@@ -14,6 +14,59 @@
 > llamándolo `INSTALL.md`; su traducción es `INSTALL_EN.md`. Lo mismo pasa con `README.md`,
 > que ahora es un selector de idioma: el contenido completo está en `README_ES.md` y `README_EN.md`.
 
+## 07/10/2026 (21:00) — UPD-H cerrado sin medir contra la versión anterior; PUB cerrada
+
+### UPD-H — Sima Ígnea con `mod-dungeon-clear` `d224254`: se cierra con lo medido
+
+Es un módulo de terceros y la IA interna de sus mazmorras no se persigue (decisión ya adoptada el 01/10, UPD-V), así que se pararon las pruebas en cuanto hubo suficiente para describir el estado. `mazmorra -p mazmorra=rfc -p nivel=17`, grupo de nivel 17, siempre con `d224254`:
+
+- Sin intervención: wipe a los 88 s hacia Oggleflint; otra pasada válida con wipe a los 1077 s hacia Taragaman, con Oggleflint ya muerto. Las otras cinco pasadas sin intervención no llegaron a empezar porque party-here no trajo tanque.
+- Con `completar_roles=si` (reposición de tanque con `addclass`, intervención anotada): 3 de 4 jefes en los 3000 s del tope (pasó Taragaman y Jergosh; faltó Bazzalan), sin wipe; y `dc_apagado` con tres jefes pendientes a los 550 s.
+- Junto a las tres del nivel 16/17 de la tarde, el resultado coincide con lo ya visto con `b501c63` y `805b909`: el tramo hacia Oggleflint/Taragaman sigue siendo irregular. **No se midió `60f3d98` con este método**, así que ni se atribuye ni se descarta una regresión del código nuevo, y no se medirá: el módulo no es nuestro. La retención de los DPS no mostró ningún efecto visible.
+- **Observación aparte, de módulo propio:** 6 de 9 intentos sin reposición de roles acabaron sin tanque en el grupo de party-here a nivel 16–17. Queda en `PLAN.md` como UPD-I.
+- Una serie cortada a mano dejó un personaje temporal (`Vsgeginu`); borrado con `verificar.py limpiar` y `diagnostico` en verde. Copia del binario de pruebas (`~/binarios-upd-h`) borrada de la VM. El worldserver sigue con `d224254`.
+
+### PUB — cerrada
+
+PUB01 a PUB06 y PUB04-I están terminadas y verificadas (detalle en las entradas del 05/10 y 07/10/2026 y en `docs/publicacion/INVENTARIO.md`). La sección sale de `PLAN.md`. El mantenimiento que queda (publicar en GitHub sólo a petición expresa con `sincronizar.py --empujar`, integrar los PR uno a uno con `git am` y `--coautor`, vigilar la CI) está en `AGENTS.md` y `CONTRIBUTING_ES.md`.
+
+## 07/10/2026 (19:25) — UPD-B: los bots de tu grupo dejan de susurrar «Eating [objeto]»
+
+`AiPlayerbot.AnnounceConsumableUse` (mod-playerbots `037c014`) hace que cada bot del grupo susurre al jugador qué come o bebe y con qué porcentaje. Con compañeros de `.grupo` o de mazmorra en single player es ruido. Variable nueva `BOTS_ANNOUNCE_CONSUMABLE_USE` en `config.sh` (por defecto `false`) y línea en la fase 5; los bots siguen comiendo y bebiendo igual, solo sin avisar (`UseItemAction::TellConsumableUse` sale antes de hablar). Para volver al comportamiento de fábrica, `BOTS_ANNOUNCE_CONSUMABLE_USE=true` en `config.local.sh` y fase 5.
+
+Desplegado: `config.sh` y la fase 5 de la VM eran idénticos al commit anterior (md5), se subieron con md5 igual a los dos lados, `--only 5` en 15 s, `playerbots.conf` con `AiPlayerbot.AnnounceConsumableUse = 0`. Worldserver (en espera) despertado por el cliente sintético y arranque limpio; `diagnostico` y `modulos` (14) en verde. No hay prueba que muestre la ausencia del susurro: el cliente sintético no tiene un caso para ello y la clave solo la lee esa función.
+
+## 07/10/2026 (19:17) — Actualización de mod-dungeon-clear a d224254
+
+Procedimiento de `INSTALL_ES.md` parte 4 §3. Pasa a `versions.lock`: **mod-dungeon-clear** `60f3d98` → `d224254` (8 commits). Los otros 25 repositorios estaban al día y no había ningún PR abierto a este proyecto (los PR 1 y 2 de GitHub son los de prueba, cerrados). Sin parches propios sobre este módulo.
+
+### Qué trae
+
+- **Pull Lab** (`src/Lab`, `lab/`, `tools/lab_*.py`): herramienta de desarrollo del autor que monta una pelea suelta en una instancia viva y la puntúa con diez criterios. Comandos nuevos `.dc lab list|show|run|batch|status|stop` (solo GM, también por consola) y `.dc test start … trace=1`; clave nueva `DungeonClear.Lab.MaxParties` (15; solo se usa con `.dc lab`). Con la consola de pruebas apagada no cambia nada. Acceso a `PlayerbotAI::engines` por puntero a miembro (`DcEngineAccess.h`): existe en nuestro mod-playerbots `037c014`.
+- **Cambio de comportamiento en partida normal:** los DPS retienen toda acción de daño (incluidos los hechizos de área centrados en el lanzador) hasta que el tanque lleva su ventaja de amenaza; el tanque se une a una pelea de grupo aunque solo tenga la marca de combate; el segador de pasivos ya no quita la espera de exploración. Para esto el módulo registra un gancho `UnitScript::OnDamage` (sale pronto si no es un jugador atacando o el módulo está apagado).
+- **Arreglos por mazmorra:** Estratholme (tres atascos: matadero, bichos de la trampa que caen bajo el suelo, cristales del zigurat), Templo Sumergido (estado de un objetivo anterior), Pantano Negro (salto entre portal y vado).
+- **Compilación:** `DC_PB_CONFIG` lee `PlayerbotAIConfig` con el nombre viejo o el nuevo (playerbots #2854, aún en `test-staging`). Los cambios de `AiPlayerbot.*` a `Playerbots.*` en el `.conf.dist` son solo comentarios.
+
+### Revisión previa (3b, 3c, 3d)
+
+Sin conflicto con módulos propios: `mod-party-here` y `mod-queue-bots` solo llaman a `.dc on` y a `DungeonClear.Enable`; ninguna clave que escribe la fase 5 desaparece. Comandos nuevos: `.dc lab` es de desarrollo, igual que `.dc test`, que tampoco tiene ficha en `mod-server-help`; no se añade. El Pull Lab no sustituye nada nuestro. Lo que merece seguimiento (la retención de los DPS) va a `PLAN.md` como UPD-H.
+
+### Despliegue (VM)
+
+Copia `~/backup-20261007-1812`, `versions.lock` subido con md5 igual a los dos lados, fase 3, fase 4 (**27 min 46 s**, compiló a la primera) y fase 5 sin claves nuevas sin declarar. Worldserver arrancado; el único `ERROR` es el conocido de prioridad de proceso. `--mirror` y `--verify-mirrors` en verde y mirrors traídos al repo (tarball viejo retirado). `revisar-actualizaciones` sin pendientes.
+
+### Verificación (cliente sintético, reino real)
+
+`diagnostico` OK, `modulos` OK (14; `.dc config` responde), `selfbot` OK (7). **`mazmorra` en Sima Ígnea, 3 pasadas, ninguna completa:**
+
+1. Nivel 16: party-here no trajo tanque (los cuatro compañeros: tres de daño y un sanador); el caso paró solo antes de empezar.
+2. Nivel 16: dungeon-clear arrancó (452 trayectorias, lista de 4 jefes); el sanador recibió daño de lava y murió, `dc_apagado` con los cuatro jefes pendientes a los 433 s.
+3. Nivel 17: wipe de los cinco a los 88 s hacia Oggleflint, con `dc` en «resting».
+
+Sin personajes ni grupos huérfanos al terminar (`diagnostico` OK después de cada pasada).
+
+**Decisión: se queda `d224254`.** Es el mismo tramo y los mismos síntomas que con `b501c63` y `805b909` (wipes, `dc_atasco`, tanque muerto en «resting»), así que no se atribuye al código nuevo; tampoco se descarta, porque no se ha medido la versión anterior con este método y el wipe a 88 s es más rápido que los vistos antes. Medirlo queda en `PLAN.md` como UPD-H. Hipótesis **no** confirmadas: regresión de `d224254` y relación con la retención de los DPS.
+
 ## 07/10/2026 — Mensajes del juego en el idioma del cliente (módulos propios y addons)
 
 **Qué hay.** Lo que los módulos propios y los addons de terceros del proyecto muestran al jugador sale ahora en el idioma de **su cliente**: español para `esES`/`esMX`, inglés para cualquier otro. Antes los módulos mandaban siempre español y la ayuda del juego, aunque ya elegía `_en`, caía al español porque esas columnas estaban vacías.

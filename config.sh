@@ -683,6 +683,13 @@ BOTS_GEAR_TWO_ROUNDS=true
 # activado para completar su validación en juego.
 BOTS_LOOT_ROLL_AFTER_REAL_PLAYERS_PASS=true
 
+# Los bots de tu grupo te susurran «Eating [objeto] (85%)» cada vez que comen,
+# beben o usan un banquete. En single player, con compañeros de `.grupo` o de
+# mazmorra, es ruido en el chat. A false: siguen comiendo y bebiendo igual, pero
+# en silencio (AiPlayerbot.AnnounceConsumableUse, de mod-playerbots desde el
+# 05/10/2026; con el valor de fábrica, true, hablaban). UPD-B.
+BOTS_ANNOUNCE_CONSUMABLE_USE=false
+
 # ── Bots al nivel del jugador y colas cortas ─────────────────────────────────
 # Limita el nivel máximo de los bots al del jugador de más nivel conectado.
 # ⚠️  A false a propósito, por dos motivos:

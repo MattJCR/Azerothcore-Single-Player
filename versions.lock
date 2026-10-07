@@ -73,6 +73,10 @@
 #   WorldScript, BD de playerbots asíncrona), mod-dungeon-clear 60f3d98 y
 #   mod-individual-progression 60336b3. Migrados los módulos propios y parche 02 de
 #   mod-playerbots-wintergrasp. Ver CHANGELOG.
+# 2026-10-07: mod-dungeon-clear a d224254 (8 commits: Pull Lab `.dc lab`, DPS esperan la
+#   ventaja de amenaza del tanque, arreglos de Estratholme, Templo Sumergido y Black Morass,
+#   compatibilidad con ambos nombres de miembros de PlayerbotAIConfig). Sin parches propios.
+#   Ver CHANGELOG.
 #
 # Para volver a una de estas versiones:  ./install.sh --only 3 && ./install.sh --from 4
 # Para actualizar el lock a lo instalado: ./install.sh --freeze
@@ -86,7 +90,7 @@ mod-quest-loot-party	master	6f073c1bef1bba1aa73787d1e30db7429f2b1c7b	2026-05-10	
 mod-autobalance	master	73d4ad3c379fbfc35c63b5b9b44fba1f7d9e213d	2026-01-16	https://github.com/azerothcore/mod-autobalance.git
 mod-challenge-modes	master	1930525b9530d329cb9fe0504a3c9b5b40a12261	2025-11-25	https://github.com/ZhengPeiRu21/mod-challenge-modes.git
 mod-congrats-on-level	master	fed4752e0cd71db7faa4d6f9f4650f5377d2f31c	2025-02-28	https://github.com/azerothcore/mod-congrats-on-level.git
-mod-dungeon-clear	master	60f3d98b83143714041df4120abd45f0e3c3ebd7	2026-10-01	https://github.com/jrad7/mod-dungeon-clear.git
+mod-dungeon-clear	master	d2242541f48fe2538e60fce0666a6bb509cae94a	2026-10-07	https://github.com/jrad7/mod-dungeon-clear.git
 mod-dungeon-master	main	612eaf804cd7fc4af74fde66d376a571a5550077	2026-09-06	https://github.com/InstanceForge/mod-dungeon-master.git
 mod-guild-levels	main	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	2026-05-01	https://github.com/Old-Man-Warcraft/mod-guild-levels.git
 mod-guildhouse	master	0b3cc14e947a859f8a7751a10676107d6316275b	2026-06-18	https://github.com/azerothcore/mod-guildhouse.git

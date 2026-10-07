@@ -433,6 +433,10 @@ if [ "$INSTALL_MOD_PLAYERBOTS" = true ]; then
             set_conf_value "$CONF" "AiPlayerbot.LootGreedRollLevel" "1"
         fi
 
+        # Aviso «Eating [objeto] (85%)» al comer/beber (UPD-B). Clave nueva de
+        # mod-playerbots 037c014; en versiones anteriores no la lee nadie.
+        set_conf_value "$CONF" "AiPlayerbot.AnnounceConsumableUse" "$(bool_to_int "${BOTS_ANNOUNCE_CONSUMABLE_USE:-false}")"
+
         # ── Que siempre haya bots de tu nivel ────────────────────────────────
         # SyncLevelWithPlayers es la opción clave: pega el nivel máximo de los
         # bots al del jugador de más nivel conectado, así los bots se reparten
