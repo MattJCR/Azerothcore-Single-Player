@@ -42,7 +42,7 @@ código de terceros»).
    `WorldScript::OnUpdate`, nunca en un hook de `PlayerScript`.
 6. **Cabecera de licencia en el código propio.** Cada `.sh`, `.py`, `.js`, `.mjs`,
    `.cpp`, `.h` y `.ps1` nuevo lleva las dos líneas SPDX que ya llevan los demás
-   (`SPDX-FileCopyrightText` y `SPDX-License-Identifier: AGPL-3.0-or-later`).
+   (copia la cabecera de cualquier fichero del mismo tipo: copyright del proyecto y licencia `AGPL-3.0-or-later`).
 7. **Fin de línea Unix** en scripts, `.tsv`, `.lock` y `.dist` (`.gitattributes`).
 8. **Documentación.** Hay cuatro documentos principales: README, INSTALL, REFERENCES y
    CHANGELOG, más este. **README, INSTALL y CONTRIBUTING existen en español e

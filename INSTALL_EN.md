@@ -90,13 +90,14 @@ begins. The game runs on the player's PC.
 
 #### Steps
 
-1. Download or copy the whole project to the server and unzip it. Keep all its
+1. Clone the project on the server with `git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer`,
+   or download and unzip a version's ZIP. Keep all its
    folders, including `modules/`, `patches/`, `cliente/` and `web-panel/`. Each
    version publishes the tree as a ZIP and a `.tar.gz` next to a `SHA256SUMS`;
    check the download with `sha256sum -c SHA256SUMS --ignore-missing` before
    unzipping it (see "Packages of each version" in
    [part 2 §9](#9-versions-offline-copies-and-notices)).
-2. Open a terminal inside the unzipped folder. If you are using SSH, enter that
+2. Open a terminal inside the project folder. If you are using SSH, enter that
    folder with `cd`.
 3. Run, with your normal user, **without prefixing `sudo`**:
 
@@ -200,7 +201,7 @@ Complete, unattended installation — phases 1-7, first start, post-install, web
 panel, services and verification — asking for the `sudo` password only once:
 
 ```bash
-unzip azerothcore-installer.zip && cd azerothcore-installer
+git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer && cd azerothcore-installer   # or unzip a version's ZIP
 nano config.sh
 chmod +x scripts/instalar-todo.sh && ./scripts/instalar-todo.sh
 ```

@@ -278,6 +278,13 @@ Requisitos: Ubuntu Server 24.04 ya instalado, un usuario con `sudo`, internet,
 16 GB de RAM y 60 GiB de disco libres (lo que comprueba el asistente; más cores
 acortan la compilación). Hardware con el que se ha probado: `INSTALL_ES.md`.
 
+**Obtener el proyecto**: clónalo en el servidor (o descarga el ZIP de una versión y comprueba su `SHA256SUMS`, ver `INSTALL_ES.md`):
+
+```bash
+git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer
+cd azerothcore-installer
+```
+
 **Instalación guiada**, sin editar archivos: abre una terminal en la carpeta
 del proyecto y ejecuta:
 
@@ -303,7 +310,7 @@ Ubuntu y las opciones de comprobación: **[INSTALL_ES.md — Instalar con el asi
 **Instalación avanzada**, con control manual de la configuración:
 
 ```bash
-unzip azerothcore-installer.zip && cd azerothcore-installer
+cd azerothcore-installer      # la carpeta clonada (o el ZIP descomprimido)
 nano config.local.sh                                 # tus REALM_IP y contraseñas (ver config.sh); módulos en config.sh
 chmod +x scripts/instalar-todo.sh && ./scripts/instalar-todo.sh   # ~35 min, pide sudo una vez
 ```

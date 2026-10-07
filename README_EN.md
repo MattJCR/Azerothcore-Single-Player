@@ -280,6 +280,13 @@ Requirements: Ubuntu Server 24.04 already installed, a user with `sudo`,
 internet, 16 GB of RAM and 60 GiB of free disk (what the wizard checks; more
 cores shorten the build). Hardware it has been tested on: `INSTALL_EN.md`.
 
+**Get the project**: clone it on the server (or download a version's ZIP and check its `SHA256SUMS`, see `INSTALL_EN.md`):
+
+```bash
+git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer
+cd azerothcore-installer
+```
+
 **Guided installation**, without editing files: open a terminal in the project
 folder and run:
 
@@ -307,7 +314,7 @@ wizard](INSTALL_EN.md#install-with-the-wizard)**.
 **Advanced installation**, with manual control of the configuration:
 
 ```bash
-unzip azerothcore-installer.zip && cd azerothcore-installer
+cd azerothcore-installer      # the cloned folder (or the unzipped ZIP)
 nano config.local.sh                                 # your REALM_IP and passwords (see config.sh); modules in config.sh
 chmod +x scripts/instalar-todo.sh && ./scripts/instalar-todo.sh   # ~35 min, asks for sudo once
 ```

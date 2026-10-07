@@ -43,7 +43,7 @@ código de terceros» — the reference documents are written in Spanish).
    `WorldScript::OnUpdate`, never in a `PlayerScript` hook.
 6. **License header on own code.** Each new `.sh`, `.py`, `.js`, `.mjs`, `.cpp`,
    `.h` and `.ps1` carries the two SPDX lines the others already have
-   (`SPDX-FileCopyrightText` and `SPDX-License-Identifier: AGPL-3.0-or-later`).
+   (copy the header of any file of the same type: the project's copyright and the `AGPL-3.0-or-later` license).
 7. **Unix line endings** in scripts, `.tsv`, `.lock` and `.dist`
    (`.gitattributes`).
 8. **Documentation.** There are four main documents: README, INSTALL, REFERENCES

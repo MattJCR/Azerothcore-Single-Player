@@ -82,13 +82,14 @@ los requisitos de arriba (16 GB de RAM y al menos 60 GiB libres) antes de comenz
 
 #### Pasos
 
-1. Descarga o copia el proyecto completo al servidor y descomprímelo. Conserva
+1. Clona el proyecto en el servidor, con `git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer`, o
+   descarga y descomprime un ZIP de versión. Conserva
    todas sus carpetas, incluidos `modules/`, `patches/`, `cliente/` y `web-panel/`.
    Cada versión publica el árbol como ZIP y `.tar.gz` junto a un `SHA256SUMS`;
    comprueba la descarga con `sha256sum -c SHA256SUMS --ignore-missing` antes de
    descomprimirla (ver «Paquetes de cada versión» en la
    [parte 2 §9](#9-versiones-copias-offline-y-avisos)).
-2. Abre una terminal dentro de la carpeta descomprimida. Si estás usando SSH,
+2. Abre una terminal dentro de la carpeta del proyecto. Si estás usando SSH,
    entra en esa carpeta con `cd`.
 3. Ejecuta, con tu usuario normal, **sin anteponer `sudo`**:
 
@@ -192,7 +193,7 @@ post-instalación, panel web, servicios y verificación — pidiendo la contrase
 de `sudo` una sola vez:
 
 ```bash
-unzip azerothcore-installer.zip && cd azerothcore-installer
+git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer && cd azerothcore-installer   # o descomprime el ZIP de una versión
 nano config.sh
 chmod +x scripts/instalar-todo.sh && ./scripts/instalar-todo.sh
 ```
