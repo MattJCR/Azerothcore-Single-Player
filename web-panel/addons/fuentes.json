@@ -1158,13 +1158,15 @@
    "patches-cliente/Chatter/01-altnames-nota-nula.patch"
   ],
   "GuildLevels": [
-   "patches-cliente/GuildLevels/01-compatibilidad-3-3-5-y-minimapa.patch"
+   "patches-cliente/GuildLevels/01-compatibilidad-3-3-5-y-minimapa.patch",
+   "patches-cliente/GuildLevels/02-localizacion-segun-idioma-del-cliente.patch"
   ],
   "QuestRadar": [
-   "patches-cliente/QuestRadar/01-traduccion-y-astrolabe.patch"
+   "patches-cliente/QuestRadar/01-traduccion-y-astrolabe.patch",
+   "patches-cliente/QuestRadar/02-localizacion-segun-idioma-del-cliente.patch"
   ],
   "PlayerBotManager": [
-   "patches-cliente/PlayerBotManager/es-localizacion-visible.patch"
+   "patches-cliente/PlayerBotManager/01-localizacion-segun-idioma-del-cliente.patch"
   ]
  },
  "propios": [

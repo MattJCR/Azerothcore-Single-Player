@@ -280,7 +280,10 @@ namespace
         WorldSession const* session = const_cast<ChatHandler&>(handler).GetSession();
         if (!session)
             return true;
-        LocaleConstant loc = session->GetSessionDbcLocale();
+        // El idioma del CLIENTE, no el de los DBC del servidor: GetSessionDbcLocale() devuelve
+        // el de los DBC cargados (enUS en esta instalación) sea cual sea el cliente, así que
+        // nunca detectaba español y, con las columnas *_en rellenas, un cliente esES veía inglés.
+        LocaleConstant loc = static_cast<LocaleConstant>(session->GetSessionDbLocaleIndex());
         return loc == LOCALE_esES || loc == LOCALE_esMX;
     }
 

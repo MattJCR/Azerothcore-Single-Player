@@ -5,6 +5,7 @@
 // app.js con el mismo patrón de inyección que routes/serverConfig.js/
 // botOperations.js.
 import { worldTable } from '../db.js';
+import { itemLocale } from '../i18n.js';
 import { classifyInventory } from '../inventory.js';
 import { formatItemRow } from '../items.js';
 
@@ -18,7 +19,8 @@ const ITEM_COLUMNS = `ii.guid AS itemGuid, ii.itemEntry AS entry, ii.count AS co
   it.stat_type4 AS statType4, it.stat_value4 AS statValue4,
   it.stat_type5 AS statType5, it.stat_value5 AS statValue5`;
 const ITEM_TEMPLATE_TABLE = worldTable('item_template');
-const ITEM_TEMPLATE_LOCALE_JOIN = `LEFT JOIN ${worldTable('item_template_locale')} itl ON itl.ID = it.entry AND itl.locale = 'esES'`;
+// El nombre sale en el idioma del panel; en inglés no hay fila enUS y COALESCE cae en item_template.name.
+const itemLocaleJoin = (request) => `LEFT JOIN ${worldTable('item_template_locale')} itl ON itl.ID = it.entry AND itl.locale = '${itemLocale(request)}'`;
 
 export function registerCharactersRoutes(app, { authDb, charactersDb, currentGmLevel, requireAuth, noStore }) {
   app.get('/api/characters/search', requireAuth, async (request, response, next) => {
@@ -105,7 +107,7 @@ export function registerCharactersRoutes(app, { authDb, charactersDb, currentGmL
          FROM character_inventory ci
          JOIN item_instance ii ON ii.guid = ci.item
          JOIN ${ITEM_TEMPLATE_TABLE} it ON it.entry = ii.itemEntry
-         ${ITEM_TEMPLATE_LOCALE_JOIN}
+         ${itemLocaleJoin(request)}
          WHERE ci.guid = ? AND ci.bag = 0 AND ci.slot <= 18
          ORDER BY ci.slot`,
         [guid],
@@ -134,7 +136,7 @@ export function registerCharactersRoutes(app, { authDb, charactersDb, currentGmL
            FROM character_inventory ci
            JOIN item_instance ii ON ii.guid = ci.item
            JOIN ${ITEM_TEMPLATE_TABLE} it ON it.entry = ii.itemEntry
-           ${ITEM_TEMPLATE_LOCALE_JOIN}
+           ${itemLocaleJoin(request)}
            WHERE ci.guid = ?`,
           [guid],
         );
@@ -166,7 +168,7 @@ export function registerCharactersRoutes(app, { authDb, charactersDb, currentGmL
                FROM guild_bank_item gbi
                JOIN item_instance ii ON ii.guid = gbi.item_guid
                JOIN ${ITEM_TEMPLATE_TABLE} it ON it.entry = ii.itemEntry
-               ${ITEM_TEMPLATE_LOCALE_JOIN}
+               ${itemLocaleJoin(request)}
                WHERE gbi.guildid = ? AND gbi.TabId IN (?)
                ORDER BY gbi.TabId, gbi.SlotId`,
               [guildRow.guildId, allowedTabIds],

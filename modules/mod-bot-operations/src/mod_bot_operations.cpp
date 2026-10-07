@@ -61,6 +61,8 @@
 #include "DatabaseEnv.h"
 #include "GameTime.h"
 #include "Log.h"
+#include "ModLocale.h"
+#include "bot_operations_locale.h"
 #include "ScriptMgr.h"
 #include "SlowTick.h"
 #include "StringFormat.h"
@@ -718,8 +720,8 @@ namespace
 
         static bool HandleStatus(ChatHandler* handler)
         {
-            handler->PSendSysMessage("bot-operations: puente {} (BotOperations.Enable).",
-                cfg.enabled ? "activo" : "inactivo");
+            handler->PSendSysMessage(ModLocale::L(handler, "bot-operations: puente {} (BotOperations.Enable)."),
+                cfg.enabled ? ModLocale::L(handler, "activo") : ModLocale::L(handler, "inactivo"));
 
             uint32 pending = 0, done = 0, failed = 0, expired = 0;
             if (QueryResult totals = WorldDatabase.Query(
@@ -736,7 +738,7 @@ namespace
                     else if (status == "expired") expired = count;
                 } while (totals->NextRow());
             }
-            handler->PSendSysMessage("colas: {} pendientes, {} resueltas ({} done, {} failed, {} expired).",
+            handler->PSendSysMessage(ModLocale::L(handler, "colas: {} pendientes, {} resueltas ({} done, {} failed, {} expired)."),
                 pending, done + failed + expired, done, failed, expired);
 
             // Hasta 10 pendientes, de la mas antigua a la mas nueva (mismo
@@ -751,7 +753,7 @@ namespace
                     {
                         Field* f = rows->Fetch();
                         std::string const param = f[2].Get<std::string>();
-                        handler->PSendSysMessage("  pendiente #{} {} param={} edad={}s",
+                        handler->PSendSysMessage(ModLocale::L(handler, "  pendiente #{} {} param={} edad={}s"),
                             f[0].Get<uint64>(), f[1].Get<std::string>(),
                             param.empty() ? std::string("-") : param, f[3].Get<uint32>());
                     } while (rows->NextRow());
@@ -768,7 +770,7 @@ namespace
                 do
                 {
                     Field* f = rows->Fetch();
-                    handler->PSendSysMessage("  resuelta #{} {} [{}] edad={}s: {}",
+                    handler->PSendSysMessage(ModLocale::L(handler, "  resuelta #{} {} [{}] edad={}s: {}"),
                         f[0].Get<uint64>(), f[1].Get<std::string>(), f[2].Get<std::string>(),
                         f[4].Get<uint32>(), f[3].Get<std::string>());
                 } while (rows->NextRow());
@@ -781,6 +783,7 @@ namespace
 
 void AddSC_mod_bot_operations()
 {
+    ModLocale::Register(BotOperationsLocale::kEntries);
     new mod_bot_operations_world();
     new mod_bot_operations_command();
 }

@@ -22,6 +22,7 @@
 import { allCategories } from '../serverConfigCatalog.js';
 import { resolveAndValidate, ServerConfigError } from '../serverConfigValidation.js';
 import { readCurrentValues } from '../serverConfigFiles.js';
+import { paramDescription } from '../i18n.js';
 
 export function registerServerConfigRoutes(app, { requireAuth, requireAdmin, requireCsrfHeader, noStore, audit, clientKey, panelDb }) {
   app.get('/api/server-config/categories', requireAuth, requireAdmin, async (_request, response, next) => {
@@ -47,11 +48,11 @@ export function registerServerConfigRoutes(app, { requireAuth, requireAdmin, req
   // puro catálogo en memoria (sin lectura de fichero ni consulta a BD, a
   // diferencia de /category/:id): puede pedirse una sola vez al entrar en la
   // vista sin abrir una categoría por cada resultado.
-  app.get('/api/server-config/search-index', requireAuth, requireAdmin, (_request, response) => {
+  app.get('/api/server-config/search-index', requireAuth, requireAdmin, (request, response) => {
     noStore(response);
     response.json({
       params: allCategories().flatMap((category) => category.params.map((param) => ({
-        key: param.key, description: param.description || '', categoryId: category.id, categoryLabel: category.label,
+        key: param.key, description: paramDescription(param, request), categoryId: category.id, categoryLabel: category.label,
       }))),
     });
   });
@@ -71,7 +72,7 @@ export function registerServerConfigRoutes(app, { requireAuth, requireAdmin, req
         category: { id: category.id, label: category.label, group: category.group, module: category.module, file: category.file },
         params: category.params.map((param) => ({
           key: param.key, type: param.type, min: param.min, max: param.max, risk: param.risk,
-          description: param.description, default: param.default, options: param.options || null,
+          description: paramDescription(param, request), default: param.default, options: param.options || null,
           current: currentValues.get(param.key) ?? param.default,
           pending: pendingByKey.get(param.key) ?? null,
         })),

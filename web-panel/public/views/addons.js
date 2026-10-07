@@ -4,6 +4,7 @@
 // Access API, detección de lo ya instalado y parches de cliente.
 import { $, $$, state, api, showLogin, showToast, escapeHtml } from '../shared.js';
 import { ClientData, describeClient, prepareResources } from '../client-resources.js';
+import { t, lang, lowerCase, compareText, formatDate, formatDateTime, formatNumber } from '../i18n.js';
 
 export const CLASS_FILTERS = ['Guerrero', 'Paladín', 'Cazador', 'Pícaro', 'Sacerdote', 'Caballero de la Muerte', 'Chamán', 'Mago', 'Brujo', 'Druida'];
 
@@ -15,14 +16,14 @@ export function enter() {
 
 function formatBytes(bytes) {
   if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)} KB`;
-  return `${(bytes / 1024 / 1024).toLocaleString('es-ES', { maximumFractionDigits: 1 })} MB`;
+  return `${formatNumber(bytes / 1024 / 1024, { maximumFractionDigits: 1 })} MB`;
 }
 
 function filteredAddons() {
-  const search = $('#addon-search').value.trim().toLocaleLowerCase('es');
+  const search = lowerCase($('#addon-search').value.trim());
   const category = $('#addon-category').value;
   const playerClass = $('#addon-class').value;
-  return state.addons.filter((addon) => (!search || `${addon.name} ${addon.description}`.toLocaleLowerCase('es').includes(search))
+  return state.addons.filter((addon) => (!search || lowerCase(`${addon.name} ${addon.description}`).includes(search))
     && (!category || addon.category === category)
     && (!playerClass || addon.classes.includes(playerClass)));
 }
@@ -39,8 +40,8 @@ function updateAddonSelection() {
 // scanInstalledAddons/scanInstalledPatches): no hay un manifiesto propio que
 // pueda desincronizarse. 'not-installed' se omite del todo (badge null).
 function installStatusBadge(status) {
-  if (status === 'current') return { text: '✓ Instalado', className: 'status-current' };
-  if (status === 'update') return { text: '⟳ Actualización disponible', className: 'status-update' };
+  if (status === 'current') return { text: t('✓ Instalado'), className: 'status-current' };
+  if (status === 'update') return { text: t('⟳ Actualización disponible'), className: 'status-update' };
   return null;
 }
 
@@ -52,10 +53,10 @@ function renderPatches() {
     const pending = patch.available === false;
     return `<article class="patch-item ${pending ? 'patch-pending' : ''}">
     <span class="patch-file">${escapeHtml(patch.name)}</span>
-    <span class="patch-copy"><strong>${patch.required ? '★ Obligatorio' : 'Opcional'}</strong><small>${escapeHtml(patch.description)} · ${pending ? '<em class="resource-state-pendiente">Pendiente de generar desde un cliente de WoW (lo hace un administrador)</em>' : formatBytes(patch.size)}${badge ? ` · <em class="badge-${badge.className}">${badge.text}</em>` : ''}</small></span>
+    <span class="patch-copy"><strong>${patch.required ? t('★ Obligatorio') : t('Opcional')}</strong><small>${escapeHtml(patch.description)} · ${pending ? `<em class="resource-state-pendiente">${t('Pendiente de generar desde un cliente de WoW (lo hace un administrador)')}</em>` : formatBytes(patch.size)}${badge ? ` · <em class="badge-${badge.className}">${badge.text}</em>` : ''}</small></span>
     <span class="patch-actions">
-      ${pending ? '' : `<a href="${escapeHtml(patch.downloadUrl)}" download>Descargar</a>`}
-      ${canUninstall ? `<button type="button" class="link-danger" data-uninstall-patch="${escapeHtml(patch.id)}">Desinstalar</button>` : ''}
+      ${pending ? '' : `<a href="${escapeHtml(patch.downloadUrl)}" download>${t('Descargar')}</a>`}
+      ${canUninstall ? `<button type="button" class="link-danger" data-uninstall-patch="${escapeHtml(patch.id)}">${t('Desinstalar')}</button>` : ''}
     </span>
   </article>`;
   }).join('');
@@ -72,16 +73,16 @@ function renderAddons() {
       <input type="checkbox" value="${escapeHtml(addon.id)}" ${state.selectedAddons.has(addon.id) ? 'checked' : ''} ${addon.required ? 'disabled' : ''}>
       <span class="addon-emblem" aria-hidden="true">${escapeHtml(addon.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase())}</span>
       <span class="addon-copy">
-        <span class="addon-title"><strong>${escapeHtml(addon.name)}</strong>${addon.required ? '<em class="badge-protected" title="Se instala siempre; no se puede desmarcar ni desinstalar.">★ Obligatorio</em>' : addon.recommended ? '<em class="badge-recommended">Recomendado</em>' : ''}${badge ? `<em class="badge-${badge.className}">${badge.text}</em>` : ''}</span>
-        <span class="addon-category">${escapeHtml(addon.category)} · ${formatBytes(addon.size)}${addon.classes.length && addon.classes.length < CLASS_FILTERS.length ? ` · ${escapeHtml(addon.classes.join(', '))}` : ''}</span>
+        <span class="addon-title"><strong>${escapeHtml(addon.name)}</strong>${addon.required ? `<em class="badge-protected" title="${t('Se instala siempre; no se puede desmarcar ni desinstalar.')}">${t('★ Obligatorio')}</em>` : addon.recommended ? `<em class="badge-recommended">${t('Recomendado')}</em>` : ''}${badge ? `<em class="badge-${badge.className}">${badge.text}</em>` : ''}</span>
+        <span class="addon-category">${escapeHtml(t(addon.category))} · ${formatBytes(addon.size)}${addon.classes.length && addon.classes.length < CLASS_FILTERS.length ? ` · ${escapeHtml(addon.classes.map((name) => t(name)).join(', '))}` : ''}</span>
         <span class="addon-description">${escapeHtml(addon.description)}</span>
       </span>
       <span class="checkmark" aria-hidden="true">✓</span>
     </label>
     <div class="addon-links">
-      ${addon.sourceUrl ? `<a href="${escapeHtml(addon.sourceUrl)}" target="_blank" rel="noreferrer">Fuente</a>` : '<span>Addon del servidor</span>'}
-      <a class="addon-download" href="${escapeHtml(addon.downloadUrl)}" download>Descargar ZIP</a>
-      ${canUninstall ? `<button type="button" class="link-danger" data-uninstall-addon="${escapeHtml(addon.id)}">Desinstalar</button>` : ''}
+      ${addon.sourceUrl ? `<a href="${escapeHtml(addon.sourceUrl)}" target="_blank" rel="noreferrer">${t('Fuente')}</a>` : `<span>${t('Addon del servidor')}</span>`}
+      <a class="addon-download" href="${escapeHtml(addon.downloadUrl)}" download>${t('Descargar ZIP')}</a>
+      ${canUninstall ? `<button type="button" class="link-danger" data-uninstall-addon="${escapeHtml(addon.id)}">${t('Desinstalar')}</button>` : ''}
     </div>
   </article>`;
   }).join('');
@@ -97,9 +98,10 @@ async function loadAddons() {
     state.patches = catalog.patches || [];
     state.selectedAddons = new Set(catalog.addons.filter((addon) => addon.required || addon.recommended).map((addon) => addon.id));
     $('#addon-total').textContent = catalog.addons.length;
-    $('#mirror-version').textContent = `Copia ${catalog.sourceCommit.slice(0, 8)} · ${new Date(catalog.mirroredAt).toLocaleDateString('es-ES')}`;
-    const categories = [...new Set(catalog.addons.map((addon) => addon.category))].sort((a, b) => a.localeCompare(b, 'es'));
-    $('#addon-category').insertAdjacentHTML('beforeend', categories.map((category) => `<option>${escapeHtml(category)}</option>`).join(''));
+    $('#mirror-version').textContent = t('Copia {commit} · {date}', { commit: catalog.sourceCommit.slice(0, 8), date: formatDate(catalog.mirroredAt) });
+    // El valor de la opción es la categoría del catálogo (en español); sólo cambia lo que se lee.
+    const categories = [...new Set(catalog.addons.map((addon) => addon.category))].sort((a, b) => compareText(t(a), t(b)));
+    $('#addon-category').insertAdjacentHTML('beforeend', categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(t(category))}</option>`).join(''));
     renderAddons();
     renderPatches();
     await refreshInstalledState();
@@ -175,7 +177,7 @@ async function scanInstalledAddons() {
     }
     state.installedAddons = statuses;
   } catch (error) {
-    console.warn('No se pudo comprobar los addons instalados', error);
+    console.warn(t('No se pudo comprobar los addons instalados'), error);
   }
   renderAddons();
 }
@@ -192,12 +194,12 @@ async function scanInstalledPatches() {
         const hex = (await sha256Hex(await file.arrayBuffer())).toUpperCase();
         statuses.set(patch.id, hex === patch.sha256 ? 'current' : 'update');
       } catch (error) {
-        if (error.name !== 'NotFoundError') console.warn(`No se pudo comprobar ${patch.file}`, error);
+        if (error.name !== 'NotFoundError') console.warn(t('No se pudo comprobar {file}', { file: patch.file }), error);
         statuses.set(patch.id, 'not-installed');
       }
     }
   } catch (error) {
-    console.warn('No se pudo comprobar los parches instalados', error);
+    console.warn(t('No se pudo comprobar los parches instalados'), error);
   }
   state.installedPatches = statuses;
   renderPatches();
@@ -207,12 +209,12 @@ async function refreshInstalledState() {
   if (!state.wowDirectory || state.scanningInstalled) return;
   state.scanningInstalled = true;
   const status = $('#folder-status');
-  status.textContent = `${state.wowDirectory.name} · comprobando addons y parches instalados…`;
+  status.textContent = t('{folder} · comprobando addons y parches instalados…', { folder: state.wowDirectory.name });
   try {
     await Promise.all([scanInstalledAddons(), scanInstalledPatches()]);
   } finally {
     state.scanningInstalled = false;
-    status.textContent = `${state.wowDirectory.name} · cliente verificado. Se instalará en Interface/AddOns y Data.`;
+    status.textContent = t('{folder} · cliente verificado. Se instalará en Interface/AddOns y Data.', { folder: state.wowDirectory.name });
   }
 }
 
@@ -226,16 +228,16 @@ function renderResources() {
   const panel = $('#resources-panel');
   panel.classList.toggle('hidden', !isAdmin() || !state.resources);
   if (!state.resources) return;
-  const names = { iconos: 'Iconos de la armería', 'parche-esES': 'Parche patch-esES-4.MPQ', 'parche-enUS': 'Parche patch-enUS-4.MPQ', mapas: 'Mapas del panel' };
+  const names = { iconos: t('Iconos de la armería'), 'parche-esES': t('Parche patch-esES-4.MPQ'), 'parche-enUS': t('Parche patch-enUS-4.MPQ'), mapas: t('Mapas del panel') };
   $('#resource-list').innerHTML = state.resources.recursos.map((item) => `<article class="resource-item">
     <span class="patch-file">${escapeHtml(names[item.id] || item.id)}</span>
-    <span class="patch-copy"><strong class="resource-state-${escapeHtml(item.estado)}">${item.estado === 'listo' ? '✓ Listo' : 'Pendiente'}</strong><small>${item.estado === 'listo'
-      ? `${item.origen === 'preparado' ? 'Preparado en el servidor' : 'Generado desde tu cliente'}${item.actualizado ? ` · ${new Date(item.actualizado).toLocaleString('es-ES')}` : ''}`
+    <span class="patch-copy"><strong class="resource-state-${escapeHtml(item.estado)}">${item.estado === 'listo' ? t('✓ Listo') : t('Pendiente')}</strong><small>${item.estado === 'listo'
+      ? `${item.origen === 'preparado' ? t('Preparado en el servidor') : t('Generado desde tu cliente')}${item.actualizado ? ` · ${formatDateTime(item.actualizado)}` : ''}`
       : escapeHtml(item.detalle || '')}</small></span>
   </article>`).join('');
   const job = state.resources.trabajo;
   if (job && job.estado === 'error') {
-    $('#resource-list').insertAdjacentHTML('beforeend', `<article class="resource-item"><span class="patch-file">Último intento</span><span class="patch-copy"><strong class="resource-state-pendiente">Falló</strong><small>${escapeHtml(job.mensaje)}</small></span></article>`);
+    $('#resource-list').insertAdjacentHTML('beforeend', `<article class="resource-item"><span class="patch-file">${t('Último intento')}</span><span class="patch-copy"><strong class="resource-state-pendiente">${t('Falló')}</strong><small>${escapeHtml(job.mensaje)}</small></span></article>`);
   }
 }
 
@@ -279,8 +281,8 @@ async function listClientMpq(dataDirectory) {
 const resourceHttp = {
   json: (method, path, body) => api(path, { method, body: body === undefined ? undefined : JSON.stringify(body) }),
   async put(path, bytes) {
-    const response = await fetch(path, { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/zip', 'X-Panel-Request': '1' }, body: bytes });
-    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || 'No se pudo enviar el lote al servidor');
+    const response = await fetch(path, { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/zip', 'X-Panel-Request': '1', 'X-Panel-Lang': lang() }, body: bytes });
+    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || t('No se pudo enviar el lote al servidor'));
   },
 };
 
@@ -298,7 +300,7 @@ async function prepareFromClient({ force = false } = {}) {
   cancel.classList.remove('hidden');
   cancel.onclick = () => controller.abort();
   try {
-    setResourceProgress({ texto: 'Abriendo los MPQ de tu cliente…' });
+    setResourceProgress({ texto: t('Abriendo los MPQ de tu cliente…') });
     const dataDirectory = await state.wowDirectory.getDirectoryHandle('Data');
     const client = new ClientData(await listClientMpq(dataDirectory));
     const { languages } = describeClient(client);
@@ -306,14 +308,14 @@ async function prepareFromClient({ force = false } = {}) {
       client, http: resourceHttp, JSZip: window.JSZip, languages, force: force ? ['iconos', ...languages.map((language) => `parche-${language}`)] : [],
       onProgress: setResourceProgress, signal: controller.signal,
     });
-    setResourceProgress({ texto: result.estado === 'alDia' ? 'Los recursos ya estaban al día con tu cliente.' : 'Recursos generados y verificados en el servidor.', hecho: 1, total: 1 });
-    showToast(result.estado === 'alDia' ? 'Los recursos ya estaban al día con tu cliente.' : 'Recursos preparados. Ya puedes instalar los parches.');
+    setResourceProgress({ texto: result.estado === 'alDia' ? t('Los recursos ya estaban al día con tu cliente.') : t('Recursos generados y verificados en el servidor.'), hecho: 1, total: 1 });
+    showToast(result.estado === 'alDia' ? t('Los recursos ya estaban al día con tu cliente.') : t('Recursos preparados. Ya puedes instalar los parches.'));
     state.patches = [];
     state.addons = [];
     await Promise.all([loadResources(), loadAddons()]);
     return true;
   } catch (error) {
-    setResourceProgress({ texto: `No se pudieron preparar los recursos: ${error.message}`, hecho: 0, total: 1 });
+    setResourceProgress({ texto: t('No se pudieron preparar los recursos: {error}', { error: error.message }), hecho: 0, total: 1 });
     showToast(error.message);
     await loadResources();
     return false;
@@ -328,16 +330,16 @@ const resourcesPending = () => Boolean(state.resources?.recursos.some((item) => 
 
 async function chooseWowDirectory({ skipPrepare = false } = {}) {
   if (!window.isSecureContext) {
-    showToast('El certificado aún no es de confianza. Instálalo en Equipo local → Entidades de certificación raíz de confianza.');
+    showToast(t('El certificado aún no es de confianza. Instálalo en Equipo local → Entidades de certificación raíz de confianza.'));
     return;
   }
   if (!window.showDirectoryPicker) {
-    showToast('El origen ya es seguro, pero este navegador no admite el selector. Usa una versión actual de Chrome o Edge.');
+    showToast(t('El origen ya es seguro, pero este navegador no admite el selector. Usa una versión actual de Chrome o Edge.'));
     return;
   }
   try {
     const directory = await window.showDirectoryPicker({ id: 'azeroth-wow-client', mode: 'readwrite' });
-    if (!await containsWowExecutable(directory)) throw new Error('La carpeta elegida no contiene Wow.exe.');
+    if (!await containsWowExecutable(directory)) throw new Error(t('La carpeta elegida no contiene Wow.exe.'));
     state.wowDirectory = directory;
     state.installedAddons = new Map();
     state.installedPatches = new Map();
@@ -356,7 +358,7 @@ async function chooseWowDirectory({ skipPrepare = false } = {}) {
 
 async function uninstallAddon(addon) {
   if (addon.required || !state.wowDirectory) return;
-  if (!window.confirm(`¿Desinstalar ${addon.name}? Se borrará su carpeta de Interface/AddOns junto con su configuración guardada.`)) return;
+  if (!window.confirm(t('¿Desinstalar {name}? Se borrará su carpeta de Interface/AddOns junto con su configuración guardada.', { name: addon.name }))) return;
   try {
     const interfaceDirectory = await state.wowDirectory.getDirectoryHandle('Interface', { create: true });
     const addonsDirectory = await interfaceDirectory.getDirectoryHandle('AddOns', { create: true });
@@ -366,26 +368,26 @@ async function uninstallAddon(addon) {
     }
     state.installedAddons.set(addon.id, 'not-installed');
     state.selectedAddons.delete(addon.id);
-    showToast(`${addon.name} desinstalado.`);
+    showToast(t('{name} desinstalado.', { name: addon.name }));
     renderAddons();
   } catch (error) {
-    showToast(`No se pudo desinstalar ${addon.name}: ${error.message}`);
+    showToast(t('No se pudo desinstalar {name}: {error}', { name: addon.name, error: error.message }));
   }
 }
 
 async function uninstallPatch(patch) {
   if (patch.required || !state.wowDirectory) return;
-  if (!window.confirm(`¿Desinstalar ${patch.name}?`)) return;
+  if (!window.confirm(t('¿Desinstalar {name}?', { name: patch.name }))) return;
   try {
     const dataDirectory = await state.wowDirectory.getDirectoryHandle('Data', { create: true });
     const directory = patch.targetDir ? await dataDirectory.getDirectoryHandle(patch.targetDir, { create: true }) : dataDirectory;
     try { await directory.removeEntry(patch.file); }
     catch (error) { if (error.name !== 'NotFoundError') throw error; }
     state.installedPatches.set(patch.id, 'not-installed');
-    showToast(`${patch.name} desinstalado.`);
+    showToast(t('{name} desinstalado.', { name: patch.name }));
     renderPatches();
   } catch (error) {
-    showToast(`No se pudo desinstalar ${patch.name}: ${error.message}`);
+    showToast(t('No se pudo desinstalar {name}: {error}', { name: patch.name, error: error.message }));
   }
 }
 
@@ -394,10 +396,10 @@ function installableZipEntries(zip) {
     .map((entry) => ({ entry, path: entry.name.replace(/^\.\//, '').replaceAll('\\', '/') }))
     .filter(({ path }) => path && !path.startsWith('__MACOSX/') && !path.endsWith('/.DS_Store'));
   if (entries.some(({ path }) => path.startsWith('/') || path.split('/').some((part) => !part || part === '..' || part.includes(':')))) {
-    throw new Error('El paquete contiene una ruta no segura.');
+    throw new Error(t('El paquete contiene una ruta no segura.'));
   }
   const tocPaths = entries.map(({ path }) => path).filter((value) => value.toLowerCase().endsWith('.toc'));
-  if (!tocPaths.length) throw new Error('El paquete no contiene ningún archivo .toc de addon.');
+  if (!tocPaths.length) throw new Error(t('El paquete no contiene ningún archivo .toc de addon.'));
   const first = entries[0]?.path.split('/')[0];
   const stripWrapper = first && entries.every(({ path }) => path.split('/')[0] === first) && tocPaths.every((value) => value.split('/').length >= 3);
   return entries.map(({ entry, path }) => ({ entry, path: stripWrapper ? path.split('/').slice(1).join('/') : path }));
@@ -438,7 +440,7 @@ async function installAddonsCore(selected, onProgress) {
       continue;
     }
     const response = await fetch(addon.downloadUrl, { credentials: 'same-origin' });
-    if (!response.ok) throw new Error(`No se pudo descargar ${addon.name}.`);
+    if (!response.ok) throw new Error(t('No se pudo descargar {name}.', { name: addon.name }));
     await writeZipToDirectory(await response.arrayBuffer(), addonsDirectory);
     state.installedAddons.set(addon.id, 'current');
     written += 1;
@@ -458,14 +460,16 @@ async function installSelectedAddons() {
     const { written, skipped } = await installAddonsCore(selected, (index, total, addon) => {
       progress.querySelector('i').style.width = `${Math.round(index / total * 100)}%`;
       progress.querySelector('span').textContent = state.installedAddons.get(addon.id) === 'current'
-        ? `${index + 1}/${total} · ${addon.name} ya está al día, sin tocar…`
-        : `${index + 1}/${total} · Descargando e instalando ${addon.name}…`;
+        ? t('{index}/{total} · {name} ya está al día, sin tocar…', { index: index + 1, total, name: addon.name })
+        : t('{index}/{total} · Descargando e instalando {name}…', { index: index + 1, total, name: addon.name });
     });
     progress.querySelector('i').style.width = '100%';
-    progress.querySelector('span').textContent = `${written} addon${written === 1 ? '' : 's'} instalado${written === 1 ? '' : 's'}/actualizado${written === 1 ? '' : 's'}, ${skipped} sin cambios.`;
-    showToast('Instalación terminada correctamente.');
+    progress.querySelector('span').textContent = written === 1
+      ? t('1 addon instalado/actualizado, {skipped} sin cambios.', { skipped })
+      : t('{written} addons instalados/actualizados, {skipped} sin cambios.', { written, skipped });
+    showToast(t('Instalación terminada correctamente.'));
   } catch (error) {
-    progress.querySelector('span').textContent = `Instalación detenida: ${error.message}`;
+    progress.querySelector('span').textContent = t('Instalación detenida: {error}', { error: error.message });
     showToast(error.message);
   } finally {
     button.disabled = false;
@@ -487,7 +491,7 @@ async function installPatchesCore() {
       continue;
     }
     const response = await fetch(patch.downloadUrl, { credentials: 'same-origin' });
-    if (!response.ok) throw new Error(`No se pudo descargar ${patch.name}.`);
+    if (!response.ok) throw new Error(t('No se pudo descargar {name}.', { name: patch.name }));
     // targetDir: los parches de DBC de idioma van en Data/<idioma>/ (Data/esES,
     // Data/enUS), no planos en Data/, para pisar a patch-<idioma>-3.
     let directory = dataDirectory;
@@ -524,15 +528,15 @@ async function installPatchesCore() {
 // propia sección (paso 3), no desde aquí.
 async function installPatches() {
   if (!window.isSecureContext) {
-    showToast('El certificado aún no es de confianza. Instálalo en Equipo local → Entidades de certificación raíz de confianza.');
+    showToast(t('El certificado aún no es de confianza. Instálalo en Equipo local → Entidades de certificación raíz de confianza.'));
     return;
   }
   if (!window.showDirectoryPicker) {
-    showToast('El origen ya es seguro, pero este navegador no admite el selector. Usa una versión actual de Chrome o Edge.');
+    showToast(t('El origen ya es seguro, pero este navegador no admite el selector. Usa una versión actual de Chrome o Edge.'));
     return;
   }
   if (!state.patches.length) {
-    showToast('El catálogo todavía se está cargando. Espera un momento y vuelve a pulsar.');
+    showToast(t('El catálogo todavía se está cargando. Espera un momento y vuelve a pulsar.'));
     return;
   }
   const button = $('#install-patches');
@@ -542,7 +546,7 @@ async function installPatches() {
     if (!state.wowDirectory) return;
     if (state.patches.some((patch) => patch.required && patch.available === false)) {
       if (!isAdmin()) {
-        showToast('Los parches aún no están generados. Un administrador debe elegir su cliente en esta pantalla para prepararlos.');
+        showToast(t('Los parches aún no están generados. Un administrador debe elegir su cliente en esta pantalla para prepararlos.'));
         return;
       }
       if (!await prepareFromClient()) return;
@@ -552,19 +556,23 @@ async function installPatches() {
     await scanInstalledPatches();
     const missing = state.patches.filter((patch) => patch.required && state.installedPatches.get(patch.id) !== 'current');
     if (missing.length) {
-      showToast(`Instalación incompleta: falta ${missing.map((patch) => patch.name).join(', ')}. Vuelve a pulsar "Instalar parches".`);
+      showToast(t('Instalación incompleta: falta {names}. Vuelve a pulsar "Instalar parches".', { names: missing.map((patch) => patch.name).join(', ') }));
       return;
     }
     if (!written) {
-      showToast(`Los ${skipped} parche${skipped === 1 ? '' : 's'} ya estaban al día y verificados. No se ha tocado nada.`);
+      showToast(skipped === 1
+        ? t('El parche ya estaba al día y verificado. No se ha tocado nada.')
+        : t('Los {skipped} parches ya estaban al día y verificados. No se ha tocado nada.', { skipped }));
       return;
     }
-    const plural = written === 1 ? '' : 's';
+    const installed = written === 1
+      ? t('1 parche instalado/actualizado y verificado')
+      : t('{written} parches instalados/actualizados y verificados', { written });
     showToast(cacheError
-      ? `${written} parche${plural} instalado${plural}/actualizado${plural} y verificado${plural} (${skipped} sin cambios). No pude borrar Cache\\ (¿WoW abierto?): ciérralo, bórrala y reinicia.`
-      : `${written} parche${plural} instalado${plural}/actualizado${plural} y verificado${plural} (${skipped} sin cambios) y caché limpiada. Cierra y abre el WoW.`);
+      ? t('{installed} ({skipped} sin cambios). No pude borrar Cache\\ (¿WoW abierto?): ciérralo, bórrala y reinicia.', { installed, skipped })
+      : t('{installed} ({skipped} sin cambios) y caché limpiada. Cierra y abre el WoW.', { installed, skipped }));
   } catch (error) {
-    showToast(`No se pudieron instalar los parches: ${error.message}`);
+    showToast(t('No se pudieron instalar los parches: {error}', { error: error.message }));
   } finally {
     button.disabled = !state.patches.length;
   }
@@ -605,13 +613,14 @@ $('#install-addons').addEventListener('click', installSelectedAddons);
 $('#install-patches').addEventListener('click', installPatches);
 $('#prepare-resources').addEventListener('click', () => prepareFromClient());
 $('#regenerate-resources').addEventListener('click', () => {
-  if (window.confirm('¿Regenerar todos los recursos desde tu cliente? Sustituye los actuales cuando termine bien.')) prepareFromClient({ force: true });
+  if (window.confirm(t('¿Regenerar todos los recursos desde tu cliente? Sustituye los actuales cuando termine bien.'))) prepareFromClient({ force: true });
 });
 
 if (!window.isSecureContext) {
-  $('#folder-status').textContent = 'El certificado aún no es de confianza. Instálalo en Equipo local → Entidades de certificación raíz de confianza, cierra el navegador por completo y vuelve a entrar por HTTPS.';
+  $('#folder-status').textContent = t('El certificado aún no es de confianza. Instálalo en Equipo local → Entidades de certificación raíz de confianza, cierra el navegador por completo y vuelve a entrar por HTTPS.');
 } else if (!window.showDirectoryPicker) {
-  $('#folder-status').textContent = 'La conexión ya es segura, pero este navegador no admite la instalación directa. Usa una versión actual de Chrome o Edge.';
+  $('#folder-status').textContent = t('La conexión ya es segura, pero este navegador no admite la instalación directa. Usa una versión actual de Chrome o Edge.');
 }
 
-for (const name of CLASS_FILTERS) $('#addon-class').insertAdjacentHTML('beforeend', `<option>${name}</option>`);
+// El valor es el nombre de clase del catálogo (en español); sólo cambia lo que se lee.
+for (const name of CLASS_FILTERS) $('#addon-class').insertAdjacentHTML('beforeend', `<option value="${name}">${t(name)}</option>`);

@@ -1,0 +1,216 @@
+Licencia: GPL-2.0-or-later, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+diff --git a/a/GuildLevels/GuildLevels.toc b/b/GuildLevels/GuildLevels.toc
+index 18c2128..68421dd 100644
+--- a/a/GuildLevels/GuildLevels.toc
++++ b/b/GuildLevels/GuildLevels.toc
+@@ -13,6 +13,7 @@ Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+ Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+ Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua
+ 
++Locale.lua
+ Core.lua
+ UI.lua
+ Minimap.lua
+diff --git b/b/GuildLevels/Locale.lua b/b/GuildLevels/Locale.lua
+new file mode 100644
+index 0000000..9ebab43
+--- /dev/null
++++ b/b/GuildLevels/Locale.lua
+@@ -0,0 +1,56 @@
++-- GuildLevels - Locale.lua
++--
++-- Los textos del addon están escritos en inglés (el autor original). Aquí se
++-- traducen al español para los clientes esES/esMX; cualquier otro cliente ve el
++-- original. La clave es el literal inglés tal como aparece en el código; lo que
++-- no tenga traducción se muestra tal cual, así que nunca queda un texto vacío.
++--
++-- Uso: local L = GuildLevels_L ; L("English text")
++-- Los textos con valores van como formato (%s, %d) y se rellenan con string.format.
++
++local locale = GetLocale()
++
++local ES = {
++    ["Guild Levels"] = "Niveles de hermandad",
++    ["Guild"] = "Hermandad",
++    ["No guild progression\n(not in a guild, or the server feature is off)."] = "Sin progresión de hermandad\n(no estás en una hermandad, o la función está apagada en el servidor).",
++    ["%s\nLevel %d / 25 (%d%% to next)\nToday: %s   Week: %s"] = "%s\nNivel %d / 25 (%d%% al siguiente)\nHoy: %s   Semana: %s",
++    ["|cffeda55fClick|r to open the panel."] = "|cffeda55fClic|r para abrir el panel.",
++    ["Perks (Cataclysm-style)"] = "Ventajas (al estilo Cataclismo)",
++    ["No guild progression (not in a guild or server disabled)."] = "Sin progresión de hermandad (no estás en una hermandad o el servidor la tiene desactivada).",
++    ["Guild Levels — %s"] = "Niveles de hermandad — %s",
++    ["Level |cffffffff%d|r / 25   (guild id %u)"] = "Nivel |cffffffff%d|r / 25   (id de hermandad %u)",
++    ["XP %s / %s in this level   (today %s / week %s)"] = "XP %s / %s en este nivel   (hoy %s / semana %s)",
++    ["(locked) "] = "(bloqueada) ",
++    ["Lv"] = "Nv",
++    ["Fast Track (rank 1)"] = "Vía rápida (rango 1)",
++    ["+5% experience from monsters and quests."] = "+5% de experiencia de monstruos y misiones.",
++    ["Fast Track (rank 2)"] = "Vía rápida (rango 2)",
++    ["Additional +5% experience."] = "+5% de experiencia adicional.",
++    ["Mount Up"] = "Montar",
++    ["Increases mounted movement speed by 10%."] = "Aumenta un 10% la velocidad de movimiento a lomos de montura.",
++    ["Mr. Popularity (r1)"] = "Popular (r1)",
++    ["+5% reputation from monsters and quests."] = "+5% de reputación de monstruos y misiones.",
++    ["Cash Flow (rank 1)"] = "Flujo de caja (rango 1)",
++    ["Guild bank receives 5% of looted enemy money."] = "El banco de hermandad recibe el 5% del dinero saqueado a los enemigos.",
++    ["Working Overtime"] = "Horas extra",
++    ["10% chance for an extra profession skill gain."] = "10% de probabilidad de ganar un punto extra de habilidad de profesión.",
++    ["Cash Flow (rank 2)"] = "Flujo de caja (rango 2)",
++    ["Guild bank receives 10% of looted enemy money."] = "El banco de hermandad recibe el 10% del dinero saqueado a los enemigos.",
++    ["Mr. Popularity (r2)"] = "Popular (r2)",
++    ["Additional +5% reputation."] = "+5% de reputación adicional.",
++    ["Reinforce"] = "Reforzar",
++    ["Reduces death durability loss for equipped gear."] = "Reduce la pérdida de durabilidad por muerte del equipo puesto.",
++    ["Honorable Mention"] = "Mención honorífica",
++    ["Bonus honor from PvP kills."] = "Honor adicional por las muertes en JcJ.",
++    ["Mobile Banking"] = "Banca móvil",
++    ["Grants a spell that summons a temporary guild bank."] = "Concede un hechizo que invoca un banco de hermandad temporal.",
++    ["Mass Resurrection"] = "Resurrección en masa",
++    ["Grants a spell that resurrects nearby dead guild group members."] = "Concede un hechizo que resucita a los miembros muertos de tu grupo de hermandad que estén cerca.",
++}
++
++local dictionary = (locale == "esES" or locale == "esMX") and ES or nil
++
++function GuildLevels_L(text)
++    return (dictionary and dictionary[text]) or text
++end
+diff --git a/a/GuildLevels/Minimap.lua b/b/GuildLevels/Minimap.lua
+index d75eedc..166fd55 100644
+--- a/a/GuildLevels/Minimap.lua
++++ b/b/GuildLevels/Minimap.lua
+@@ -10,24 +10,26 @@ end
+ GuildLevelsSaved = GuildLevelsSaved or {}
+ GuildLevelsSaved.minimap = GuildLevelsSaved.minimap or { hide = false }
+ 
++local L = GuildLevels_L   -- Locale.lua: los textos están en inglés y se traducen al español
++
+ local function BuildTooltipText()
+     local data = GuildLevelsSaved.last
+     if not data then
+-        return "No guild progression\n(not in a guild, or the server feature is off)."
++        return L("No guild progression\n(not in a guild, or the server feature is off).")
+     end
+     local span = math.max(1, data.nextXp - data.prev)
+     local seg = math.max(0, data.xp - data.prev)
+     local pct = math.floor(math.min(1, math.max(0, seg / span)) * 100)
+     return string.format(
+-        "%s\nLevel %d / 25 (%d%% to next)\nToday: %s   Week: %s",
+-        (data.guildName ~= "" and data.guildName or "Guild"),
++        L("%s\nLevel %d / 25 (%d%% to next)\nToday: %s   Week: %s"),
++        (data.guildName ~= "" and data.guildName or L("Guild")),
+         data.level, pct, tostring(data.today), tostring(data.week)
+     )
+ end
+ 
+ local dataObject = LDB:NewDataObject("GuildLevels", {
+     type = "launcher",
+-    text = "Guild Levels",
++    text = L("Guild Levels"),
+     icon = "Interface\\Icons\\INV_Shirt_GuildTabard_01",
+     OnClick = function(_, button)
+         if GuildLevelsUI and GuildLevelsUI.Toggle then
+@@ -38,10 +40,10 @@ local dataObject = LDB:NewDataObject("GuildLevels", {
+         if not tooltip or not tooltip.AddLine then
+             return
+         end
+-        tooltip:AddLine("Guild Levels")
++        tooltip:AddLine(L("Guild Levels"))
+         tooltip:AddLine(BuildTooltipText(), 1, 1, 1)
+         tooltip:AddLine(" ")
+-        tooltip:AddLine("|cffeda55fClick|r to open the panel.")
++        tooltip:AddLine(L("|cffeda55fClick|r to open the panel."))
+     end,
+ })
+ 
+diff --git a/a/GuildLevels/UI.lua b/b/GuildLevels/UI.lua
+index 702d89c..68b4d2a 100644
+--- a/a/GuildLevels/UI.lua
++++ b/b/GuildLevels/UI.lua
+@@ -12,19 +12,21 @@ local bar
+ local perkScroll
+ local perkContent
+ 
++local L = GuildLevels_L   -- Locale.lua: los textos están en inglés y se traducen al español
++
+ local PERKS = {
+-    { lv = 2,  name = "Fast Track (rank 1)",  desc = "+5% experience from monsters and quests." },
+-    { lv = 4,  name = "Fast Track (rank 2)",  desc = "Additional +5% experience." },
+-    { lv = 5,  name = "Mount Up",             desc = "Increases mounted movement speed by 10%." },
+-    { lv = 6,  name = "Mr. Popularity (r1)",  desc = "+5% reputation from monsters and quests." },
+-    { lv = 8,  name = "Cash Flow (rank 1)",   desc = "Guild bank receives 5% of looted enemy money." },
+-    { lv = 10, name = "Working Overtime",     desc = "10% chance for an extra profession skill gain." },
+-    { lv = 14, name = "Cash Flow (rank 2)",   desc = "Guild bank receives 10% of looted enemy money." },
+-    { lv = 15, name = "Mr. Popularity (r2)",  desc = "Additional +5% reputation." },
+-    { lv = 16, name = "Reinforce",            desc = "Reduces death durability loss for equipped gear." },
+-    { lv = 18, name = "Honorable Mention",    desc = "Bonus honor from PvP kills." },
+-    { lv = 20, name = "Mobile Banking",       desc = "Grants a spell that summons a temporary guild bank." },
+-    { lv = 25, name = "Mass Resurrection",    desc = "Grants a spell that resurrects nearby dead guild group members." },
++    { lv = 2,  name = L("Fast Track (rank 1)"),  desc = L("+5% experience from monsters and quests.") },
++    { lv = 4,  name = L("Fast Track (rank 2)"),  desc = L("Additional +5% experience.") },
++    { lv = 5,  name = L("Mount Up"),             desc = L("Increases mounted movement speed by 10%.") },
++    { lv = 6,  name = L("Mr. Popularity (r1)"),  desc = L("+5% reputation from monsters and quests.") },
++    { lv = 8,  name = L("Cash Flow (rank 1)"),   desc = L("Guild bank receives 5% of looted enemy money.") },
++    { lv = 10, name = L("Working Overtime"),     desc = L("10% chance for an extra profession skill gain.") },
++    { lv = 14, name = L("Cash Flow (rank 2)"),   desc = L("Guild bank receives 10% of looted enemy money.") },
++    { lv = 15, name = L("Mr. Popularity (r2)"),  desc = L("Additional +5% reputation.") },
++    { lv = 16, name = L("Reinforce"),            desc = L("Reduces death durability loss for equipped gear.") },
++    { lv = 18, name = L("Honorable Mention"),    desc = L("Bonus honor from PvP kills.") },
++    { lv = 20, name = L("Mobile Banking"),       desc = L("Grants a spell that summons a temporary guild bank.") },
++    { lv = 25, name = L("Mass Resurrection"),    desc = L("Grants a spell that resurrects nearby dead guild group members.") },
+ }
+ 
+ local function FormatNum(n)
+@@ -67,7 +69,7 @@ local function BuildFrame()
+ 
+     title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+     title:SetPoint("TOP", frame, "TOP", 0, -16)
+-    title:SetText("Guild Levels")
++    title:SetText(L("Guild Levels"))
+ 
+     levelText = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+     levelText:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -48)
+@@ -94,7 +96,7 @@ local function BuildFrame()
+ 
+     local perkLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+     perkLabel:SetPoint("TOPLEFT", bar, "BOTTOMLEFT", 0, -18)
+-    perkLabel:SetText("Perks (Cataclysm-style)")
++    perkLabel:SetText(L("Perks (Cataclysm-style)"))
+ 
+     perkScroll = CreateFrame("ScrollFrame", "GuildLevelsPerkScroll", frame, "UIPanelScrollFrameTemplate")
+     perkScroll:SetPoint("TOPLEFT", perkLabel, "BOTTOMLEFT", 0, -8)
+@@ -120,22 +122,22 @@ end
+ function GuildLevelsUI.ApplyPayload(data)
+     BuildFrame()
+     if not data then
+-        levelText:SetText("No guild progression (not in a guild or server disabled).")
++        levelText:SetText(L("No guild progression (not in a guild or server disabled)."))
+         xpText:SetText("")
+         bar:SetMinMaxValues(0, 1)
+         bar:SetValue(0)
+         return
+     end
+ 
+-    title:SetText("Guild Levels — " .. (data.guildName ~= "" and data.guildName or "Guild"))
++    title:SetText(string.format(L("Guild Levels — %s"), (data.guildName ~= "" and data.guildName or L("Guild"))))
+ 
+-    levelText:SetText(string.format("Level |cffffffff%d|r / 25   (guild id %u)", data.level, data.guildId))
++    levelText:SetText(string.format(L("Level |cffffffff%d|r / 25   (guild id %u)"), data.level, data.guildId))
+ 
+     local span = math.max(1, data.nextXp - data.prev)
+     local seg = math.max(0, data.xp - data.prev)
+     local pct = seg / span
+     xpText:SetText(string.format(
+-        "XP %s / %s in this level   (today %s / week %s)",
++        L("XP %s / %s in this level   (today %s / week %s)"),
+         FormatNum(seg),
+         FormatNum(span),
+         FormatNum(data.today),
+@@ -165,7 +167,7 @@ function GuildLevelsUI.ApplyPayload(data)
+         local p = PERKS[i]
+         local unlocked = data.level >= p.lv
+         local color = unlocked and "|cff88ff88" or "|cff888888"
+-        row.title:SetText(string.format("%sLv %d|r %s%s|r", color, p.lv, unlocked and "" or "(locked) ", p.name))
++        row.title:SetText(string.format("%s%s %d|r %s%s|r", color, L("Lv"), p.lv, unlocked and "" or L("(locked) "), p.name))
+         row.desc:SetText(p.desc)
+         row:ClearAllPoints()
+         row:SetPoint("TOPLEFT", perkContent, "TOPLEFT", 0, -y)

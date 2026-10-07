@@ -58,6 +58,7 @@
 #include "CharacterCache.h"
 #include "CommandScript.h"
 #include "Optional.h"
+#include "home_guild_locale.h"
 #include "Config.h"
 #include "Containers.h"
 #include "DatabaseEnv.h"
@@ -66,6 +67,7 @@
 #include "GuildMgr.h"
 #include "Log.h"
 #include "Map.h"
+#include "ModLocale.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "ScriptMgr.h"
@@ -1197,7 +1199,7 @@ private:
                         it->second.nextCareMs = 0;   // Care ya en la siguiente pasada
                         if (Player* p = ObjectAccessor::FindPlayer(event.player))
                             if (p->GetSession())
-                                ChatHandler(p->GetSession()).SendSysMessage("Se renueva tu hermandad: reclutar y nivelar en la proxima pasada.");
+                                ChatHandler(p->GetSession()).SendSysMessage(ModLocale::L(p, "Se renueva tu hermandad: reclutar y nivelar en la proxima pasada."));
                     }
                     break;
                 }
@@ -1269,8 +1271,8 @@ private:
         {
             if (cfg.announce && cfg.announceWhenGuildless)
                 ChatHandler(player->GetSession()).SendSysMessage(
-                    "No tienes hermandad. mod-home-guild no crea ninguna automáticamente: "
-                    "funda una en el juego si quieres una hermandad de casa.");
+                    ModLocale::L(player, "No tienes hermandad. mod-home-guild no crea ninguna automáticamente: "
+                    "funda una en el juego si quieres una hermandad de casa."));
             return;
         }
 
@@ -1313,7 +1315,7 @@ private:
 
         if (cfg.announce)
             ChatHandler(player->GetSession()).PSendSysMessage(
-                "Tu hermandad '{}': {} companeros, {} conectados ahora. Escribe .grupo para salir con ellos.",
+                ModLocale::L(player, "Tu hermandad '{}': {} companeros, {} conectados ahora. Escribe .grupo para salir con ellos."),
                 guild->GetName(), static_cast<uint32>(home.bots.size()), online);
     }
 
@@ -1324,12 +1326,12 @@ private:
         Guild* guild = player ? player->GetGuild() : nullptr;
         if (!guild)
         {
-            ChatHandler(player->GetSession()).SendSysMessage("No tienes hermandad. Funda una en el juego primero.");
+            ChatHandler(player->GetSession()).SendSysMessage(ModLocale::L(player, "No tienes hermandad. Funda una en el juego primero."));
             return nullptr;
         }
         if (guild->GetLeaderGUID() != player->GetGUID())
         {
-            ChatHandler(player->GetSession()).SendSysMessage("Solo el lider fundador de la hermandad puede usar esto.");
+            ChatHandler(player->GetSession()).SendSysMessage(ModLocale::L(player, "Solo el lider fundador de la hermandad puede usar esto."));
             return nullptr;
         }
         return guild;
@@ -1344,8 +1346,8 @@ private:
         Guild* guild = player->GetGuild();
         if (!guild || !g_managedGuilds.count(guild->GetId()))
         {
-            h.PSendSysMessage("Tu hermandad no es una hermandad de casa. Usa .hermandad activar si eres su fundador"
-                              "{}.", cfg.autoAdopt ? " (o funda una nueva)" : "");
+            h.PSendSysMessage(ModLocale::L(h, "Tu hermandad no es una hermandad de casa. Usa .hermandad activar si eres su fundador"
+                              "{}."), cfg.autoAdopt ? ModLocale::L(h, " (o funda una nueva)") : "");
             return;
         }
         std::vector<ObjectGuid> const bots = LoadBotMembers(guild->GetId());
@@ -1363,15 +1365,15 @@ private:
                 else if (info->second.role == 2) ++healers;
             }
         }
-        h.PSendSysMessage("Hermandad de casa '{}': {} companeros bot, {} conectados ({} tanques, {} sanadores conocidos).",
+        h.PSendSysMessage(ModLocale::L(h, "Hermandad de casa '{}': {} companeros bot, {} conectados ({} tanques, {} sanadores conocidos)."),
                           guild->GetName(), static_cast<uint32>(bots.size()), online, tanks, healers);
         for (ObjectGuid const& b : bots)
             if (Player* bot = ObjectAccessor::FindPlayer(b))
             {
                 auto info = roster.find(b.GetCounter());
-                h.PSendSysMessage("  {} (nivel {}, {}){}", bot->GetName(), bot->GetLevel(),
-                                  RoleName(info != roster.end() ? info->second.role : 0),
-                                  (info != roster.end() && info->second.pinned) ? " [fijado]" : "");
+                h.PSendSysMessage(ModLocale::L(h, "  {} (nivel {}, {}){}"), bot->GetName(), bot->GetLevel(),
+                                  ModLocale::L(h, RoleName(info != roster.end() ? info->second.role : 0)),
+                                  (info != roster.end() && info->second.pinned) ? ModLocale::L(h, " [fijado]") : "");
             }
     }
 
@@ -1389,12 +1391,12 @@ private:
         ChatHandler h(player->GetSession());
         if (!g_managedGuilds.count(guild->GetId()))
         {
-            h.SendSysMessage("Tu hermandad no es una hermandad de casa.");
+            h.SendSysMessage(ModLocale::L(h, "Tu hermandad no es una hermandad de casa."));
             return;
         }
         if (botName.empty())
         {
-            h.SendSysMessage("Falta el nombre del companero.");
+            h.SendSysMessage(ModLocale::L(h, "Falta el nombre del companero."));
             return;
         }
 
@@ -1423,7 +1425,7 @@ private:
         }
         if (!low)
         {
-            h.PSendSysMessage("No hay ningun companero '{}' en tu hermandad.", botName);
+            h.PSendSysMessage(ModLocale::L(h, "No hay ningun companero '{}' en tu hermandad."), botName);
             return;
         }
 
@@ -1454,7 +1456,7 @@ private:
         // siguiente pasada (nextCareMs = 0 la adelanta).
         if (auto it = g_homes.find(guid); it != g_homes.end())
             it->second.nextCareMs = 0;
-        h.PSendSysMessage("Companero {}.", verb);
+        h.PSendSysMessage(ModLocale::L(h, "Companero {}."), ModLocale::L(h, verb));
     }
 
     void CmdActivate(ObjectGuid guid)
@@ -1468,7 +1470,7 @@ private:
         ChatHandler h(player->GetSession());
         if (g_managedGuilds.count(guild->GetId()))
         {
-            h.SendSysMessage("Tu hermandad ya es una hermandad de casa.");
+            h.SendSysMessage(ModLocale::L(h, "Tu hermandad ya es una hermandad de casa."));
             return;
         }
         uint32 const accountId = player->GetSession()->GetAccountId();
@@ -1478,7 +1480,7 @@ private:
             guild->GetId(), accountId, guid.GetCounter());
         g_managedGuilds[guild->GetId()] = { accountId, guid.GetCounter() };
         LOG_INFO("module", "[home-guild] '{}' activada como hermandad de casa por {}.", guild->GetName(), player->GetName());
-        h.SendSysMessage("Hermandad de casa activada: se poblara con companeros de tu nivel.");
+        h.SendSysMessage(ModLocale::L(h, "Hermandad de casa activada: se poblara con companeros de tu nivel."));
         OnLogin(guid);
     }
 
@@ -1493,7 +1495,7 @@ private:
         ChatHandler h(player->GetSession());
         if (!g_managedGuilds.count(guild->GetId()))
         {
-            h.SendSysMessage("Tu hermandad no es una hermandad de casa.");
+            h.SendSysMessage(ModLocale::L(h, "Tu hermandad no es una hermandad de casa."));
             return;
         }
 
@@ -1511,7 +1513,7 @@ private:
         g_homes.erase(guid);
         PublishHomeBots();
         LOG_INFO("module", "[home-guild] '{}' desactivada por {}: {} bots liberados.", guild->GetName(), player->GetName(), freed);
-        h.PSendSysMessage("Hermandad de casa desactivada: {} companeros bot expulsados. La hermandad sigue existiendo.", freed);
+        h.PSendSysMessage(ModLocale::L(h, "Hermandad de casa desactivada: {} companeros bot expulsados. La hermandad sigue existiendo."), freed);
     }
 
     // Devuelve false si el jugador ya no está en su hermandad (se disolvió, o
@@ -1671,7 +1673,7 @@ public:
             return true;
         if (!g_enabledHot.load(std::memory_order_relaxed))
         {
-            handler->SendSysMessage("mod-home-guild esta desactivado.");
+            handler->SendSysMessage(ModLocale::L(handler, "mod-home-guild esta desactivado."));
             return true;
         }
         Push({ kind, player->GetGUID(), player->GetGuildId(), player->GetSession()->GetAccountId() });
@@ -1685,12 +1687,12 @@ public:
             return true;
         if (!g_enabledHot.load(std::memory_order_relaxed))
         {
-            handler->SendSysMessage("mod-home-guild esta desactivado.");
+            handler->SendSysMessage(ModLocale::L(handler, "mod-home-guild esta desactivado."));
             return true;
         }
         if (name.empty())
         {
-            handler->SendSysMessage("Falta el nombre del companero.");
+            handler->SendSysMessage(ModLocale::L(handler, "Falta el nombre del companero."));
             return true;
         }
         Push({ kind, player->GetGUID(), player->GetGuildId(), player->GetSession()->GetAccountId(), name });
@@ -1711,6 +1713,7 @@ public:
 
 void AddSC_mod_home_guild()
 {
+    ModLocale::Register(HomeGuildLocale::kEntries);
     new mod_home_guild_world();
     new mod_home_guild_player();
     new mod_home_guild_guild();

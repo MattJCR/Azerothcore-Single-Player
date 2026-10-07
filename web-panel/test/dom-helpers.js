@@ -41,13 +41,16 @@ let mounted = false;
 // "responde la red" en vez de necesitar un servidor Express real. Devuelve
 // { status, body } (status 200 por defecto). setFetchHandler() permite
 // cambiar esa respuesta a mitad de fichero sin volver a montar la app.
-export async function mountApp({ fetchHandler } = {}) {
+// lang: idioma del panel ('es' por defecto, como lo esperan las pruebas existentes; jsdom
+// anunciaría en-US y el panel arrancaría en inglés).
+export async function mountApp({ fetchHandler, lang = 'es' } = {}) {
   if (mounted) throw new Error('mountApp() ya se llamó en este proceso — un segundo mount deja el document nuevo sin los listeners de app.js. Usa setFetchHandler() para cambiar de escenario.');
   mounted = true;
 
   const dom = new JSDOM(indexHtml, { url: 'http://localhost/', pretendToBeVisual: true });
   const { window } = dom;
   global.window = window;
+  window.localStorage.setItem('panel-lang', lang);
   global.document = window.document;
   window.scrollTo = () => {};
   window.requestAnimationFrame = (cb) => setTimeout(cb, 0);

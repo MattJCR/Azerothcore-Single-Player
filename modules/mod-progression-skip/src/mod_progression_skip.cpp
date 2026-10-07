@@ -51,7 +51,9 @@
 #include "GossipDef.h"
 #include "Group.h"
 #include "Log.h"
+#include "ModLocale.h"
 #include "Player.h"
+#include "progression_skip_locale.h"
 #include "ScriptedGossip.h"
 #include "ScriptMgr.h"
 #include "WorldSession.h"
@@ -96,27 +98,27 @@ namespace
     std::string InteractionBlockedReason(Player* player)
     {
         if (!player->IsAlive())
-            return "Vuelve cuando estes con vida.";
+            return ModLocale::L(player, "Vuelve cuando estes con vida.");
         if (player->IsInCombat())
-            return "No mientras estas en combate.";
+            return ModLocale::L(player, "No mientras estas en combate.");
         if (player->InBattleground() || player->InArena())
-            return "No dentro de un campo de batalla ni de una arena.";
+            return ModLocale::L(player, "No dentro de un campo de batalla ni de una arena.");
 
 #ifdef PROGRESSION_SKIP_WITH_IP
         if (sIndividualProgression->isPlayerInDungeonOrRaid(player))
-            return "No dentro de una mazmorra ni de una banda. Sal al exterior.";
+            return ModLocale::L(player, "No dentro de una mazmorra ni de una banda. Sal al exterior.");
 #endif
 
         if (sConfigMgr->GetOption<bool>("ProgressionSkip.RequireNoGroup", true) && player->GetGroup())
-            return "Sal del grupo antes de dar este paso: tus companeros podrian "
-                   "quedar en una etapa incompatible.";
+            return ModLocale::L(player, "Sal del grupo antes de dar este paso: tus companeros podrian "
+                   "quedar en una etapa incompatible.");
 
         return "";
     }
 
     void Reject(Player* player, std::string const& reason)
     {
-        ChatHandler(player->GetSession()).PSendSysMessage("Cronista de las Eras: {}", reason);
+        ChatHandler(player->GetSession()).PSendSysMessage(ModLocale::L(player, "Cronista de las Eras: {}"), reason);
         CloseGossipMenuFor(player);
     }
 }
@@ -137,12 +139,12 @@ public:
         }
 
 #ifndef PROGRESSION_SKIP_WITH_IP
-        Reject(player, "La progresion por eras no esta activa en este servidor.");
+        Reject(player, ModLocale::L(player, "La progresion por eras no esta activa en este servidor."));
         return true;
 #else
         if (!sIndividualProgression->enabled)
         {
-            Reject(player, "La progresion por eras no esta activa en este servidor.");
+            Reject(player, ModLocale::L(player, "La progresion por eras no esta activa en este servidor."));
             return true;
         }
 
@@ -171,14 +173,14 @@ public:
             anyOffer = true;
         };
 
-        offer(SKIP_VANILLA, "Saltar Vanilla: dar por terminadas las fases de Vanilla y abrir Terrallende.");
+        offer(SKIP_VANILLA, ModLocale::L(player, "Saltar Vanilla: dar por terminadas las fases de Vanilla y abrir Terrallende."));
         if (current >= SKIP_VANILLA && current <= 12)
-            offer(SKIP_TBC, "Saltar Terrallende: dar por terminadas las fases de Terrallende y abrir Rasganorte.");
-        offer(SKIP_ALL, "Desactivar todas las etapas: desbloquear todo el contenido de Rasganorte.");
+            offer(SKIP_TBC, ModLocale::L(player, "Saltar Terrallende: dar por terminadas las fases de Terrallende y abrir Rasganorte."));
+        offer(SKIP_ALL, ModLocale::L(player, "Desactivar todas las etapas: desbloquear todo el contenido de Rasganorte."));
 
         if (cappedSomething)
             ChatHandler(player->GetSession()).PSendSysMessage(
-                "Cronista de las Eras: el servidor limita la progresion a la etapa {}; no puedo adelantarte mas alla.",
+                ModLocale::L(player, "Cronista de las Eras: el servidor limita la progresion a la etapa {}; no puedo adelantarte mas alla."),
                 sIndividualProgression->progressionLimit);
 
         if (!anyOffer)
@@ -206,12 +208,12 @@ public:
             return OnGossipHello(player, creature);
 
 #ifndef PROGRESSION_SKIP_WITH_IP
-        Reject(player, "La progresion por eras no esta activa en este servidor.");
+        Reject(player, ModLocale::L(player, "La progresion por eras no esta activa en este servidor."));
         return true;
 #else
         if (!ModuleEnabled() || !sIndividualProgression->enabled)
         {
-            Reject(player, "La progresion por eras no esta activa en este servidor.");
+            Reject(player, ModLocale::L(player, "La progresion por eras no esta activa en este servidor."));
             return true;
         }
 
@@ -226,13 +228,13 @@ public:
             }
 
             char const* label =
-                target == SKIP_VANILLA ? "Si: saltar Vanilla. Es permanente." :
-                target == SKIP_TBC     ? "Si: saltar Terrallende. Es permanente." :
-                                         "Si: desactivar todas las etapas. Es permanente.";
+                target == SKIP_VANILLA ? ModLocale::L(player, "Si: saltar Vanilla. Es permanente.") :
+                target == SKIP_TBC     ? ModLocale::L(player, "Si: saltar Terrallende. Es permanente.") :
+                                         ModLocale::L(player, "Si: desactivar todas las etapas. Es permanente.");
 
             AddGossipItemFor(player, GOSSIP_ICON_CHAT, label, GOSSIP_SENDER_MAIN, ACTION_DO + target,
-                             CONFIRM_POPUP, 0, false);
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "No, dejalo estar.", GOSSIP_SENDER_MAIN, ACTION_BACK);
+                             ModLocale::L(player, CONFIRM_POPUP), 0, false);
+            AddGossipItemFor(player, GOSSIP_ICON_CHAT, ModLocale::L(player, "No, dejalo estar."), GOSSIP_SENDER_MAIN, ACTION_BACK);
             SendGossipMenuFor(player, TEXT_CONFIRM, creature->GetGUID());
             return true;
         }
@@ -265,14 +267,14 @@ private:
         // No se fía del menú: sólo hacia delante, y nunca por encima del tope real.
         if (target <= current || target > SKIP_MAX)
         {
-            Reject(player, "Ese salto ya no corresponde a tu estado actual.");
+            Reject(player, ModLocale::L(player, "Ese salto ya no corresponde a tu estado actual."));
             return;
         }
 
         int const limit = sIndividualProgression->progressionLimit;
         if (limit && target > limit)
         {
-            Reject(player, "El servidor no permite avanzar mas alla de esa etapa.");
+            Reject(player, ModLocale::L(player, "El servidor no permite avanzar mas alla de esa etapa."));
             return;
         }
 
@@ -291,10 +293,10 @@ private:
 
         if (now > current)
             ChatHandler(player->GetSession()).PSendSysMessage(
-                "Cronista de las Eras: hecho. Tu progresion queda en la etapa {}.", now);
+                ModLocale::L(player, "Cronista de las Eras: hecho. Tu progresion queda en la etapa {}."), now);
         else
             ChatHandler(player->GetSession()).PSendSysMessage(
-                "Cronista de las Eras: el servidor no ha permitido el salto. Sigues en la etapa {}.", now);
+                ModLocale::L(player, "Cronista de las Eras: el servidor no ha permitido el salto. Sigues en la etapa {}."), now);
 
         CloseGossipMenuFor(player);
     }
@@ -303,5 +305,6 @@ private:
 
 void AddSC_mod_progression_skip()
 {
+    ModLocale::Register(ProgressionSkipLocale::kEntries);
     new npc_progression_skip();
 }

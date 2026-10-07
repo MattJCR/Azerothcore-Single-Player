@@ -11,6 +11,7 @@
 // una pieza, CRC de sector, cifrado y las compresiones zlib, PKWARE (implode) y
 // bzip2 que usan los DBC y los BLP del cliente. Otras (Huffman, ADPCM, parches
 // delta) lanzan un error claro en vez de devolver datos erróneos.
+import { t } from './i18n.js';
 
 const FLAG_IMPLODE = 0x00000100;
 const FLAG_COMPRESS = 0x00000200;
@@ -110,7 +111,7 @@ export function explodePkware(input, expectedSize) {
   let bitCount = 0;
   const out = new Uint8Array(expectedSize);
   let outPosition = 0;
-  const need = () => { if (position >= input.length) throw new Error('PKWARE: datos truncados'); };
+  const need = () => { if (position >= input.length) throw new Error(t('PKWARE: datos truncados')); };
   const bits = (n) => {
     let value = bitBuffer;
     while (bitCount < n) {
@@ -132,12 +133,12 @@ export function explodePkware(input, expectedSize) {
       const count = huffman.count[len];
       if (code < first + count) { bitBuffer = bitBufferLocal; bitCount = left; return huffman.symbol[index + (code - first)]; }
       index += count; first += count; first <<= 1; code <<= 1;
-      if (len >= 15) throw new Error('PKWARE: código no válido');
+      if (len >= 15) throw new Error(t('PKWARE: código no válido'));
     }
   };
   const literalMode = bits(8);
   const dictionaryBits = bits(8);
-  if (literalMode > 1 || dictionaryBits < 4 || dictionaryBits > 6) throw new Error('PKWARE: cabecera no válida');
+  if (literalMode > 1 || dictionaryBits < 4 || dictionaryBits > 6) throw new Error(t('PKWARE: cabecera no válida'));
   while (outPosition < expectedSize) {
     if (bits(1)) {
       let symbol = decode(LENCODE);
@@ -145,7 +146,7 @@ export function explodePkware(input, expectedSize) {
       if (length === 519) break;
       symbol = length === 2 ? 2 : dictionaryBits;
       const distance = (decode(DISTCODE) << symbol) + bits(symbol) + 1;
-      if (distance > outPosition) throw new Error('PKWARE: distancia fuera de rango');
+      if (distance > outPosition) throw new Error(t('PKWARE: distancia fuera de rango'));
       for (let index = 0; index < length && outPosition < expectedSize; index += 1) {
         out[outPosition] = out[outPosition - distance];
         outPosition += 1;
@@ -164,7 +165,7 @@ export function inflateBzip2(input) {
   let bitCount = 0;
   const readBits = (n) => {
     while (bitCount < n) {
-      if (position >= input.length) throw new Error('bzip2: datos truncados');
+      if (position >= input.length) throw new Error(t('bzip2: datos truncados'));
       bitBuffer = bitBuffer * 256 + input[position++];
       bitCount += 8;
     }
@@ -174,9 +175,9 @@ export function inflateBzip2(input) {
     bitCount -= n;
     return value;
   };
-  if (readBits(8) !== 0x42 || readBits(8) !== 0x5A || readBits(8) !== 0x68) throw new Error('bzip2: cabecera no válida');
+  if (readBits(8) !== 0x42 || readBits(8) !== 0x5A || readBits(8) !== 0x68) throw new Error(t('bzip2: cabecera no válida'));
   const level = readBits(8) - 0x30;
-  if (level < 1 || level > 9) throw new Error('bzip2: tamaño de bloque no válido');
+  if (level < 1 || level > 9) throw new Error(t('bzip2: tamaño de bloque no válido'));
   const blockSize = level * 100000;
   const chunks = [];
   let total = 0;
@@ -184,9 +185,9 @@ export function inflateBzip2(input) {
     const magicHigh = readBits(24);
     const magicLow = readBits(24);
     if (magicHigh === 0x177245 && magicLow === 0x385090) { readBits(32); break; }
-    if (magicHigh !== 0x314159 || magicLow !== 0x265359) throw new Error('bzip2: bloque no válido');
+    if (magicHigh !== 0x314159 || magicLow !== 0x265359) throw new Error(t('bzip2: bloque no válido'));
     readBits(32); // CRC
-    if (readBits(1)) throw new Error('bzip2: bloques aleatorizados no soportados');
+    if (readBits(1)) throw new Error(t('bzip2: bloques aleatorizados no soportados'));
     const origPointer = readBits(24);
     const usedGroups = readBits(16);
     const seqToUnseq = [];
@@ -199,13 +200,13 @@ export function inflateBzip2(input) {
     const alphaSize = seqToUnseq.length + 2;
     const groupCount = readBits(3);
     const selectorCount = readBits(15);
-    if (groupCount < 2 || groupCount > 6 || selectorCount < 1) throw new Error('bzip2: tablas no válidas');
+    if (groupCount < 2 || groupCount > 6 || selectorCount < 1) throw new Error(t('bzip2: tablas no válidas'));
     const mtf = [];
     for (let index = 0; index < groupCount; index += 1) mtf.push(index);
     const selectors = [];
     for (let index = 0; index < selectorCount; index += 1) {
       let jump = 0;
-      while (readBits(1)) { jump += 1; if (jump >= groupCount) throw new Error('bzip2: selector no válido'); }
+      while (readBits(1)) { jump += 1; if (jump >= groupCount) throw new Error(t('bzip2: selector no válido')); }
       const value = mtf.splice(jump, 1)[0];
       mtf.unshift(value);
       selectors.push(value);
@@ -216,7 +217,7 @@ export function inflateBzip2(input) {
       let current = readBits(5);
       for (let symbol = 0; symbol < alphaSize; symbol += 1) {
         for (;;) {
-          if (current < 1 || current > 20) throw new Error('bzip2: longitud de código no válida');
+          if (current < 1 || current > 20) throw new Error(t('bzip2: longitud de código no válida'));
           if (!readBits(1)) break;
           current += readBits(1) ? -1 : 1;
         }
@@ -253,14 +254,14 @@ export function inflateBzip2(input) {
       if (runLength) {
         const byte = seqToUnseq[symbolsMtf[0]];
         unzftab[byte] += runLength;
-        if (nblock + runLength > blockSize) throw new Error('bzip2: bloque demasiado grande');
+        if (nblock + runLength > blockSize) throw new Error(t('bzip2: bloque demasiado grande'));
         tt.fill(byte, nblock, nblock + runLength);
         nblock += runLength; runLength = 0; runBit = 1;
       }
     };
     for (;;) {
       if (groupPosition === 0) {
-        if (selectorIndex >= selectors.length) throw new Error('bzip2: faltan selectores');
+        if (selectorIndex >= selectors.length) throw new Error(t('bzip2: faltan selectores'));
         table = tables[selectors[selectorIndex++]];
         groupPosition = 50;
       }
@@ -269,7 +270,7 @@ export function inflateBzip2(input) {
       let code = readBits(len);
       while (code > table.limit[len]) {
         len += 1;
-        if (len > table.maxLen) throw new Error('bzip2: código Huffman no válido');
+        if (len > table.maxLen) throw new Error(t('bzip2: código Huffman no válido'));
         code = (code << 1) | readBits(1);
       }
       const symbol = table.perm[code + table.base[len]];
@@ -281,7 +282,7 @@ export function inflateBzip2(input) {
       symbolsMtf.unshift(value);
       const byte = seqToUnseq[value];
       unzftab[byte] += 1;
-      if (nblock >= blockSize) throw new Error('bzip2: bloque demasiado grande');
+      if (nblock >= blockSize) throw new Error(t('bzip2: bloque demasiado grande'));
       tt[nblock++] = byte;
     }
     // BWT inversa
@@ -333,12 +334,12 @@ async function decompressSector(raw, expected) {
   const mask = raw[0];
   let data = raw.subarray(1);
   const known = 0x02 | 0x08 | 0x10;
-  if (mask & ~known) throw new Error(`Compresión MPQ no soportada (máscara 0x${mask.toString(16)})`);
+  if (mask & ~known) throw new Error(t('Compresión MPQ no soportada (máscara 0x{mask})', { mask: mask.toString(16) }));
   // Orden de aplicación inverso al de compresión: bzip2, PKWARE, zlib.
   if (mask & 0x10) data = inflateBzip2(data);
   if (mask & 0x08) data = explodePkware(data, expected);
   if (mask & 0x02) data = await inflateZlib(data);
-  if (data.length !== expected) throw new Error(`Sector descomprimido de ${data.length} bytes, se esperaban ${expected}`);
+  if (data.length !== expected) throw new Error(t('Sector descomprimido de {actual} bytes, se esperaban {expected}', { actual: data.length, expected }));
   return data;
 }
 
@@ -364,7 +365,7 @@ export class MpqArchive {
       head = await source.read(base, 44);
       dv = view(head);
     }
-    if (dv.getUint32(0, true) !== 0x1A51504D) throw new Error(`${name || 'El archivo'} no es un MPQ`);
+    if (dv.getUint32(0, true) !== 0x1A51504D) throw new Error(t('{name} no es un MPQ', { name: name || t('El archivo') }));
     const formatVersion = dv.getUint16(12, true);
     const sectorShift = dv.getUint16(14, true);
     let hashPosition = dv.getUint32(16, true);
@@ -377,7 +378,7 @@ export class MpqArchive {
       hashPosition += dv.getUint16(40, true) * 2 ** 32;
       blockPosition += dv.getUint16(42, true) * 2 ** 32;
     }
-    if (!hashSize || (hashSize & (hashSize - 1)) || hashSize > 1 << 24 || blockSize > 1 << 24) throw new Error('Tablas MPQ no válidas');
+    if (!hashSize || (hashSize & (hashSize - 1)) || hashSize > 1 << 24 || blockSize > 1 << 24) throw new Error(t('Tablas MPQ no válidas'));
     const hashTable = await MpqArchive.readTable(source, base + hashPosition, hashSize * 16, '(hash table)');
     const blockTable = await MpqArchive.readTable(source, base + blockPosition, blockSize * 16, '(block table)');
     let hiBlocks = null;
@@ -390,7 +391,7 @@ export class MpqArchive {
 
   static async readTable(source, position, length, key) {
     const bytes = await source.read(position, length);
-    if (bytes.length !== length) throw new Error('Tabla MPQ truncada');
+    if (bytes.length !== length) throw new Error(t('Tabla MPQ truncada'));
     const plain = decryptBytes(bytes, hashString(key, 3));
     return new Uint32Array(plain.buffer.slice(plain.byteOffset, plain.byteOffset + plain.byteLength));
   }
@@ -432,7 +433,7 @@ export class MpqArchive {
     const fileSize = this.blockTable[entry + 2];
     const flags = this.blockTable[entry + 3];
     if (!(flags & FLAG_EXISTS) || (flags & FLAG_DELETE_MARKER)) return null;
-    if (flags & FLAG_PATCH_FILE) throw new Error(`${path} es un parche delta de MPQ (no soportado)`);
+    if (flags & FLAG_PATCH_FILE) throw new Error(t('{path} es un parche delta de MPQ (no soportado)', { path }));
     if (this.header.hiBlocks) position += this.header.hiBlocks[block] * 2 ** 32;
     position += this.header.base;
     if (fileSize === 0) return new Uint8Array(0);
@@ -460,7 +461,7 @@ export class MpqArchive {
     // Un solo read por tramo contiguo de sectores (los ficheros suelen serlo).
     const first = offsets[0];
     const last = offsets[sectors];
-    if (last < first || last > compressedSize + 8) throw new Error(`Tabla de sectores corrupta en ${path}`);
+    if (last < first || last > compressedSize + 8) throw new Error(t('Tabla de sectores corrupta en {path}', { path }));
     const body = await this.source.read(position + first, last - first);
     for (let index = 0; index < sectors; index += 1) {
       const from = offsets[index] - first;

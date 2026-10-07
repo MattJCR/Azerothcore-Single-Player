@@ -6,9 +6,10 @@
 // banda naranja, hermandad verde, amigos dorado); tú apareces con el aro
 // blanco, como en el mapa GM.
 import { $, state, CLASSES, escapeHtml, api, showLogin, showToast, sizeMapView, createMapController, socialMapSlot } from '../shared.js';
+import { t } from '../i18n.js';
 
 const RELATION_COLORS = { self: '#ffffff', party: '#3f9bff', raid: '#ff8a3d', guild: '#5fce8f', friend: '#f2c94c' };
-const RELATION_LABELS = { self: 'Tú', party: 'Tu grupo', raid: 'Tu banda', guild: 'Tu hermandad', friend: 'Amigo' };
+const RELATION_LABELS = { self: t('Tú'), party: t('Tu grupo'), raid: t('Tu banda'), guild: t('Tu hermandad'), friend: t('Amigo') };
 const RELATION_ORDER = ['party', 'raid', 'guild', 'friend'];
 
 const socialMap = createMapController({
@@ -16,15 +17,15 @@ const socialMap = createMapController({
   tabs: $('#social-map-tabs'), zoomIn: $('#social-zoom-in'), zoomOut: $('#social-zoom-out'), zoomReset: $('#social-zoom-reset'),
   zoomLevel: $('#social-zoom-level'), summary: $('#social-map-summary'), instances: $('#social-instance-players'),
 }, {
-  instancesLabel: 'De tu círculo, en instancias u otros mapas',
+  instancesLabel: t('De tu círculo, en instancias u otros mapas'),
   buildMarker(player) {
-    const [className, classColor] = CLASSES[player.class] || [`Clase ${player.class}`, '#d9ae62'];
+    const [className, classColor] = CLASSES[player.class] || [t('Clase {id}', { id: player.class }), '#d9ae62'];
     const relation = player.relation || 'guild';
     const relationColor = RELATION_COLORS[relation] || RELATION_COLORS.guild;
     const relationLabel = RELATION_LABELS[relation] || '';
     const inside = relation === 'self'
       ? `<span class="marker-label">${escapeHtml(player.name)}<small>${relationLabel}</small></span>`
-      : `<span class="marker-tip"><strong>${escapeHtml(player.name)}</strong> · Nv. ${player.level}<br><small>${escapeHtml(className)} · ${escapeHtml(relationLabel)}</small></span>`;
+      : `<span class="marker-tip"><strong>${escapeHtml(player.name)}</strong> · ${t('Nv. {level}', { level: player.level })}<br><small>${escapeHtml(className)} · ${escapeHtml(relationLabel)}</small></span>`;
     return `<button class="marker${relation === 'self' ? ' you' : ''}" data-map-x="${player.mapX}" data-map-y="${player.mapY}" data-relation="${relation}" style="--class-color:${classColor};--relation-color:${relationColor}" aria-label="${escapeHtml(player.name)} · ${escapeHtml(relationLabel)}">${inside}</button>`;
   },
 });
@@ -45,8 +46,8 @@ function renderSocialCharacterPicker(data) {
   if (select.dataset.signature !== signature) {
     select.dataset.signature = signature;
     select.innerHTML = data.characters.map((character) => {
-      const [className] = CLASSES[character.class] || [`Clase ${character.class}`];
-      return `<option value="${character.guid}">${escapeHtml(character.name)} — Nv. ${character.level} ${escapeHtml(className)}${character.online ? ' · conectado' : ''}</option>`;
+      const [className] = CLASSES[character.class] || [t('Clase {id}', { id: character.class })];
+      return `<option value="${character.guid}">${escapeHtml(character.name)} — ${t('Nv. {level}', { level: character.level })} ${escapeHtml(className)}${character.online ? ` · ${t('conectado')}` : ''}</option>`;
     }).join('');
   }
   const selected = state.socialMap.character || data.focus?.guid;
@@ -90,8 +91,8 @@ function renderSocialMap() {
   const others = data.players.filter((player) => player.relation !== 'self').length;
   const focusOffline = data.focus && !data.players.some((player) => player.relation === 'self');
   $('#social-map-caption').textContent = others === 0
-    ? `Ahora mismo no hay nadie de tu grupo, banda, hermandad ni amigos conectado${focusOffline ? ' (y este personaje tampoco lo está)' : ''}.`
-    : `${others} de tu círculo ${others === 1 ? 'conectado' : 'conectados'}${focusOffline ? ' · este personaje no está conectado' : ''}.`;
+    ? `${t('Ahora mismo no hay nadie de tu grupo, banda, hermandad ni amigos conectado')}${focusOffline ? ` ${t('(y este personaje tampoco lo está)')}` : ''}.`
+    : `${others === 1 ? t('{count} de tu círculo conectado', { count: others }) : t('{count} de tu círculo conectados', { count: others })}${focusOffline ? ` · ${t('este personaje no está conectado')}` : ''}.`;
 }
 
 export async function load(characterGuid) {

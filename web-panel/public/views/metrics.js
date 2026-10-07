@@ -6,13 +6,14 @@
 // mientras nadie mira la vista) y "no observado" siempre distinto de un
 // valor real igual a cero.
 import { $, $$, state, api, showLogin, formatAgo, escapeHtml } from '../shared.js';
+import { t, formatDateTime } from '../i18n.js';
 
-const METRICS_RESULT_LABELS = { ok: 'Todo correcto', warn: 'Con avisos', fail: 'Con fallos' };
+const METRICS_RESULT_LABELS = { ok: t('Todo correcto'), warn: t('Con avisos'), fail: t('Con fallos') };
 // Reutiliza los tonos de .tag que ya existen (verde/ámbar/rojo) en vez de
 // añadir clases nuevas: ok→online, warn→pending (ámbar), fail→warn (rojo).
 const METRICS_RESULT_TAGS = { ok: 'online', warn: 'pending', fail: 'warn' };
-const METRICS_EVENT_LABELS = { install: 'Instalación', update: 'Actualización', compile: 'Compilación', restart: 'Reinicio', manual: 'Manual' };
-const METRICS_MODULE_STATUS_LABELS = { active: 'activo', disabled: 'desactivado' };
+const METRICS_EVENT_LABELS = { install: t('Instalación'), update: t('Actualización'), compile: t('Compilación'), restart: t('Reinicio'), manual: t('Manual') };
+const METRICS_MODULE_STATUS_LABELS = { active: t('activo'), disabled: t('desactivado') };
 const METRICS_POLL_MS = 5 * 60_000;
 let metricsPollTimer = null;
 
@@ -37,7 +38,7 @@ function metricsEventLabel(eventType) {
 // diferencia entre "no observado" y "un valor real igual a cero" que se pide
 // aquí, en un único sitio en vez de repetir la comprobación.
 function metricOrGap(value, formatter = (v) => String(v)) {
-  return value === null || value === undefined ? 'sin datos' : formatter(value);
+  return value === null || value === undefined ? t('sin datos') : formatter(value);
 }
 
 function formatUptime(seconds) {
@@ -58,18 +59,18 @@ function renderMetricsStatus(body) {
   const historyBody = $('#metrics-history-body');
   const history = body.history || [];
   historyBody.innerHTML = history.map((row) => `<tr>
-    <td>${new Date(row.createdAt).toLocaleString('es-ES')}</td>
+    <td>${formatDateTime(row.createdAt)}</td>
     <td>${escapeHtml(metricsEventLabel(row.eventType))}</td>
     <td><span class="tag ${METRICS_RESULT_TAGS[row.overallResult] || 'offline'}">${METRICS_RESULT_LABELS[row.overallResult] || escapeHtml(row.overallResult)}</span></td>
     <td>${row.durationMs} ms</td>
-  </tr>`).join('') || '<tr><td colspan="4">Sin historial todavía</td></tr>';
+  </tr>`).join('') || `<tr><td colspan="4">${t('Sin historial todavía')}</td></tr>`;
 
   if (!body.doctor.available) {
     $('#metrics-empty').classList.remove('hidden');
     $('#metrics-body').classList.add('hidden');
-    badge.textContent = 'Sin datos';
+    badge.textContent = t('Sin datos');
     badge.className = 'tag offline';
-    $('#metrics-period-summary').textContent = 'Todavía no se ha ejecutado ninguna comprobación.';
+    $('#metrics-period-summary').textContent = t('Todavía no se ha ejecutado ninguna comprobación.');
     return;
   }
 
@@ -81,8 +82,8 @@ function renderMetricsStatus(body) {
 
   const period = body.period;
   $('#metrics-period-summary').textContent = period
-    ? `${metricsEventLabel(period.eventType)} · ${new Date(period.startedAt).toLocaleString('es-ES')} — los picos de esta pestaña se cuentan desde aquí.`
-    : 'Sin periodo todavía.';
+    ? t('{event} · {date} — los picos de esta pestaña se cuentan desde aquí.', { event: metricsEventLabel(period.eventType), date: formatDateTime(period.startedAt) })
+    : t('Sin periodo todavía.');
 
   // Aviso de "puede que el muestreo se haya detenido" con un margen bastante
   // mayor que los 5 min normales de la caché: sólo salta si de verdad hace
@@ -90,18 +91,18 @@ function renderMetricsStatus(body) {
   const sampleAgeMs = Date.now() - new Date(body.live.sampledAt).getTime();
   const stale = sampleAgeMs > 20 * 60_000;
   $('#metrics-stale-note').classList.toggle('hidden', !stale);
-  if (stale) $('#metrics-stale-detail').textContent = `Última muestra hace ${formatAgo(sampleAgeMs)}: comprueba que el muestreo automático sigue activo.`;
+  if (stale) $('#metrics-stale-detail').textContent = t('Última muestra {ago}: comprueba que el muestreo automático sigue activo.', { ago: formatAgo(sampleAgeMs) });
 
   $('#metrics-checks-body').innerHTML = (body.doctor.checks || []).map((check) => `<tr>
     <td>${escapeHtml(check.name)}</td>
     <td><span class="tag ${METRICS_RESULT_TAGS[check.status] || 'offline'}">${METRICS_RESULT_LABELS[check.status] || escapeHtml(check.status)}</span></td>
     <td>${escapeHtml(check.detail)}</td>
-  </tr>`).join('') || '<tr><td colspan="3">Sin comprobaciones registradas</td></tr>';
+  </tr>`).join('') || `<tr><td colspan="3">${t('Sin comprobaciones registradas')}</td></tr>`;
 
   const live = body.live;
-  $('#metrics-live-state').textContent = live.active === null ? 'no observado' : (live.active ? 'activo' : 'inactivo');
-  $('#metrics-live-since').textContent = live.activeSince ? `desde ${new Date(live.activeSince).toLocaleString('es-ES')}` : '';
-  $('#metrics-restarts').textContent = live.restarts === null ? 'reinicios: no observado' : `${live.restarts} reinicios registrados por systemd`;
+  $('#metrics-live-state').textContent = live.active === null ? t('no observado') : (live.active ? t('activo') : t('inactivo'));
+  $('#metrics-live-since').textContent = live.activeSince ? t('desde {date}', { date: formatDateTime(live.activeSince) }) : '';
+  $('#metrics-restarts').textContent = live.restarts === null ? t('reinicios: no observado') : t('{count} reinicios registrados por systemd', { count: live.restarts });
 
   const proc = live.process; // null = worldserver dormido/caído ahora mismo: no observado, no un cero
   // "en espera" cuando sabemos que el motivo es que el proceso no está
@@ -109,7 +110,7 @@ function renderMetricsStatus(body) {
   // cuando de verdad no se pudo saber (systemctl no observado, o el proceso
   // desapareció justo al muestrear): 14/09/2026,
   // ver también metrics-live-state un poco más abajo.
-  const procGap = live.active === false ? 'en espera' : 'sin datos';
+  const procGap = live.active === false ? t('en espera') : t('sin datos');
   $('#metrics-cpu').textContent = proc ? `${proc.cpuPct.toFixed(1)} %` : procGap;
   $('#metrics-mem').textContent = proc ? formatMib(proc.memRssKb) : procGap;
   $('#metrics-mem-peak').textContent = proc ? formatMib(proc.memPeakKb) : '—';
@@ -127,11 +128,11 @@ function renderMetricsStatus(body) {
     const commit = mod.commit || (mod.kind === 'own' && body.doctor.installerCommit ? body.doctor.installerCommit.slice(0, 12) : '');
     return `<tr>
       <td>${escapeHtml(mod.name)}</td>
-      <td>${mod.kind === 'own' ? 'propio' : 'terceros'}</td>
+      <td>${mod.kind === 'own' ? t('propio') : t('terceros')}</td>
       <td>${commit ? escapeHtml(commit) : '—'}</td>
       <td>${METRICS_MODULE_STATUS_LABELS[mod.status] || escapeHtml(mod.status)}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="4">Sin inventario todavía</td></tr>';
+  }).join('') || `<tr><td colspan="4">${t('Sin inventario todavía')}</td></tr>`;
 }
 
 async function loadMetricsStatus() {

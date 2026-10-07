@@ -7,6 +7,7 @@
 // "shell" (login/registro, navegación, indicador de conexión perdida y el
 // arranque de la sesión) — 16/09/2026: antes todo esto
 // vivía en un único fichero de 2563 líneas.
+import { t } from './i18n.js';
 import {
   $, $$, state, api, showApp, showLogin, showView, viewRegistry, sizeMapView, setSidebarOpen,
   stopRefreshPolling, stopServerStatusPolling, runRefresh, startServerStatusPolling,
@@ -44,7 +45,7 @@ $('#login-form').addEventListener('submit', async (event) => {
   const button = $('#login-button');
   $('#login-error').textContent = '';
   button.disabled = true;
-  button.textContent = 'Comprobando…';
+  button.textContent = t('Comprobando…');
   try {
     const data = await api('/api/login', { method: 'POST', body: JSON.stringify({ username: $('#username').value, password: $('#password').value }) });
     showApp(data.user);
@@ -52,7 +53,7 @@ $('#login-form').addEventListener('submit', async (event) => {
     $('#login-error').textContent = error.message;
   } finally {
     button.disabled = false;
-    button.textContent = 'Entrar al reino';
+    button.textContent = t('Entrar al reino');
   }
 });
 
@@ -93,7 +94,7 @@ $('#register-form').addEventListener('submit', async (event) => {
   const button = $('#register-button');
   $('#register-error').textContent = '';
   button.disabled = true;
-  button.textContent = 'Creando…';
+  button.textContent = t('Creando…');
   try {
     const data = await api('/api/register', { method: 'POST', body: JSON.stringify({
       inviteCode: $('#register-invite').value, username: $('#register-username').value, password: $('#register-password').value,
@@ -103,7 +104,7 @@ $('#register-form').addEventListener('submit', async (event) => {
     $('#register-error').textContent = error.message;
   } finally {
     button.disabled = false;
-    button.textContent = 'Crear cuenta';
+    button.textContent = t('Crear cuenta');
   }
 });
 

@@ -5,6 +5,7 @@
 // selectModCharacterByName también lo usan Jugadores/Armería ("Moderar
 // personaje"), por eso se exporta.
 import { $, $$, state, api, showLogin, showToast, showView, formValues, escapeHtml, icon, RACES, CLASSES, QUALITY_COLORS } from '../shared.js';
+import { t, formatDateTime, lowerCase } from '../i18n.js';
 import { openArmory } from './armory.js';
 import { focusCharacterOnMap } from './map.js';
 
@@ -14,25 +15,25 @@ export function enter() {
 }
 
 function formatUnixSeconds(seconds) {
-  return seconds ? new Date(seconds * 1000).toLocaleString('es-ES') : '—';
+  return seconds ? formatDateTime(seconds * 1000) : '—';
 }
 
 function sanctionRowHtml(kind, row) {
   const who = row.username || row.name;
-  const until = row.permanent ? 'Permanente' : `hasta ${formatUnixSeconds(row.unbanDate)}`;
+  const until = row.permanent ? t('Permanente') : t('hasta {date}', { date: formatUnixSeconds(row.unbanDate) });
   return `<div class="sanction-row">
     <span class="sanction-who">${escapeHtml(who)}</span>
     <span class="sanction-detail">${escapeHtml(row.reason || '')} · ${escapeHtml(row.bannedBy || '')} · ${until}</span>
-    <button class="secondary-button" data-unban="${kind}:${escapeHtml(who)}">Levantar</button>
+    <button class="secondary-button" data-unban="${kind}:${escapeHtml(who)}">${t('Levantar')}</button>
   </div>`;
 }
 
 function muteRowHtml(row) {
-  const status = row.pending ? 'pendiente al próximo inicio de sesión' : `hasta ${formatUnixSeconds(row.muteUntil)}`;
+  const status = row.pending ? t('pendiente al próximo inicio de sesión') : t('hasta {date}', { date: formatUnixSeconds(row.muteUntil) });
   return `<div class="sanction-row">
     <span class="sanction-who">${escapeHtml(row.username)}</span>
     <span class="sanction-detail">${escapeHtml(row.reason || '')} · ${escapeHtml(row.mutedBy || '')} · ${status}</span>
-    <button class="secondary-button" data-unmute="${escapeHtml(row.username)}">Quitar silencio</button>
+    <button class="secondary-button" data-unmute="${escapeHtml(row.username)}">${t('Quitar silencio')}</button>
   </div>`;
 }
 
@@ -40,7 +41,7 @@ function renderSanctions() {
   if (!state.sanctions) return;
   const { accountBans, characterBans, muted } = state.sanctions;
   const total = accountBans.length + characterBans.length + muted.length;
-  $('#sanctions-summary').textContent = total ? `${total} activas` : 'Sin sanciones activas';
+  $('#sanctions-summary').textContent = total ? t('{count} activas', { count: total }) : t('Sin sanciones activas');
   $('#sanctions-list').innerHTML = [
     ...accountBans.map((row) => sanctionRowHtml('account', row)),
     ...characterBans.map((row) => sanctionRowHtml('character', row)),
@@ -69,7 +70,7 @@ async function moderationSubmit(path, body, { formSelector, refreshSanctions = t
   if (button) button.disabled = true;
   try {
     const data = await api(path, { method: 'POST', body: JSON.stringify(body) });
-    showToast(data.result || 'Hecho.');
+    showToast(data.result || t('Hecho.'));
     if (form) form.reset();
     // form.reset() también vacía el campo oculto characterName/name: hay que
     // devolverle el personaje seleccionado o el siguiente envío iría vacío.
@@ -88,14 +89,14 @@ async function moderationSubmit(path, body, { formSelector, refreshSanctions = t
 // Todas las acciones de la pestaña "Buscar personaje" operan sobre
 // state.modCharacter en vez de repetir un campo de nombre en cada formulario.
 function modCharResultHtml(character) {
-  const [race] = RACES[character.race] || [`Raza ${character.race}`];
-  const [className, classColor] = CLASSES[character.class] || [`Clase ${character.class}`, '#9eb1a7'];
+  const [race] = RACES[character.race] || [t('Raza {id}', { id: character.race })];
+  const [className, classColor] = CLASSES[character.class] || [t('Clase {id}', { id: character.class }), '#9eb1a7'];
   return `<button class="armory-result" data-mod-guid="${character.guid}">
     <span class="armory-result-identity" style="--icon-color:${classColor}">
       ${icon('class', character.class, className)}
-      <span><strong>${escapeHtml(character.name)}</strong><small>Nv. ${character.level} · ${escapeHtml(className)} · ${escapeHtml(race)}${character.guildName ? ` · &lt;${escapeHtml(character.guildName)}&gt;` : ''}</small></span>
+      <span><strong>${escapeHtml(character.name)}</strong><small>${t('Nv. {level}', { level: character.level })} · ${escapeHtml(className)} · ${escapeHtml(race)}${character.guildName ? ` · &lt;${escapeHtml(character.guildName)}&gt;` : ''}</small></span>
     </span>
-    <span class="armory-result-status${character.online ? ' online' : ''}">${character.online ? 'En línea' : 'Desconectado'}</span>
+    <span class="armory-result-status${character.online ? ' online' : ''}">${character.online ? t('En línea') : t('Desconectado')}</span>
   </button>`;
 }
 
@@ -125,29 +126,29 @@ function applyModCharacterToForms() {
 function renderModCharacterCard() {
   const character = state.modCharacter;
   if (!character) return;
-  const [race] = RACES[character.race] || [`Raza ${character.race}`];
-  const [className, classColor] = CLASSES[character.class] || [`Clase ${character.class}`, '#9eb1a7'];
+  const [race] = RACES[character.race] || [t('Raza {id}', { id: character.race })];
+  const [className, classColor] = CLASSES[character.class] || [t('Clase {id}', { id: character.class }), '#9eb1a7'];
   const mute = character.accountUsername && state.sanctions
     ? state.sanctions.muted.find((row) => row.username === character.accountUsername) : null;
   const charBan = state.sanctions?.characterBans.find((row) => row.guid === character.guid);
   const acctBan = character.accountUsername && state.sanctions
     ? state.sanctions.accountBans.find((row) => row.username === character.accountUsername) : null;
-  const tags = [`<span class="tag ${character.online ? 'online' : 'offline'}">${character.online ? 'En línea' : 'Desconectado'}</span>`];
-  if (mute) tags.push(`<span class="tag warn">Silenciado ${mute.pending ? 'al próximo inicio de sesión' : `hasta ${formatUnixSeconds(mute.muteUntil)}`}</span>`);
-  if (charBan) tags.push(`<span class="tag warn">Personaje baneado${charBan.permanent ? ' (permanente)' : ` hasta ${formatUnixSeconds(charBan.unbanDate)}`}</span>`);
-  if (acctBan) tags.push(`<span class="tag warn">Cuenta baneada${acctBan.permanent ? ' (permanente)' : ` hasta ${formatUnixSeconds(acctBan.unbanDate)}`}</span>`);
+  const tags = [`<span class="tag ${character.online ? 'online' : 'offline'}">${character.online ? t('En línea') : t('Desconectado')}</span>`];
+  if (mute) tags.push(`<span class="tag warn">${mute.pending ? t('Silenciado al próximo inicio de sesión') : t('Silenciado hasta {date}', { date: formatUnixSeconds(mute.muteUntil) })}</span>`);
+  if (charBan) tags.push(`<span class="tag warn">${charBan.permanent ? t('Personaje baneado (permanente)') : t('Personaje baneado hasta {date}', { date: formatUnixSeconds(charBan.unbanDate) })}</span>`);
+  if (acctBan) tags.push(`<span class="tag warn">${acctBan.permanent ? t('Cuenta baneada (permanente)') : t('Cuenta baneada hasta {date}', { date: formatUnixSeconds(acctBan.unbanDate) })}</span>`);
   $('#mod-char-card').innerHTML = `<div class="char-card" style="--icon-color:${classColor}">
     ${icon('class', character.class, className)}
     <div class="char-card-copy">
       <h3>${escapeHtml(character.name)}</h3>
-      <p>Nivel ${character.level} · ${escapeHtml(className)} · ${escapeHtml(race)}${character.guildName ? ` · &lt;${escapeHtml(character.guildName)}&gt;` : ''}</p>
+      <p>${t('Nivel {level}', { level: character.level })} · ${escapeHtml(className)} · ${escapeHtml(race)}${character.guildName ? ` · &lt;${escapeHtml(character.guildName)}&gt;` : ''}</p>
       <div class="char-card-tags">${tags.join('')}</div>
       <div class="char-card-links">
-        <button type="button" data-mod-goto="armory">Ver en armería →</button>
-        <button type="button" data-mod-goto="map">Ver en el mapa →</button>
+        <button type="button" data-mod-goto="armory">${t('Ver en armería →')}</button>
+        <button type="button" data-mod-goto="map">${t('Ver en el mapa →')}</button>
       </div>
     </div>
-    <button class="char-clear" type="button" title="Cambiar de personaje" aria-label="Cambiar de personaje">×</button>
+    <button class="char-clear" type="button" title="${t('Cambiar de personaje')}" aria-label="${t('Cambiar de personaje')}">×</button>
   </div>`;
 }
 
@@ -166,8 +167,8 @@ function selectModCharacter(character) {
 export async function selectModCharacterByName(name) {
   try {
     const data = await api(`/api/characters/search?q=${encodeURIComponent(name)}`);
-    const exact = data.characters.find((candidate) => candidate.name.toLocaleLowerCase('es') === name.toLocaleLowerCase('es')) || data.characters[0];
-    if (!exact) return showToast('No se encontró ese personaje.');
+    const exact = data.characters.find((candidate) => lowerCase(candidate.name) === lowerCase(name)) || data.characters[0];
+    if (!exact) return showToast(t('No se encontró ese personaje.'));
     selectModCharacter(exact);
   } catch (error) {
     if (error.status === 401) return showLogin();
@@ -219,16 +220,16 @@ function selectItem(entry) {
 
 function inviteRowHtml(invite) {
   const expired = invite.expiresAt && new Date(invite.expiresAt) < new Date();
-  const status = invite.usedAt ? `usada por la cuenta ${invite.usedByAccount}` : (expired ? 'caducada' : 'disponible');
+  const status = invite.usedAt ? t('usada por la cuenta {account}', { account: invite.usedByAccount }) : (expired ? t('caducada') : t('disponible'));
   return `<div class="sanction-row">
     <span class="sanction-who">${escapeHtml(invite.id)}…</span>
-    <span class="sanction-detail">${escapeHtml(invite.note || 'sin nota')} · creada por ${escapeHtml(invite.createdBy)} · ${status}</span>
+    <span class="sanction-detail">${escapeHtml(invite.note || t('sin nota'))} · ${t('creada por {name}', { name: escapeHtml(invite.createdBy) })} · ${status}</span>
   </div>`;
 }
 
 function renderInvites() {
   if (!state.invites) return;
-  $('#invite-list').innerHTML = state.invites.length ? state.invites.map(inviteRowHtml).join('') : '<p class="armory-empty-note">Sin invitaciones todavía.</p>';
+  $('#invite-list').innerHTML = state.invites.length ? state.invites.map(inviteRowHtml).join('') : `<p class="armory-empty-note">${t('Sin invitaciones todavía.')}</p>`;
 }
 
 async function loadInvites() {
@@ -303,7 +304,7 @@ $('#send-money-form').addEventListener('submit', (event) => {
 });
 $('#send-items-form').addEventListener('submit', (event) => {
   event.preventDefault();
-  if (!state.selectedItem) return showToast('Elige un objeto de la lista primero.');
+  if (!state.selectedItem) return showToast(t('Elige un objeto de la lista primero.'));
   moderationSubmit('/api/moderation/send-items', formValues(event.target), {
     formSelector: '#send-items-form', refreshSanctions: false,
     onSuccess: () => { $('#send-items-form').classList.add('hidden'); state.selectedItem = null; },
@@ -336,7 +337,7 @@ $('#mod-char-card').addEventListener('click', (event) => {
   const goto = event.target.closest('[data-mod-goto]');
   if (!goto || !state.modCharacter) return;
   if (goto.dataset.modGoto === 'armory') { showView('armory'); openArmory(state.modCharacter.guid); }
-  else if (goto.dataset.modGoto === 'map') focusCharacterOnMap({ guid: state.modCharacter.guid, name: state.modCharacter.name, sourceLabel: 'Moderación' });
+  else if (goto.dataset.modGoto === 'map') focusCharacterOnMap({ guid: state.modCharacter.guid, name: state.modCharacter.name, sourceLabel: t('Moderación') });
 });
 $('#invite-form').addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -345,7 +346,7 @@ $('#invite-form').addEventListener('submit', async (event) => {
   try {
     const data = await api('/api/admin/invites', { method: 'POST', body: JSON.stringify(formValues(event.target)) });
     $('#invite-result').classList.remove('hidden');
-    $('#invite-result').textContent = `Clave (cópiala ahora, no se vuelve a mostrar): ${data.code}`;
+    $('#invite-result').textContent = t('Clave (cópiala ahora, no se vuelve a mostrar): {code}', { code: data.code });
     event.target.reset();
     loadInvites();
   } catch (error) {
@@ -361,7 +362,7 @@ $('#admin-account-form').addEventListener('submit', async (event) => {
   button.disabled = true;
   try {
     const data = await api('/api/admin/accounts', { method: 'POST', body: JSON.stringify(formValues(event.target)) });
-    showToast(`Cuenta ${data.username} creada.`);
+    showToast(t('Cuenta {name} creada.', { name: data.username }));
     event.target.reset();
   } catch (error) {
     if (error.status === 401) return showLogin();

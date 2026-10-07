@@ -63,6 +63,8 @@
 #include "CommandScript.h"
 #include "Config.h"
 #include "Log.h"
+#include "ModLocale.h"
+#include "standby_locale.h"
 #include "Optional.h"
 #include "ScriptMgr.h"
 #include "TimeMs.h"
@@ -367,38 +369,38 @@ public:
     {
         auto const c = Cfg();
         bool const activated = g_socketActivated.load(std::memory_order_relaxed);
-        handler->PSendSysMessage("Modo en espera: {}", c->enable ? "activado" : "DESACTIVADO");
-        handler->PSendSysMessage("  Activacion de socket heredada: {}{}",
-            activated ? "si" : "no",
-            (c->requireSocketActivation && !activated) ? " -> el modulo NO apagara el servidor" : "");
-        handler->PSendSysMessage("  Ventana de inactividad: {} min | aviso: {} s | margen tras arranque: {} min",
+        handler->PSendSysMessage(ModLocale::L(handler, "Modo en espera: {}"), c->enable ? ModLocale::L(handler, "activado") : ModLocale::L(handler, "DESACTIVADO"));
+        handler->PSendSysMessage(ModLocale::L(handler, "  Activacion de socket heredada: {}{}"),
+            activated ? ModLocale::L(handler, "si") : ModLocale::L(handler, "no"),
+            (c->requireSocketActivation && !activated) ? ModLocale::L(handler, " -> el modulo NO apagara el servidor") : "");
+        handler->PSendSysMessage(ModLocale::L(handler, "  Ventana de inactividad: {} min | aviso: {} s | margen tras arranque: {} min"),
             c->idleMinutes, c->warnSeconds, c->minUptimeMinutes);
 
         uint32 const humans = g_lastHumanCount.load(std::memory_order_relaxed);
-        handler->PSendSysMessage("  Sesiones humanas (ultimo recuento): {}", humans);
+        handler->PSendSysMessage(ModLocale::L(handler, "  Sesiones humanas (ultimo recuento): {}"), humans);
 
         if (sWorld->IsShuttingDown())
         {
             Own const own = g_own.load(std::memory_order_relaxed);
-            handler->PSendSysMessage("  Apagado EN CURSO: quedan {} s ({}{})",
+            handler->PSendSysMessage(ModLocale::L(handler, "  Apagado EN CURSO: quedan {} s ({}{})"),
                 sWorld->GetShutDownTimeLeft(),
-                own == Own::None ? "" : "modo en espera, ", OwnName(own));
+                own == Own::None ? "" : ModLocale::L(handler, "modo en espera, "), ModLocale::L(handler, OwnName(own)));
         }
         else if (humans > 0)
-            handler->SendSysMessage("  No se dormira: hay jugadores conectados.");
+            handler->SendSysMessage(ModLocale::L(handler, "  No se dormira: hay jugadores conectados."));
         else
         {
             int64_t const mins = MinutesUntilSleep(*c);
             if (mins < 0)
-                handler->SendSysMessage("  Estado indeterminado (aun no se ha hecho la primera comprobacion).");
+                handler->SendSysMessage(ModLocale::L(handler, "  Estado indeterminado (aun no se ha hecho la primera comprobacion)."));
             else
-                handler->PSendSysMessage("  Se dormira en ~{} min si no entra nadie.", mins);
+                handler->PSendSysMessage(ModLocale::L(handler, "  Se dormira en ~{} min si no entra nadie."), mins);
         }
 
         uint64_t const suppressUntil = g_suppressUntilMs.load(std::memory_order_relaxed);
         uint64_t const now = TimeMs::NowMs();
         if (suppressUntil > now)
-            handler->PSendSysMessage("  Suspendido por '.standby mantener': {} min restantes.",
+            handler->PSendSysMessage(ModLocale::L(handler, "  Suspendido por '.standby mantener': {} min restantes."),
                 static_cast<uint32>((suppressUntil - now) / 60000) + 1);
         return true;
     }
@@ -414,21 +416,21 @@ public:
                     // Mismo apagado y mismo codigo de salida: solo cambia la
                     // intencion, para que entrar alguien ya no lo cancele.
                     g_own.store(Own::Manual, std::memory_order_relaxed);
-                    handler->PSendSysMessage("El apagado por inactividad en curso pasa a ser manual: quedan {} s.",
+                    handler->PSendSysMessage(ModLocale::L(handler, "El apagado por inactividad en curso pasa a ser manual: quedan {} s."),
                         sWorld->GetShutDownTimeLeft());
                     LOG_INFO("server.worldserver", "[standby] {} convierte en manual el apagado por inactividad.",
                         handler->GetNameLink());
                     break;
                 case Own::Manual:
-                    handler->SendSysMessage("Ya hay un apagado manual del modo en espera en curso.");
+                    handler->SendSysMessage(ModLocale::L(handler, "Ya hay un apagado manual del modo en espera en curso."));
                     break;
                 default:
-                    handler->SendSysMessage("Ya hay un apagado en curso que no es del modo en espera; no se toca.");
+                    handler->SendSysMessage(ModLocale::L(handler, "Ya hay un apagado en curso que no es del modo en espera; no se toca."));
                     break;
             }
             return true;
         }
-        handler->PSendSysMessage("Modo en espera: apagando el worldserver en {} s.", c->warnSeconds);
+        handler->PSendSysMessage(ModLocale::L(handler, "Modo en espera: apagando el worldserver en {} s."), c->warnSeconds);
         LOG_INFO("server.worldserver", "[standby] apagado manual solicitado por {}.", handler->GetNameLink());
         RequestShutdown(Own::Manual, c->warnSeconds, "modo en espera (manual)");
         return true;
@@ -439,17 +441,17 @@ public:
         uint32 const mins = minutes.value_or(60);
         if (!mins || mins > 1440)
         {
-            handler->SendSysMessage("Uso: .standby mantener <minutos> (1-1440).");
+            handler->SendSysMessage(ModLocale::L(handler, "Uso: .standby mantener <minutos> (1-1440)."));
             return true;
         }
         g_suppressUntilMs.store(TimeMs::NowMs() + TimeMs::MinsToMs(mins), std::memory_order_relaxed);
         // Orden explicita y posterior: cancela nuestro apagado, sea cual sea
         // su motivo. Uno ajeno no se toca.
         if (CancelOwn({ Own::Idle, Own::Manual }))
-            handler->SendSysMessage("Apagado del modo en espera cancelado.");
+            handler->SendSysMessage(ModLocale::L(handler, "Apagado del modo en espera cancelado."));
         else if (sWorld->IsShuttingDown())
-            handler->SendSysMessage("Hay un apagado en curso que no es del modo en espera; no se cancela.");
-        handler->PSendSysMessage("Modo en espera suspendido {} min. '.standby reanudar' lo vuelve a activar.", mins);
+            handler->SendSysMessage(ModLocale::L(handler, "Hay un apagado en curso que no es del modo en espera; no se cancela."));
+        handler->PSendSysMessage(ModLocale::L(handler, "Modo en espera suspendido {} min. '.standby reanudar' lo vuelve a activar."), mins);
         LOG_INFO("server.worldserver", "[standby] suspendido {} min por {}.", mins, handler->GetNameLink());
         return true;
     }
@@ -457,13 +459,14 @@ public:
     static bool HandleResume(ChatHandler* handler)
     {
         g_suppressUntilMs.store(0, std::memory_order_relaxed);
-        handler->SendSysMessage("Modo en espera reanudado.");
+        handler->SendSysMessage(ModLocale::L(handler, "Modo en espera reanudado."));
         return true;
     }
 };
 
 void AddSC_mod_standby()
 {
+    ModLocale::Register(StandbyLocale::kEntries);
     new mod_standby_world();
     new mod_standby_command();
 }

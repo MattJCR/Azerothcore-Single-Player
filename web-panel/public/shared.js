@@ -7,23 +7,24 @@
 // showView() llega a cada vista a través de viewRegistry, que rellena
 // app.js tras importar todos los módulos de vista.
 import { MAP_BOUNDS, projectMapPlayer } from './map-projection.js?v=1.2.1';
+import { t, lang, formatTime } from './i18n.js';
 
 export const RACES = {
-  1: ['Humano', 'Alliance'], 2: ['Orco', 'Horde'], 3: ['Enano', 'Alliance'], 4: ['Elfo de la noche', 'Alliance'],
-  5: ['No-muerto', 'Horde'], 6: ['Tauren', 'Horde'], 7: ['Gnomo', 'Alliance'], 8: ['Trol', 'Horde'],
-  10: ['Elfo de sangre', 'Horde'], 11: ['Draenei', 'Alliance'],
+  1: [t('Humano'), 'Alliance'], 2: [t('Orco'), 'Horde'], 3: [t('Enano'), 'Alliance'], 4: [t('Elfo de la noche'), 'Alliance'],
+  5: [t('No-muerto'), 'Horde'], 6: [t('Tauren'), 'Horde'], 7: [t('Gnomo'), 'Alliance'], 8: [t('Trol'), 'Horde'],
+  10: [t('Elfo de sangre'), 'Horde'], 11: [t('Draenei'), 'Alliance'],
 };
 export const CLASSES = {
-  1: ['Guerrero', '#c79c6e'], 2: ['Paladín', '#f58cba'], 3: ['Cazador', '#abd473'], 4: ['Pícaro', '#fff569'],
-  5: ['Sacerdote', '#ffffff'], 6: ['Caballero de la Muerte', '#c41f3b'], 7: ['Chamán', '#2777ff'],
-  8: ['Mago', '#69ccf0'], 9: ['Brujo', '#9482c9'], 11: ['Druida', '#ff7d0a'],
+  1: [t('Guerrero'), '#c79c6e'], 2: [t('Paladín'), '#f58cba'], 3: [t('Cazador'), '#abd473'], 4: [t('Pícaro'), '#fff569'],
+  5: [t('Sacerdote'), '#ffffff'], 6: [t('Caballero de la Muerte'), '#c41f3b'], 7: [t('Chamán'), '#2777ff'],
+  8: [t('Mago'), '#69ccf0'], 9: [t('Brujo'), '#9482c9'], 11: [t('Druida'), '#ff7d0a'],
 };
 export const QUALITY_COLORS = ['#9d9d9d', '#ffffff', '#1eff00', '#0070dd', '#a335ee', '#ff8000', '#e6cc80', '#00ccff'];
 const MAPS = {
-  0: { name: 'Reinos del Este', image: '/assets/maps/0.jpg?v=1.2.0', width: 3840, height: 2560, ...MAP_BOUNDS[0] },
-  1: { name: 'Kalimdor', image: '/assets/maps/1.jpg?v=1.2.0', width: 3840, height: 2560, ...MAP_BOUNDS[1] },
-  530: { name: 'Terrallende', image: '/assets/maps/530.jpg?v=1.2.0', width: 3840, height: 2560, ...MAP_BOUNDS[530] },
-  571: { name: 'Rasganorte', image: '/assets/maps/571.jpg?v=1.2.0', width: 3840, height: 2560, ...MAP_BOUNDS[571] },
+  0: { name: t('Reinos del Este'), image: '/assets/maps/0.jpg?v=1.2.0', width: 3840, height: 2560, ...MAP_BOUNDS[0] },
+  1: { name: t('Kalimdor'), image: '/assets/maps/1.jpg?v=1.2.0', width: 3840, height: 2560, ...MAP_BOUNDS[1] },
+  530: { name: t('Terrallende'), image: '/assets/maps/530.jpg?v=1.2.0', width: 3840, height: 2560, ...MAP_BOUNDS[530] },
+  571: { name: t('Rasganorte'), image: '/assets/maps/571.jpg?v=1.2.0', width: 3840, height: 2560, ...MAP_BOUNDS[571] },
 };
 
 export const state = {
@@ -45,11 +46,11 @@ export const $$ = (selector) => [...document.querySelectorAll(selector)];
 // (el servidor la exige ahí como defensa CSRF), pero es más simple añadirla
 // en un único sitio que recordarla en cada llamada mutante.
 export async function api(path, options = {}) {
-  const response = await fetch(path, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Panel-Request': '1', ...(options.headers || {}) }, ...options });
+  const response = await fetch(path, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Panel-Request': '1', 'X-Panel-Lang': lang(), ...(options.headers || {}) }, ...options });
   if (response.status === 204) return null;
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(data.error || 'No se pudo contactar con el servidor');
+    const error = new Error(data.error || t('No se pudo contactar con el servidor'));
     error.status = response.status;
     throw error;
   }
@@ -99,7 +100,7 @@ export function applyModerationVisibility() {
 // desde una petición GM que devuelva 403 (map.js) mientras el resto del
 // sondeo sigue en marcha; centralizado aquí porque antes vivía inline en el
 // único catch de refresh() que agrupaba jugadores + mapa.
-export function demoteFromGm(message = 'Tu cuenta ya no tiene acceso GM.') {
+export function demoteFromGm(message = t('Tu cuenta ya no tiene acceso GM.')) {
   setUser({ ...state.user, gmlevel: 0, isGm: false });
   showToast(message);
 }
@@ -107,11 +108,12 @@ export function demoteFromGm(message = 'Tu cuenta ya no tiene acceso GM.') {
 export function setUser(user) {
   state.user = user;
   $('#account-name').textContent = user.username;
-  $('#account-rank').textContent = user.isGm ? `Maestro de Juego · Rango ${user.gmlevel}` : 'Jugador';
+  const rank = user.isGm ? t('Maestro de Juego · Rango {level}', { level: user.gmlevel }) : t('Jugador');
+  $('#account-rank').textContent = rank;
   $('#account-avatar').textContent = user.username.slice(0, 1).toUpperCase();
   $('#account-summary-avatar').textContent = user.username.slice(0, 1).toUpperCase();
   $('#account-summary-name').textContent = user.username;
-  $('#account-summary-tag').textContent = user.isGm ? `Maestro de Juego · Rango ${user.gmlevel}` : 'Jugador';
+  $('#account-summary-tag').textContent = rank;
   $('#map-nav').classList.toggle('hidden', !user.isGm);
   $('#moderation-nav').classList.toggle('hidden', !user.isGm);
   $('#bot-ops-nav').classList.toggle('hidden', !user.isGm);
@@ -173,11 +175,11 @@ export function showLogin() {
 // un estado bueno previo — y se distingue de "En espera"/"Caído" en label,
 // clase y color (ver styles.css).
 export const SERVER_STATUS_LABELS = {
-  online: 'En vivo',
-  standby: 'En espera',
-  offline: 'Caído',
-  checking: 'Comprobando',
-  stale: 'Sin datos',
+  online: t('En vivo'),
+  standby: t('En espera'),
+  offline: t('Caído'),
+  checking: t('Comprobando'),
+  stale: t('Sin datos'),
 };
 
 let serverStatusInFlight = false; // evita dos peticiones a la vez si una tarda más que el intervalo
@@ -186,16 +188,16 @@ let serverStatusLastGoodAt = null;
 function applyServerStatus(el, key, lastGoodAgoMs) {
   el.dataset.state = key;
   el.querySelector('span').textContent = SERVER_STATUS_LABELS[key] || SERVER_STATUS_LABELS.stale;
-  const ageNote = Number.isFinite(lastGoodAgoMs) ? ` Última comprobación correcta: ${formatAgo(lastGoodAgoMs)}.` : '';
+  const ageNote = Number.isFinite(lastGoodAgoMs) ? ` ${t('Última comprobación correcta: {ago}.', { ago: formatAgo(lastGoodAgoMs) })}` : '';
   const base = key === 'standby'
-    ? 'El worldserver está dormido para ahorrar recursos. La primera conexión de un cliente lo despierta (puede tardar 1-2 min).'
+    ? t('El worldserver está dormido para ahorrar recursos. La primera conexión de un cliente lo despierta (puede tardar 1-2 min).')
     : key === 'offline'
-      ? 'El worldserver no responde.'
+      ? t('El worldserver no responde.')
       : key === 'checking'
-        ? 'Comprobando el estado del worldserver…'
+        ? t('Comprobando el estado del worldserver…')
         : key === 'stale'
-          ? 'No se ha podido comprobar el estado del worldserver.'
-          : 'El worldserver está en línea.';
+          ? t('No se ha podido comprobar el estado del worldserver.')
+          : t('El worldserver está en línea.');
   el.title = base + ageNote;
 }
 
@@ -250,7 +252,7 @@ export async function refresh() {
     if (error.status === 401) return showLogin();
     if (error.status === 403) {
       setUser({ ...state.user, gmlevel: 0, isGm: false });
-      return showToast('Tu cuenta ya no tiene acceso GM.');
+      return showToast(t('Tu cuenta ya no tiene acceso GM.'));
     }
     showToast(error.message);
   }
@@ -415,7 +417,7 @@ export function createMapController(refs, options = {}) {
       refs.image.src = map.image;
       resetView();
     }
-    refs.image.alt = `Mapa de ${map.name}`;
+    refs.image.alt = t('Mapa de {map}', { map: map.name });
     const visible = projected.filter((player) => player.onMap && player.displayMap === ctrl.mapId);
     refs.markers.innerHTML = visible.map((player) => options.buildMarker(player)).join('');
     if (options.afterRender) options.afterRender(projected, visible, { centerOnMarker });
@@ -423,11 +425,11 @@ export function createMapController(refs, options = {}) {
       const instances = projected.filter((player) => !player.onMap);
       refs.instances.classList.toggle('hidden', instances.length === 0);
       refs.instances.innerHTML = instances.length
-        ? `<strong>${options.instancesLabel || 'En instancias u otros mapas'} (${instances.length}):</strong> ${instances.map((player) => `${escapeHtml(player.name)} <small>[${player.map}]</small>`).join(' · ')}`
+        ? `<strong>${options.instancesLabel || t('En instancias u otros mapas')} (${instances.length}):</strong> ${instances.map((player) => `${escapeHtml(player.name)} <small>[${player.map}]</small>`).join(' · ')}`
         : '';
     }
     if (refs.summary) {
-      refs.summary.textContent = `${visible.length} en ${map.name} · consultado ${new Date(data.updatedAt).toLocaleTimeString('es-ES')}`;
+      refs.summary.textContent = t('{count} en {map} · consultado {time}', { count: visible.length, map: map.name, time: formatTime(data.updatedAt) });
     }
     applyTransform();
   }
@@ -480,8 +482,8 @@ export function showView(name) {
   $$('.view').forEach((view) => view.classList.add('hidden'));
   $(`#${name}-view`).classList.remove('hidden');
   $$('.nav-item').forEach((button) => button.classList.toggle('active', button.dataset.view === name));
-  const titles = { map: 'Mapa del mundo', 'social-map': 'Mapa', addons: 'Addons del cliente', help: 'Comandos y ayuda', armory: 'Armería', moderation: 'Moderación', account: 'Mi cuenta', metrics: 'Estado y rendimiento', 'server-config': 'Configuración del servidor', updates: 'Actualizaciones', 'bot-ops': 'Operaciones de bots' };
-  $('#page-title').textContent = titles[name] || 'Jugadores conectados';
+  const titles = { map: t('Mapa del mundo'), 'social-map': t('Mapa'), addons: t('Addons del cliente'), help: t('Comandos y ayuda'), armory: t('Armería'), moderation: t('Moderación'), account: t('Mi cuenta'), metrics: t('Estado y rendimiento'), 'server-config': t('Configuración del servidor'), updates: t('Actualizaciones'), 'bot-ops': t('Operaciones de bots') };
+  $('#page-title').textContent = titles[name] || t('Jugadores conectados');
   setSidebarOpen(false);
   // Al cambiar de menú, la nueva sección arranca visible desde su inicio en
   // vez de heredar el scroll de la anterior. Esta app no tiene navegación "atrás" (sin router ni
@@ -522,12 +524,12 @@ export function formValues(form) {
 // Usado por "Operaciones de bots" (última vez que se agregó el estado) y por
 // "Estado y rendimiento" (antigüedad de la última muestra) — 16/09/2026; antes vivían duplicadas, una en cada vista de app.js.
 export function formatAgo(ms) {
-  if (!Number.isFinite(ms) || ms < 1000) return 'ahora mismo';
+  if (!Number.isFinite(ms) || ms < 1000) return t('ahora mismo');
   const seconds = Math.floor(ms / 1000);
-  if (seconds < 60) return `hace ${seconds} s`;
+  if (seconds < 60) return t('hace {n} s', { n: seconds });
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `hace ${minutes} min`;
-  return `hace ${Math.floor(minutes / 60)} h`;
+  if (minutes < 60) return t('hace {n} min', { n: minutes });
+  return t('hace {n} h', { n: Math.floor(minutes / 60) });
 }
 
 export function itemIconHtml(item) {

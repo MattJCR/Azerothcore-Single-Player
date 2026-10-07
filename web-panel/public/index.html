@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101816">
   <title>Azeroth Single Player</title>
-  <link rel="stylesheet" href="/styles.css?v=1.18.0">
+  <link rel="stylesheet" href="/styles.css?v=1.19.0">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -27,6 +27,7 @@
       </form>
       <p class="login-note">Usa las mismas credenciales que en el juego.</p>
       <button id="show-register" class="link-button" type="button">¿No tienes cuenta? Regístrate con una invitación</button>
+      <select class="lang-select" aria-label="Idioma"></select>
     </section>
   </main>
 
@@ -48,6 +49,7 @@
         <button id="register-button" type="submit">Crear cuenta</button>
       </form>
       <button id="show-login" class="link-button" type="button">Ya tengo cuenta</button>
+      <select class="lang-select" aria-label="Idioma"></select>
     </section>
   </main>
 
@@ -88,6 +90,7 @@
           <p class="eyebrow">ESTADO DEL REINO</p>
           <h2 id="page-title">Jugadores conectados</h2>
         </div>
+        <select class="lang-select topbar-lang" aria-label="Idioma"></select>
         <div class="live-status" id="server-status" data-state="checking"><i></i><span>Comprobando</span></div>
       </header>
 
@@ -314,7 +317,7 @@
           <div class="step-heading"><span class="step-number">1</span><div><h3>Prepara tu cliente</h3><p>Instala el certificado una vez y elige la carpeta de Wow.exe. También te la pide "Instalar parches" si todavía no la has elegido.</p></div></div>
         </div>
         <div id="installer-notice" class="installer-notice">
-          <div><strong>Instalación directa segura</strong><p id="folder-status">Elige la carpeta que contiene Wow.exe. El navegador pedirá permiso antes de escribir en Interface/AddOns y Data.</p><p class="certificate-help">Primera vez: instala el certificado en <strong>Equipo local → Entidades de certificación raíz de confianza</strong>. No uses la ubicación automática.</p></div>
+          <div><strong>Instalación directa segura</strong><p id="folder-status">Elige la carpeta que contiene Wow.exe. El navegador pedirá permiso antes de escribir en Interface/AddOns y Data.</p><p class="certificate-help" data-i18n-html>Primera vez: instala el certificado en <strong>Equipo local → Entidades de certificación raíz de confianza</strong>. No uses la ubicación automática.</p></div>
           <div class="installer-actions">
             <a class="secondary-button certificate-button" href="/azerothcore-panel-ca.crt" download="azerothcore-panel-ca.crt">Descargar certificado</a>
             <button id="choose-wow-folder" class="secondary-button" type="button">Elegir carpeta de WoW</button>
@@ -325,7 +328,7 @@
         <section id="resources-panel" class="patch-panel resources-panel hidden" aria-labelledby="resources-title">
           <div class="patch-heading">
             <span class="patch-rune" aria-hidden="true">GEN</span>
-            <div><p class="eyebrow">Administrador · Recursos del servidor</p><h3 id="resources-title">Recursos generados desde tu cliente</h3><p>Iconos de la armería y parches de idioma salen de <strong>tu</strong> cliente de WoW: el navegador lee de sus MPQ sólo lo necesario y el servidor lo convierte. No hace falta instalar nada. Si ya están al día con tu cliente, no se repite.</p></div>
+            <div><p class="eyebrow">Administrador · Recursos del servidor</p><h3 id="resources-title">Recursos generados desde tu cliente</h3><p data-i18n-html>Iconos de la armería y parches de idioma salen de <strong>tu</strong> cliente de WoW: el navegador lee de sus MPQ sólo lo necesario y el servidor lo convierte. No hace falta instalar nada. Si ya están al día con tu cliente, no se repite.</p></div>
           </div>
           <div id="resource-list" class="patch-list"></div>
           <div class="resource-actions">
@@ -339,7 +342,7 @@
         <section class="patch-panel" aria-labelledby="patches-title">
           <div class="patch-heading">
             <span class="patch-rune" aria-hidden="true">MPQ</span>
-            <div><p class="eyebrow">Paso 2 · Contenido personalizado</p><h3 id="patches-title">Parches del servidor</h3><p>Se copian en la carpeta <strong>Data</strong> del cliente (los de idioma, en su subcarpeta <strong>esES</strong> / <strong>enUS</strong>) y se borra la <strong>caché</strong>. Pide la carpeta de Wow.exe si todavía no la has elegido y comprueba al final que ha quedado bien puesto (hash a hash).</p></div>
+            <div><p class="eyebrow">Paso 2 · Contenido personalizado</p><h3 id="patches-title">Parches del servidor</h3><p data-i18n-html>Se copian en la carpeta <strong>Data</strong> del cliente (los de idioma, en su subcarpeta <strong>esES</strong> / <strong>enUS</strong>) y se borra la <strong>caché</strong>. Pide la carpeta de Wow.exe si todavía no la has elegido y comprueba al final que ha quedado bien puesto (hash a hash).</p></div>
           </div>
           <div id="patch-list" class="patch-list"></div>
           <button id="install-patches" class="primary-button" type="button" disabled>Instalar parches</button>
@@ -432,7 +435,7 @@
           </div>
 
           <div id="metrics-tab-summary" class="mod-tab-panel" role="tabpanel" aria-labelledby="metrics-tab-summary-button">
-            <p class="login-note">Como mucho una muestra nueva cada 5 minutos, y sólo mientras esta vista está abierta. El servidor está en <b>modo en espera</b> cuando no hay nadie jugando: se apaga solo y una conexión lo despierta. Mientras está dormido, "CPU", "Memoria" y "Uptime del proceso" no tienen nada que medir — no es un fallo del panel.</p>
+            <p class="login-note" data-i18n-html>Como mucho una muestra nueva cada 5 minutos, y sólo mientras esta vista está abierta. El servidor está en <b>modo en espera</b> cuando no hay nadie jugando: se apaga solo y una conexión lo despierta. Mientras está dormido, "CPU", "Memoria" y "Uptime del proceso" no tienen nada que medir — no es un fallo del panel.</p>
             <div class="stats-grid">
               <article class="stat-card" title="Si systemd tiene arrancado el proceso worldserver ahora mismo. 'Inactivo' incluye el modo en espera."><span>Worldserver</span><strong id="metrics-live-state">—</strong><small id="metrics-live-since"></small></article>
               <article class="stat-card" title="Uso de CPU del proceso worldserver en el instante de la muestra. Vacío si el servidor está dormido o parado."><span>CPU</span><strong id="metrics-cpu">—</strong><small>pico del periodo: <span id="metrics-cpu-max">—</span></small></article>
@@ -655,7 +658,7 @@
 
         <div id="bot-ops-tab-summary" class="mod-tab-panel" role="tabpanel" aria-labelledby="bot-ops-tab-summary-button">
           <div class="stats-grid">
-            <article class="stat-card"><span>Bots online</span><strong id="bot-ops-online">—</strong><small>de <span id="bot-ops-cap">—</span> de cupo</small></article>
+            <article class="stat-card"><span>Bots online</span><strong id="bot-ops-online">—</strong><small data-i18n-html>de <span id="bot-ops-cap">—</span> de cupo</small></article>
             <article class="stat-card"><span>Reservas pendientes</span><strong id="bot-ops-pending">—</strong><small>logins en curso</small></article>
             <article class="stat-card"><span>Etapa activa</span><strong id="bot-ops-stage">—</strong><small id="bot-ops-stage-by">—</small></article>
             <article class="stat-card"><span>Instantánea</span><strong id="bot-ops-updated">—</strong><small>hace cuánto</small></article>
@@ -747,6 +750,6 @@
   </div>
 
   <script src="/vendor/jszip/jszip.min.js"></script>
-  <script type="module" src="/app.js?v=1.19.0"></script>
+  <script type="module" src="/app.js?v=1.20.0"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@
 // por mysql2 en el backend): esta vista sólo pinta lo que el servidor ya
 // agregó, nunca interpreta nada por su cuenta.
 import { $, $$, state, api, showLogin, showToast, formValues, formatAgo, escapeHtml } from '../shared.js';
+import { t, formatDateTime } from '../i18n.js';
 
 export function enter() {
   loadBotOps();
@@ -17,7 +18,7 @@ export async function load() {
 // Igual que formatAgo pero sin el "hace" (para una duración futura, p.ej. lo
 // que queda de enfriamiento de un punto caliente de Guerra de mundo).
 function formatDuration(ms) {
-  if (!Number.isFinite(ms) || ms < 1000) return 'menos de 1 min';
+  if (!Number.isFinite(ms) || ms < 1000) return t('menos de 1 min');
   const seconds = Math.floor(ms / 1000);
   if (seconds < 60) return `${seconds} s`;
   const minutes = Math.floor(seconds / 60);
@@ -28,11 +29,11 @@ function formatDuration(ms) {
 // attackerTeam/defenderTeam: 0 Alianza, 1 Horda, 2 cualquiera (mismo valor en
 // los dos = punto de duelos si no es 2,2 — ver world_bots_pvp_hotspot.sql).
 function pvpTeamsLabel(attackerTeam, defenderTeam) {
-  const TEAM_NAMES = ['Alianza', 'Horda', 'cualquiera'];
+  const TEAM_NAMES = [t('Alianza'), t('Horda'), t('cualquiera')];
   if (attackerTeam === defenderTeam) {
-    return attackerTeam === 2 ? 'cualquiera contra cualquiera' : `duelos (${TEAM_NAMES[attackerTeam]})`;
+    return attackerTeam === 2 ? t('cualquiera contra cualquiera') : t('duelos ({team})', { team: TEAM_NAMES[attackerTeam] });
   }
-  return `${TEAM_NAMES[attackerTeam]} ataca / ${TEAM_NAMES[defenderTeam]} defiende`;
+  return t('{attacker} ataca / {defender} defiende', { attacker: TEAM_NAMES[attackerTeam], defender: TEAM_NAMES[defenderTeam] });
 }
 
 function renderBotOpsSnapshot(data) {
@@ -50,67 +51,67 @@ function renderBotOpsSnapshot(data) {
   $('#bot-ops-cap').textContent = dash(r.globalCap);
   $('#bot-ops-pending').textContent = dash(r.pendingTotal);
   $('#bot-ops-stage').textContent = ws.stageName || '—';
-  $('#bot-ops-stage-by').textContent = ws.decidedBy ? `decidida por ${escapeHtml(ws.decidedBy)}` : 'sin nadie que la fuerce';
-  $('#bot-ops-updated').textContent = data.available ? formatAgo(Date.now() - new Date(data.updatedAt).getTime()) : 'sin datos';
+  $('#bot-ops-stage-by').textContent = ws.decidedBy ? t('decidida por {name}', { name: escapeHtml(ws.decidedBy) }) : t('sin nadie que la fuerce');
+  $('#bot-ops-updated').textContent = data.available ? formatAgo(Date.now() - new Date(data.updatedAt).getTime()) : t('sin datos');
 
   const stuck = (wp.activeEvents || []).filter((event) => event.ending && Date.now() - event.startedAtMs > 10 * 60_000);
   // cada sección trae `enabled` y, desde el 24/09/2026, `stale` (el
   // módulo no la ha publicado en las últimas instantáneas). Una sección
   // apagada o sin datos recientes no debe leerse como "cero".
   const sections = [
-    ['Mundo y etapa (world-bots)', ws], ['Guerra de mundo', wp], ['Colas (queue-bots)', q],
-    ['Grupos (party-here)', g], ['Hermandades (home-guild)', gu], ['Compañeros de misión', qm],
+    [t('Mundo y etapa (world-bots)'), ws], [t('Guerra de mundo'), wp], [t('Colas (queue-bots)'), q],
+    [t('Grupos (party-here)'), g], [t('Hermandades (home-guild)'), gu], [t('Compañeros de misión'), qm],
   ];
   const moduleNotes = data.available ? sections.flatMap(([label, section]) => {
-    if (section.enabled === false) return [`<p><strong>${label}</strong>: módulo desactivado.</p>`];
-    if (section.stale === true) return [`<p><strong>${label}</strong>: sin datos recientes (módulo no cargado o parado).</p>`];
+    if (section.enabled === false) return [`<p>${t('{label}: módulo desactivado.', { label: `<strong>${label}</strong>` })}</p>`];
+    if (section.stale === true) return [`<p>${t('{label}: sin datos recientes (módulo no cargado o parado).', { label: `<strong>${label}</strong>` })}</p>`];
     return [];
   }) : [];
   const alerts = [
-    ...stuck.map((event) => `<p><strong>${escapeHtml(event.label)}</strong> (evento #${event.id}) lleva terminando más de 10 min. Puedes pararlo desde la pestaña Acciones.</p>`),
+    ...stuck.map((event) => `<p>${t('{label} (evento #{id}) lleva terminando más de 10 min. Puedes pararlo desde la pestaña Acciones.', { label: `<strong>${escapeHtml(event.label)}</strong>`, id: event.id })}</p>`),
     ...moduleNotes,
   ];
   $('#bot-ops-alerts').innerHTML = alerts.length
     ? alerts.join('')
-    : '<span>✓</span><h3>Sin alertas</h3><p>No hay eventos PvP de mundo pendientes de cerrar.</p>';
+    : `<span>✓</span><h3>${t('Sin alertas')}</h3><p>${t('No hay eventos PvP de mundo pendientes de cerrar.')}</p>`;
 
   $('#bot-ops-claims-body').innerHTML = (r.claimsByOwner || []).map((row) => `<tr><td>${escapeHtml(row.module)}</td><td>${row.count}</td></tr>`).join('')
-    || '<tr><td colspan="2">Sin bots reservados ahora mismo</td></tr>';
+    || `<tr><td colspan="2">${t('Sin bots reservados ahora mismo')}</td></tr>`;
   $('#bot-ops-pending-alliance').textContent = dash(r.pendingAlliance);
   $('#bot-ops-pending-horde').textContent = dash(r.pendingHorde);
   $('#bot-ops-pending-range-body').innerHTML = (r.pendingByRange || []).map((row) => `<tr><td>${row.minLevel}-${row.maxLevel}</td><td>${row.count}</td></tr>`).join('')
-    || '<tr><td colspan="2">Sin reservas pendientes</td></tr>';
+    || `<tr><td colspan="2">${t('Sin reservas pendientes')}</td></tr>`;
 
   $('#bot-ops-ws-stage').textContent = ws.stageName || '—';
-  $('#bot-ops-ws-by').textContent = ws.decidedBy ? `decidida por ${escapeHtml(ws.decidedBy)}` : 'sin nadie que la fuerce';
+  $('#bot-ops-ws-by').textContent = ws.decidedBy ? t('decidida por {name}', { name: escapeHtml(ws.decidedBy) }) : t('sin nadie que la fuerce');
   $('#bot-ops-ws-cap').textContent = dash(ws.levelCap);
-  $('#bot-ops-ws-maps').textContent = (ws.maps || []).length ? `mapas ${ws.maps.join(', ')}` : 'todos los mapas';
+  $('#bot-ops-ws-maps').textContent = (ws.maps || []).length ? t('mapas {list}', { list: ws.maps.join(', ') }) : t('todos los mapas');
   $('#bot-ops-ws-zones').textContent = dash(ws.zonesPopulated);
   $('#bot-ops-ws-moved').textContent = `${ws.relocatedTotal ?? 0} / ${ws.rerolledTotal ?? 0}`;
-  $('#bot-ops-pvp-summary').textContent = `${(wp.activeEvents || []).length} evento(s) activos, ${wp.hotspotCount ?? 0} puntos calientes`;
+  $('#bot-ops-pvp-summary').textContent = t('{events} evento(s) activos, {hotspots} puntos calientes', { events: (wp.activeEvents || []).length, hotspots: wp.hotspotCount ?? 0 });
   const events = wp.activeEvents || [];
   $('#bot-ops-pvp-body').innerHTML = events.map((event) => `<tr>
     <td>${event.id}</td><td>${escapeHtml(event.label)}</td><td>${event.zoneId}</td>
     <td>${event.attackers}</td><td>${event.defenders}</td>
     <td>${formatAgo(Date.now() - event.startedAtMs)}</td>
-    <td>${event.ending ? 'terminando' : 'activo'}</td>
+    <td>${event.ending ? t('terminando') : t('activo')}</td>
   </tr>`).join('');
   $('#bot-ops-pvp-empty').classList.toggle('hidden', events.length > 0);
 
   const activeHotspotLabels = new Set(events.map((event) => event.label));
   $('#bot-ops-hotspots-body').innerHTML = (wp.hotspots || []).map((h) => {
     let status;
-    if (activeHotspotLabels.has(h.label)) status = 'activo ahora';
-    else if (!h.enabled) status = 'desactivado';
-    else if (h.cooldownRemainingMs > 0) status = `enfriando (${formatDuration(h.cooldownRemainingMs)})`;
-    else status = 'listo';
+    if (activeHotspotLabels.has(h.label)) status = t('activo ahora');
+    else if (!h.enabled) status = t('desactivado');
+    else if (h.cooldownRemainingMs > 0) status = t('enfriando ({duration})', { duration: formatDuration(h.cooldownRemainingMs) });
+    else status = t('listo');
     return `<tr>
       <td>${escapeHtml(h.label)}</td>
       <td>${pvpTeamsLabel(h.attackerTeam, h.defenderTeam)}</td>
       <td>${h.minLevel}-${h.maxLevel}</td>
       <td>${status}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="4">Sin puntos configurados</td></tr>';
+  }).join('') || `<tr><td colspan="4">${t('Sin puntos configurados')}</td></tr>`;
 
   $('#bot-ops-q-waiting').textContent = dash(q.waitingHumans);
   $('#bot-ops-q-1v1').textContent = dash(q.arena1v1Missing);
@@ -126,17 +127,17 @@ function renderBotOpsSnapshot(data) {
   $('#bot-ops-mates-pairs').textContent = qm.activePairings ?? 0;
 }
 
-const BOT_OPS_STATUS_LABELS = { pending: 'pendiente', done: 'hecha', failed: 'fallida', expired: 'caducada' };
+const BOT_OPS_STATUS_LABELS = { pending: t('pendiente'), done: t('hecha'), failed: t('fallida'), expired: t('caducada') };
 
 function renderBotOpsHistory(actions) {
   $('#bot-ops-history-body').innerHTML = actions.map((row) => `<tr>
-    <td>${new Date(row.requestedAt).toLocaleString('es-ES')}</td>
+    <td>${formatDateTime(row.requestedAt)}</td>
     <td>${escapeHtml(row.action)}</td>
     <td>${row.param ? escapeHtml(row.param) : '—'}</td>
     <td>${row.actorName ? escapeHtml(row.actorName) : '—'}</td>
     <td>${BOT_OPS_STATUS_LABELS[row.status] || escapeHtml(row.status)}</td>
     <td>${row.result ? escapeHtml(row.result) : '—'}</td>
-  </tr>`).join('') || '<tr><td colspan="6">Sin solicitudes todavía</td></tr>';
+  </tr>`).join('') || `<tr><td colspan="6">${t('Sin solicitudes todavía')}</td></tr>`;
 }
 
 async function loadBotOps() {
@@ -198,7 +199,7 @@ $$('.bot-ops-action-form').forEach((form) => {
         body: JSON.stringify({ action: form.dataset.action, param: values.param || undefined, reason: values.reason || undefined }),
       });
       form.reset();
-      showToast('Solicitud enviada.');
+      showToast(t('Solicitud enviada.'));
       await Promise.all([loadBotOpsActions(), loadBotOps()]);
     } catch (error) {
       if (error.status === 401) return showLogin();

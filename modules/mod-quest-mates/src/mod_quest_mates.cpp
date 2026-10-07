@@ -47,8 +47,10 @@
 #include "LFGMgr.h"
 #include "Log.h"
 #include "Map.h"
+#include "ModLocale.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
+#include "quest_mates_locale.h"
 #include "Player.h"
 #include "QuestDef.h"
 #include "Random.h"
@@ -680,7 +682,7 @@ private:
                  names, quest->GetTitle(), player->GetName(), zoneId, minLevel, topLevel);
 
         if (cfg.announce)
-            ChatHandler(player->GetSession()).PSendSysMessage("{} también van a por \"{}\".", names, quest->GetTitle());
+            ChatHandler(player->GetSession()).PSendSysMessage(ModLocale::L(player, "{} también van a por \"{}\"."), names, quest->GetTitle());
     }
 
     void ReleaseMates(ObjectGuid humanGuid)
@@ -869,7 +871,7 @@ private:
                             }
 #endif
                         if (cfg.announce && master->GetSession())
-                            ChatHandler(master->GetSession()).SendSysMessage("Tus companeros van a entregar la mision.");
+                            ChatHandler(master->GetSession()).SendSysMessage(ModLocale::L(master, "Tus companeros van a entregar la mision."));
                     }
 
                     q = keep ? std::next(q) : mate->quests.erase(q);
@@ -936,6 +938,7 @@ public:
 
 void AddSC_mod_quest_mates()
 {
+    ModLocale::Register(QuestMatesLocale::kEntries);
     new mod_quest_mates_world();
     new mod_quest_mates_player();
 }

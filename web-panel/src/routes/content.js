@@ -6,9 +6,9 @@
 // usaban routes/serverConfig.js y routes/botOperations.js). Sin estado
 // propio: el catálogo y los ficheros ya los sirven addons.js/patches.js.
 export function registerContentRoutes(app, { requireAuth, noStore, addonCatalog, findAddon, sendAddonZip, findPatch, patchCatalog }) {
-  app.get('/api/addons', requireAuth, (_request, response) => {
+  app.get('/api/addons', requireAuth, (request, response) => {
     noStore(response);
-    response.json({ ...addonCatalog(), ...patchCatalog() });
+    response.json({ ...addonCatalog(request.lang), ...patchCatalog() });
   });
 
   app.get('/api/addons/:id/download', requireAuth, (request, response, next) => {

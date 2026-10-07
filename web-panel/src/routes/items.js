@@ -5,6 +5,7 @@
 // app.js con el mismo patrón de inyección que routes/serverConfig.js/
 // botOperations.js.
 import { iconForDisplayId } from '../item-icons.js';
+import { itemLocale } from '../i18n.js';
 
 export function registerItemsRoutes(app, { worldDb, requireAuth, requireGmLevel, noStore }) {
   app.get('/api/items/search', requireAuth, requireGmLevel(3, 'Se requiere una cuenta de administrador'), async (request, response, next) => {
@@ -17,10 +18,10 @@ export function registerItemsRoutes(app, { worldDb, requireAuth, requireGmLevel,
         `SELECT it.entry AS entry, COALESCE(itl.Name, it.name) AS name, it.Quality AS quality,
                 it.displayid AS displayId, it.InventoryType AS inventoryType, it.ItemLevel AS ilvl
          FROM item_template it
-         LEFT JOIN item_template_locale itl ON itl.ID = it.entry AND itl.locale = 'esES'
+         LEFT JOIN item_template_locale itl ON itl.ID = it.entry AND itl.locale = ?
          WHERE COALESCE(itl.Name, it.name) LIKE ?
          ORDER BY it.Quality DESC, it.ItemLevel DESC LIMIT 40`,
-        [`%${escaped}%`],
+        [itemLocale(request), `%${escaped}%`],
       );
       response.json({
         items: rows.map((row) => ({

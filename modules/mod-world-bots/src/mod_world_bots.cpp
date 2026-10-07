@@ -69,6 +69,7 @@
 #include "Log.h"
 #include "Map.h"
 #include "MapMgr.h"
+#include "ModLocale.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Pet.h"
@@ -85,6 +86,7 @@
 #include "Tokenize.h"
 #include "World.h"
 #include "WorldBotsPolicy.h"
+#include "world_bots_locale.h"
 #include "WorldSession.h"
 
 #include <algorithm>
@@ -1230,13 +1232,15 @@ namespace
 #endif
     }
 
-    std::string StageStatus()
+    // `ctx` (ChatHandler o Player) sólo decide el idioma del texto.
+    template <typename Ctx>
+    std::string StageStatus(Ctx const& ctx)
     {
         if (!cfg.stageEnable)
-            return "etapas: apagado (WorldBots.Stage.Enable)";
-        return Acore::StringFormat("etapa activa {} ({}): tope {}, mapas {}; desde el arranque {} re-aleatorizados, {} sacados de mapas bloqueados",
-                                   StageName(g_stage), g_stageBy.empty() ? "sin jugadores" : g_stageBy, StageCap(),
-                                   g_stage >= 2 ? "todos" : JoinMaps(StageMaps()), g_stageRerolled, g_stageRelocated);
+            return ModLocale::L(ctx, "etapas: apagado (WorldBots.Stage.Enable)");
+        return Acore::StringFormat(ModLocale::L(ctx, "etapa activa {} ({}): tope {}, mapas {}; desde el arranque {} re-aleatorizados, {} sacados de mapas bloqueados"),
+                                   StageName(g_stage), g_stageBy.empty() ? ModLocale::L(ctx, "sin jugadores") : g_stageBy, StageCap(),
+                                   g_stage >= 2 ? ModLocale::L(ctx, "todos") : JoinMaps(StageMaps()), g_stageRerolled, g_stageRelocated);
     }
 }
 
@@ -1793,7 +1797,7 @@ private:
                 ++sent;
                 ++g_statSamaritan;
                 if (cfg.announce)
-                    ChatHandler(human->GetSession()).PSendSysMessage("Un aventurero acude a ayudarte.");
+                    ChatHandler(human->GetSession()).PSendSysMessage(ModLocale::L(human, "Un aventurero acude a ayudarte."));
                 WORLD_BOTS_ACTIVITY_LOG("[world-bots] {} acude a ayudar a {} (vida {}%).",
                          bot->GetName(), human->GetName(),
                          human->GetHealth() * 100 / std::max<uint64>(human->GetMaxHealth(), 1));
@@ -1816,14 +1820,14 @@ private:
             {
                 g_samaritanOptOut.insert(cmd.gm);
                 RecallHelpersIf([&](Helper const& h) { return h.human == cmd.gm; }, "rechazado");
-                handler.SendSysMessage("[world-bots] No recibiras ayuda de bots samaritanos (hasta el reinicio).");
+                handler.SendSysMessage(ModLocale::L(handler, "[world-bots] No recibiras ayuda de bots samaritanos (hasta el reinicio)."));
             }
             else
             {
                 g_samaritanOptOut.erase(cmd.gm);
                 handler.SendSysMessage(cfg.samaritan
-                    ? "[world-bots] Volveras a recibir ayuda de bots samaritanos cuando estes en apuros."
-                    : "[world-bots] El modo samaritano esta desactivado en el servidor (WorldBots.Samaritan = 0).");
+                    ? ModLocale::L(handler, "[world-bots] Volveras a recibir ayuda de bots samaritanos cuando estes en apuros.")
+                    : ModLocale::L(handler, "[world-bots] El modo samaritano esta desactivado en el servidor (WorldBots.Samaritan = 0)."));
             }
             return;
         }
@@ -1832,7 +1836,7 @@ private:
         {
             if (!gm->IsInWorld())
             {
-                handler.SendSysMessage("[world-bots] No estas en el mundo ahora mismo.");
+                handler.SendSysMessage(ModLocale::L(handler, "[world-bots] No estas en el mundo ahora mismo."));
                 return;
             }
             uint32 const zoneId = gm->GetZoneId();
@@ -1845,22 +1849,22 @@ private:
             visit.everCovered = false;      // relleno forzado, sin esperar a la histéresis
             visit.deficitSinceMs = 0;
             g_nextScan = now;   // que el throttle no se salte la pasada de este tick
-            handler.PSendSysMessage("[world-bots] Relleno forzado de {}: objetivo {} bots.",
-                                    zone ? zone->area_name[sWorld->GetDefaultDbcLocale()] : "tu zona", visit.target);
+            handler.PSendSysMessage(ModLocale::L(handler, "[world-bots] Relleno forzado de {}: objetivo {} bots."),
+                                    zone ? zone->area_name[handler.GetSessionDbcLocale()] : ModLocale::L(handler, "tu zona"), visit.target);
             return;
         }
 
         // WB_CMD_STATUS
-        handler.PSendSysMessage("[world-bots] {}.", StageStatus());
-        handler.PSendSysMessage("[world-bots] Desde el arranque: {} pasadas, {} rellenados de zona, "
-                                "{} bots reubicados, {} despertados, {} ayudas samaritanas.",
+        handler.PSendSysMessage(ModLocale::L(handler, "[world-bots] {}."), StageStatus(handler));
+        handler.PSendSysMessage(ModLocale::L(handler, "[world-bots] Desde el arranque: {} pasadas, {} rellenados de zona, "
+                                "{} bots reubicados, {} despertados, {} ayudas samaritanas."),
                                 g_statPasses, g_statFills, g_statBotsMoved, g_statBotsWoken, g_statSamaritan);
         if (cfg.samaritan)
-            handler.PSendSysMessage("[world-bots] Samaritano: activo, {} ayudante(s) ahora mismo.",
+            handler.PSendSysMessage(ModLocale::L(handler, "[world-bots] Samaritano: activo, {} ayudante(s) ahora mismo."),
                                     static_cast<uint32>(g_helpers.size()));
         if (g_visits.empty())
         {
-            handler.SendSysMessage("[world-bots] Ninguna zona con jugador en seguimiento.");
+            handler.SendSysMessage(ModLocale::L(handler, "[world-bots] Ninguna zona con jugador en seguimiento."));
             return;
         }
         for (auto const& pair : g_visits)
@@ -1869,12 +1873,12 @@ private:
             Visit const& visit = pair.second;
             AreaTableEntry const* zone = sAreaTableStore.LookupEntry(visit.zone);
             std::string const zoneName = zone
-                ? std::string(zone->area_name[sWorld->GetDefaultDbcLocale()])
-                : ("zona " + std::to_string(visit.zone));
-            handler.PSendSysMessage("  {} en {}: objetivo {} bots{}{}.",
+                ? std::string(zone->area_name[handler.GetSessionDbcLocale()])
+                : (std::string(ModLocale::L(handler, "zona ")) + std::to_string(visit.zone));
+            handler.PSendSysMessage(ModLocale::L(handler, "  {} en {}: objetivo {} bots{}{}."),
                                     human ? human->GetName() : "?", zoneName, visit.target,
-                                    IsCity(visit.zone) ? ", capital" : "",
-                                    now >= visit.nextFillMs ? ", repone ya" : "");
+                                    IsCity(visit.zone) ? ModLocale::L(handler, ", capital") : "",
+                                    now >= visit.nextFillMs ? ModLocale::L(handler, ", repone ya") : "");
         }
     }
 
@@ -2109,7 +2113,7 @@ private:
         g_statBotsWoken += woken;
 
         if (cfg.announce && moved)
-            ChatHandler(player->GetSession()).PSendSysMessage("Han llegado {} aventureros a la zona.", moved);
+            ChatHandler(player->GetSession()).PSendSysMessage(ModLocale::L(player, "Han llegado {} aventureros a la zona."), moved);
 
         // Mientras falte gente se insiste pronto (los despertados tardan unos
         // segundos en entrar); con la zona llena, se repone cada minuto.
@@ -2179,7 +2183,7 @@ public:
 
     static bool HandleStage(ChatHandler* handler)
     {
-        handler->PSendSysMessage("[world-bots] {}.", StageStatus());
+        handler->PSendSysMessage(ModLocale::L(handler, "[world-bots] {}."), StageStatus(handler));
         return true;
     }
 
@@ -2190,8 +2194,8 @@ public:
         {
             // Desde la consola no hay sesión a la que responder por el hilo del
             // mundo: se da al menos la etapa, que es síncrona y segura.
-            handler->PSendSysMessage("[world-bots] {}.", StageStatus());
-            handler->SendSysMessage("[world-bots] El detalle por zona necesita un personaje en el juego.");
+            handler->PSendSysMessage(ModLocale::L(handler, "[world-bots] {}."), StageStatus(handler));
+            handler->SendSysMessage(ModLocale::L(handler, "[world-bots] El detalle por zona necesita un personaje en el juego."));
             return true;
         }
         PushWbCmd(gm->GetGUID(), WB_CMD_STATUS);
@@ -2203,12 +2207,12 @@ public:
         Player* gm = handler->GetSession() ? handler->GetSession()->GetPlayer() : nullptr;
         if (!gm)
         {
-            handler->SendSysMessage("Este comando necesita un personaje en el juego.");
+            handler->SendSysMessage(ModLocale::L(handler, "Este comando necesita un personaje en el juego."));
             return true;
         }
         if (!cfg.enabled)
         {
-            handler->SendSysMessage("mod-world-bots esta desactivado.");
+            handler->SendSysMessage(ModLocale::L(handler, "mod-world-bots esta desactivado."));
             return true;
         }
         PushWbCmd(gm->GetGUID(), WB_CMD_HERE);
@@ -2220,7 +2224,7 @@ public:
         Player* p = handler->GetSession() ? handler->GetSession()->GetPlayer() : nullptr;
         if (!p)
         {
-            handler->SendSysMessage("Este comando necesita un personaje en el juego.");
+            handler->SendSysMessage(ModLocale::L(handler, "Este comando necesita un personaje en el juego."));
             return true;
         }
         std::string v = arg ? *arg : std::string();
@@ -2231,7 +2235,7 @@ public:
         else if (v.empty() || v == "on" || v == "si")
             PushWbCmd(p->GetGUID(), WB_CMD_SAMARITAN_ON);
         else
-            handler->SendSysMessage("Uso: .wbots samaritano on|off");
+            handler->SendSysMessage(ModLocale::L(handler, "Uso: .wbots samaritano on|off"));
         return true;
     }
 
@@ -2250,35 +2254,35 @@ public:
                 ? population.settings.maxPendingTotal - pendingTotal : 0);
 
         handler->PSendSysMessage(
-            "[bots] Global: {} online + {} pendientes / {} max; capacidad global ahora: {} (foto de hace {} s).",
+            ModLocale::L(handler, "[bots] Global: {} online + {} pendientes / {} max; capacidad global ahora: {} (foto de hace {} s)."),
             population.onlineTotal, pendingTotal, population.settings.globalCap,
             std::min(globalAvailable, pendingAvailable), population.dataAgeMs / 1000);
         handler->PSendSysMessage(
-            "[bots] Presupuesto pendiente: {}/{} total, Alianza {}/{}, Horda {}/{} (0 = sin limite intermedio).",
+            ModLocale::L(handler, "[bots] Presupuesto pendiente: {}/{} total, Alianza {}/{}, Horda {}/{} (0 = sin limite intermedio)."),
             pendingTotal, population.settings.maxPendingTotal,
             population.pendingByFaction[0], population.settings.maxPendingPerFaction,
             population.pendingByFaction[1], population.settings.maxPendingPerFaction);
 
-        handler->SendSysMessage("[bots] Online por faccion y tramo:");
-        handler->PSendSysMessage("  Alianza: {}; Horda: {}.",
+        handler->SendSysMessage(ModLocale::L(handler, "[bots] Online por faccion y tramo:"));
+        handler->PSendSysMessage(ModLocale::L(handler, "  Alianza: {}; Horda: {}."),
             population.onlineByFaction[0], population.onlineByFaction[1]);
         if (population.onlineByRange.empty())
-            handler->SendSysMessage("  Tramos: ninguno.");
+            handler->SendSysMessage(ModLocale::L(handler, "  Tramos: ninguno."));
         else
             for (auto const& [range, count] : population.onlineByRange)
-                handler->PSendSysMessage("  Nivel {}-{}: {} online.", range.first, range.second, count);
+                handler->PSendSysMessage(ModLocale::L(handler, "  Nivel {}-{}: {} online."), range.first, range.second, count);
 
-        handler->SendSysMessage("[bots] Pendientes por modulo:");
+        handler->SendSysMessage(ModLocale::L(handler, "[bots] Pendientes por modulo:"));
         if (population.pendingByModule.empty())
-            handler->SendSysMessage("  Ninguno.");
+            handler->SendSysMessage(ModLocale::L(handler, "  Ninguno."));
         else
             for (auto const& [module, count] : population.pendingByModule)
-                handler->PSendSysMessage("  {}: {}.", module, count);
+                handler->PSendSysMessage(ModLocale::L(handler, "  {}: {}."), module, count);
 
-        handler->PSendSysMessage("[bots] Pendientes por faccion/tramo (limite por tramo: {}):",
+        handler->PSendSysMessage(ModLocale::L(handler, "[bots] Pendientes por faccion/tramo (limite por tramo: {}):"),
             population.settings.maxPendingPerRange);
         if (population.pending.empty())
-            handler->SendSysMessage("  Ninguno.");
+            handler->SendSysMessage(ModLocale::L(handler, "  Ninguno."));
         else
             for (auto const& [range, count] : population.pendingByRange)
             {
@@ -2293,39 +2297,39 @@ public:
                     else
                         ++horde;
                 }
-                handler->PSendSysMessage("  Nivel {}-{}: Alianza {}/{}, Horda {}/{} ({} total).",
+                handler->PSendSysMessage(ModLocale::L(handler, "  Nivel {}-{}: Alianza {}/{}, Horda {}/{} ({} total)."),
                     range.first, range.second,
                     alliance, population.settings.maxPendingPerRange,
                     horde, population.settings.maxPendingPerRange, count);
             }
 
-        handler->PSendSysMessage("[bots] Claims: {} totales; {} bots de hermandad preferentes.",
+        handler->PSendSysMessage(ModLocale::L(handler, "[bots] Claims: {} totales; {} bots de hermandad preferentes."),
             claims.totalClaims, claims.homeGuildBots);
         if (claims.claimsByOwner.empty())
-            handler->SendSysMessage("  Claims por modulo: ninguno.");
+            handler->SendSysMessage(ModLocale::L(handler, "  Claims por modulo: ninguno."));
         else
             for (auto const& [owner, count] : claims.claimsByOwner)
-                handler->PSendSysMessage("  Claim {}: {}.", owner, count);
+                handler->PSendSysMessage(ModLocale::L(handler, "  Claim {}: {}."), owner, count);
 
         // Cola compartida de reequipado (M12): estado de cada trabajo.
         BotGear::Stats const gear = BotGear::GetStats();
-        handler->PSendSysMessage("[bots] Reequipado: {} en cola ({} en recuperacion); hechos {}, sin cambios {}, "
-            "cancelados {}, aplazados {}, caducados {}, fallos {}, recuperados {}, abandonados {}, sin sitio {}.",
+        handler->PSendSysMessage(ModLocale::L(handler, "[bots] Reequipado: {} en cola ({} en recuperacion); hechos {}, sin cambios {}, "
+            "cancelados {}, aplazados {}, caducados {}, fallos {}, recuperados {}, abandonados {}, sin sitio {}."),
             gear.queued, gear.recovering, gear.completed, gear.skipped, gear.cancelled, gear.deferred,
             gear.expired, gear.failed, gear.recovered, gear.abandoned, gear.dropped);
 
-        handler->SendSysMessage("[bots] Ultimos rechazos (mas reciente primero):");
+        handler->SendSysMessage(ModLocale::L(handler, "[bots] Ultimos rechazos (mas reciente primero):"));
         if (population.recentRejections.empty())
-            handler->SendSysMessage("  Ninguno.");
+            handler->SendSysMessage(ModLocale::L(handler, "  Ninguno."));
         else
         {
             uint32 shown = 0;
             for (auto it = population.recentRejections.rbegin();
                  it != population.recentRejections.rend() && shown < 5; ++it, ++shown)
             {
-                handler->PSendSysMessage("  hace {} s: {} / {} / {} / nivel {}-{}.",
+                handler->PSendSysMessage(ModLocale::L(handler, "  hace {} s: {} / {} / {} / nivel {}-{}."),
                     SecondsAgo(now, it->atMs), it->module,
-                    BotPopulationCoordinator::ReasonName(it->reason), PopulationFactionName(it->faction),
+                    ModLocale::L(handler, BotPopulationCoordinator::ReasonName(it->reason)), ModLocale::L(handler, PopulationFactionName(it->faction)),
                     it->minLevel, it->maxLevel);
             }
         }
@@ -2335,6 +2339,7 @@ public:
 
 void AddSC_mod_world_bots()
 {
+    ModLocale::Register(WorldBotsLocale::kEntries);
     new mod_world_bots_world();
     new mod_world_bots_player();
     new mod_world_bots_command();

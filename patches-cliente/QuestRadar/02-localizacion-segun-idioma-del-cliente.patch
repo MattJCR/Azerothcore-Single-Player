@@ -1,0 +1,294 @@
+Licencia: AGPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+diff --git b/b/QuestRadar/Locale.lua b/b/QuestRadar/Locale.lua
+new file mode 100644
+index 0000000..1cf054b
+--- /dev/null
++++ b/b/QuestRadar/Locale.lua
+@@ -0,0 +1,109 @@
++-- QuestRadar - Locale.lua
++--
++-- Los textos del addon están escritos en francés (el autor original). Aquí se
++-- traducen al español (clientes esES/esMX) y al inglés (cualquier otro cliente
++-- que no sea frFR); un cliente frFR ve el texto original. La clave es el
++-- literal francés tal como aparece en el código; lo que no tenga traducción se
++-- muestra tal cual, así que nunca queda un texto vacío.
++--
++-- Uso: local L = QuestRadar_L ; L("texto en francés")
++-- Los textos con valores van como formato (%s, %.1f) y se rellenan con string.format.
++
++local locale = GetLocale()
++
++local EN = {
++    ["Objectifs de quete sur le minimap. Ces reglages sont aussi accessibles via /qr."] = "Quest objectives on the minimap. These settings are also available through /qr.",
++    ["Activer QuestRadar"] = "Enable QuestRadar",
++    ["Affiche ou masque completement les icones d'objectifs."] = "Shows or hides the objective icons completely.",
++    ["Limiter aux quetes suivies"] = "Limit to tracked quests",
++    ["N'affiche que les quetes cochees dans le suivi d'objectifs. Decoche, affiche toutes les quetes de la zone."] = "Only shows the quests checked in the objective tracker. Unchecked, it shows every quest in the zone.",
++    ["Afficher les quetes terminees"] = "Show completed quests",
++    ["Affiche l'icone de rendu (?) pour les quetes pretes a etre rendues."] = "Shows the turn-in icon (?) for quests that are ready to be handed in.",
++    ["Afficher les objectifs hors de portee"] = "Show out-of-range objectives",
++    ["Les objectifs trop loin se collent au bord du minimap, legerement attenues."] = "Objectives that are too far away stick to the edge of the minimap, slightly dimmed.",
++    ["Utiliser le module serveur si present"] = "Use the server module if present",
++    ["Avec le module mod-quest-radar sur le royaume : une icone par objectif au lieu d'une par quete. Sans lui, aucun effet."] = "With the mod-quest-radar module on the realm: one icon per objective instead of one per quest. Without it, it has no effect.",
++    ["Taille des icones : %.1f"] = "Icon size: %.1f",
++    ["|cffff4040!Astrolabe introuvable|r - Interface\\AddOns\\!Astrolabe doit etre present et active."] = "|cffff4040!Astrolabe not found|r - Interface\\AddOns\\!Astrolabe must be present and enabled.",
++    ["v%s | actif=%s | !Astrolabe=%s | echelle=%s"] = "v%s | enabled=%s | !Astrolabe=%s | scale=%s",
++    ["absent"] = "missing",
++    ["carte: continent=%s zone=%s (%s)"] = "map: continent=%s zone=%s (%s)",
++    ["quetes=%s | objectifs annonces=%s | icones placees=%s | filtre=%s"] = "quests=%s | announced objectives=%s | icons placed=%s | filter=%s",
++    ["quetes suivies"] = "tracked quests",
++    ["toutes"] = "all",
++    ["source=%s | module serveur=%s"] = "source=%s | server module=%s",
++    ["desactive"] = "disabled",
++    ["detecte"] = "detected",
++    ["pas de reponse"] = "no response",
++    ["0 POI: si la carte du monde n affiche pas non plus de pastilles numerotees, la table quest_poi du monde est vide cote serveur."] = "0 POI: if the world map does not show numbered markers either, the world quest_poi table is empty on the server.",
++    ["active."] = "enabled.",
++    ["desactive."] = "disabled.",
++    ["quetes terminees: %s"] = "completed quests: %s",
++    ["affichees"] = "shown",
++    ["masquees"] = "hidden",
++    ["seules les quetes suivies sont affichees"] = "only tracked quests are shown",
++    ["toutes les quetes de la zone sont affichees"] = "all the quests in the zone are shown",
++    ["module serveur: %s"] = "server module: %s",
++    ["utilise si present"] = "used if present",
++    ["ignore"] = "ignored",
++    ["objectifs hors de portee (colles au bord): %s"] = "out-of-range objectives (stuck to the edge): %s",
++    ["affiches"] = "shown",
++    ["masques"] = "hidden",
++    ["echelle des icones = %s"] = "icon scale = %s",
++    ["echelle: une valeur entre 0.5 et 3"] = "scale: a value between 0.5 and 3",
++}
++
++local ES = {
++    ["Objectifs de quete sur le minimap. Ces reglages sont aussi accessibles via /qr."] = "Objetivos de misión en el minimapa. Estos ajustes también están disponibles con /qr.",
++    ["Activer QuestRadar"] = "Activar QuestRadar",
++    ["Affiche ou masque completement les icones d'objectifs."] = "Muestra u oculta por completo los iconos de objetivos.",
++    ["Limiter aux quetes suivies"] = "Limitar a las misiones seguidas",
++    ["N'affiche que les quetes cochees dans le suivi d'objectifs. Decoche, affiche toutes les quetes de la zone."] = "Sólo muestra las misiones marcadas en el seguimiento de objetivos. Desmarcado, muestra todas las misiones de la zona.",
++    ["Afficher les quetes terminees"] = "Mostrar las misiones terminadas",
++    ["Affiche l'icone de rendu (?) pour les quetes pretes a etre rendues."] = "Muestra el icono de entrega (?) de las misiones listas para entregar.",
++    ["Afficher les objectifs hors de portee"] = "Mostrar los objetivos fuera de alcance",
++    ["Les objectifs trop loin se collent au bord du minimap, legerement attenues."] = "Los objetivos demasiado lejanos se pegan al borde del minimapa, algo atenuados.",
++    ["Utiliser le module serveur si present"] = "Usar el módulo del servidor si está presente",
++    ["Avec le module mod-quest-radar sur le royaume : une icone par objectif au lieu d'une par quete. Sans lui, aucun effet."] = "Con el módulo mod-quest-radar en el reino: un icono por objetivo en lugar de uno por misión. Sin él, no tiene efecto.",
++    ["Taille des icones : %.1f"] = "Tamaño de los iconos: %.1f",
++    ["|cffff4040!Astrolabe introuvable|r - Interface\\AddOns\\!Astrolabe doit etre present et active."] = "|cffff4040!Astrolabe no encontrado|r - Interface\\AddOns\\!Astrolabe debe estar presente y activado.",
++    ["v%s | actif=%s | !Astrolabe=%s | echelle=%s"] = "v%s | activo=%s | !Astrolabe=%s | escala=%s",
++    ["absent"] = "ausente",
++    ["carte: continent=%s zone=%s (%s)"] = "mapa: continente=%s zona=%s (%s)",
++    ["quetes=%s | objectifs annonces=%s | icones placees=%s | filtre=%s"] = "misiones=%s | objetivos anunciados=%s | iconos colocados=%s | filtro=%s",
++    ["quetes suivies"] = "misiones seguidas",
++    ["toutes"] = "todas",
++    ["source=%s | module serveur=%s"] = "fuente=%s | módulo del servidor=%s",
++    ["desactive"] = "desactivado",
++    ["detecte"] = "detectado",
++    ["pas de reponse"] = "sin respuesta",
++    ["0 POI: si la carte du monde n affiche pas non plus de pastilles numerotees, la table quest_poi du monde est vide cote serveur."] = "0 POI: si el mapa del mundo tampoco muestra marcas numeradas, la tabla quest_poi del mundo está vacía en el servidor.",
++    ["active."] = "activado.",
++    ["desactive."] = "desactivado.",
++    ["quetes terminees: %s"] = "misiones terminadas: %s",
++    ["affichees"] = "mostradas",
++    ["masquees"] = "ocultas",
++    ["seules les quetes suivies sont affichees"] = "sólo se muestran las misiones seguidas",
++    ["toutes les quetes de la zone sont affichees"] = "se muestran todas las misiones de la zona",
++    ["module serveur: %s"] = "módulo del servidor: %s",
++    ["utilise si present"] = "se usa si está presente",
++    ["ignore"] = "ignorado",
++    ["objectifs hors de portee (colles au bord): %s"] = "objetivos fuera de alcance (pegados al borde): %s",
++    ["affiches"] = "mostrados",
++    ["masques"] = "ocultos",
++    ["echelle des icones = %s"] = "escala de los iconos = %s",
++    ["echelle: une valeur entre 0.5 et 3"] = "escala: un valor entre 0.5 y 3",
++}
++
++local dictionary
++if locale == "frFR" then
++    dictionary = nil
++elseif locale == "esES" or locale == "esMX" then
++    dictionary = ES
++else
++    dictionary = EN
++end
++
++function QuestRadar_L(text)
++    return (dictionary and dictionary[text]) or text
++end
+diff --git a/a/QuestRadar/Options.lua b/b/QuestRadar/Options.lua
+index 88bbf3c..b4cf2c5 100644
+--- a/a/QuestRadar/Options.lua
++++ b/b/QuestRadar/Options.lua
+@@ -9,6 +9,7 @@
+ -- third-party dependency, matching the rest of the addon.
+ 
+ local QR = QuestRadar
++local L = QuestRadar_L   -- Locale.lua: los textos están en francés y se traducen según el cliente
+ 
+ local panel = CreateFrame("Frame", "QuestRadarOptionsPanel", UIParent)
+ panel.name = "QuestRadar"
+@@ -21,7 +22,7 @@ local subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall"
+ subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+ subtitle:SetPoint("RIGHT", panel, "RIGHT", -16, 0)
+ subtitle:SetJustifyH("LEFT")
+-subtitle:SetText("Objectifs de quete sur le minimap. Ces reglages sont aussi accessibles via /qr.")
++subtitle:SetText(L("Objectifs de quete sur le minimap. Ces reglages sont aussi accessibles via /qr."))
+ 
+ -- 3.3.5 templates expose their label as the global <name>Text; newer ones use
+ -- the parentKey. Handle both so this survives a template change.
+@@ -51,20 +52,20 @@ local function CreateCheckbox(key, anchor, label, tooltip)
+     return check
+ end
+ 
+-local enabled = CreateCheckbox("enabled", subtitle, "Activer QuestRadar",
+-    "Affiche ou masque completement les icones d'objectifs.")
++local enabled = CreateCheckbox("enabled", subtitle, L("Activer QuestRadar"),
++    L("Affiche ou masque completement les icones d'objectifs."))
+ 
+-local onlyTracked = CreateCheckbox("onlyTracked", enabled, "Limiter aux quetes suivies",
+-    "N'affiche que les quetes cochees dans le suivi d'objectifs. Decoche, affiche toutes les quetes de la zone.")
++local onlyTracked = CreateCheckbox("onlyTracked", enabled, L("Limiter aux quetes suivies"),
++    L("N'affiche que les quetes cochees dans le suivi d'objectifs. Decoche, affiche toutes les quetes de la zone."))
+ 
+-local showCompleted = CreateCheckbox("showCompleted", onlyTracked, "Afficher les quetes terminees",
+-    "Affiche l'icone de rendu (?) pour les quetes pretes a etre rendues.")
++local showCompleted = CreateCheckbox("showCompleted", onlyTracked, L("Afficher les quetes terminees"),
++    L("Affiche l'icone de rendu (?) pour les quetes pretes a etre rendues."))
+ 
+-local showOffscreen = CreateCheckbox("showOffscreen", showCompleted, "Afficher les objectifs hors de portee",
+-    "Les objectifs trop loin se collent au bord du minimap, legerement attenues.")
++local showOffscreen = CreateCheckbox("showOffscreen", showCompleted, L("Afficher les objectifs hors de portee"),
++    L("Les objectifs trop loin se collent au bord du minimap, legerement attenues."))
+ 
+-local useModule = CreateCheckbox("useModule", showOffscreen, "Utiliser le module serveur si present",
+-    "Avec le module mod-quest-radar sur le royaume : une icone par objectif au lieu d'une par quete. Sans lui, aucun effet.")
++local useModule = CreateCheckbox("useModule", showOffscreen, L("Utiliser le module serveur si present"),
++    L("Avec le module mod-quest-radar sur le royaume : une icone par objectif au lieu d'une par quete. Sans lui, aucun effet."))
+ 
+ -- Icon size. The slider is only committed on release: dragging it would
+ -- otherwise rebuild every icon on each pixel of travel.
+@@ -82,7 +83,7 @@ if scaleHigh then scaleHigh:SetText("3") end
+ 
+ local function UpdateScaleLabel(value)
+     if scaleText then
+-        scaleText:SetText(string.format("Taille des icones : %.1f", value))
++        scaleText:SetText(string.format(L("Taille des icones : %.1f"), value))
+     end
+ end
+ 
+diff --git a/a/QuestRadar/QuestRadar.lua b/b/QuestRadar/QuestRadar.lua
+index 2bbd911..f648b6f 100644
+--- a/a/QuestRadar/QuestRadar.lua
++++ b/b/QuestRadar/QuestRadar.lua
+@@ -60,6 +60,8 @@ local pending = true
+ local sinceRefresh, sinceEdge = 0, 0
+ local refreshing = false
+ 
++local L = QuestRadar_L   -- Locale.lua: los textos están en francés y se traducen según el cliente
++
+ local function Print(msg)
+     DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99QuestRadar|r " .. msg)
+ end
+@@ -528,7 +530,7 @@ driver:SetScript("OnEvent", function(self, event)
+     if event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" then
+         InitDB()
+         if not GetAstrolabe() then
+-            Print("|cffff4040!Astrolabe introuvable|r - Interface\\AddOns\\!Astrolabe doit etre present et active.")
++            Print(L("|cffff4040!Astrolabe introuvable|r - Interface\\AddOns\\!Astrolabe doit etre present et active."))
+         end
+     end
+     Invalidate()
+@@ -604,22 +606,18 @@ end
+ local function Status()
+     local lib = GetAstrolabe()
+     local continent, zone = GetCurrentMapContinent(), GetCurrentMapZone()
+-    Print("v" .. VERSION
+-        .. " | actif=" .. tostring(DB.enabled)
+-        .. " | !Astrolabe=" .. (lib and "ok" or "|cffff4040absent|r")
+-        .. " | echelle=" .. tostring(DB.scale))
+-    Print("carte: continent=" .. tostring(continent) .. " zone=" .. tostring(zone)
+-        .. " (" .. tostring(GetZoneText()) .. ")")
+-    Print("quetes=" .. lastCounts.quests
+-        .. " | objectifs annonces=" .. lastCounts.pois
+-        .. " | icones placees=" .. lastCounts.placed
+-        .. " | filtre=" .. (DB.onlyTracked and "quetes suivies" or "toutes"))
+-    Print("source=" .. lastCounts.source
+-        .. " | module serveur=" .. (not DB.useModule and "desactive"
+-            or (QR.moduleSeen and "detecte" or "pas de reponse")))
++    Print(string.format(L("v%s | actif=%s | !Astrolabe=%s | echelle=%s"),
++        VERSION, tostring(DB.enabled), (lib and "ok" or ("|cffff4040" .. L("absent") .. "|r")), tostring(DB.scale)))
++    Print(string.format(L("carte: continent=%s zone=%s (%s)"),
++        tostring(continent), tostring(zone), tostring(GetZoneText())))
++    Print(string.format(L("quetes=%s | objectifs annonces=%s | icones placees=%s | filtre=%s"),
++        tostring(lastCounts.quests), tostring(lastCounts.pois), tostring(lastCounts.placed),
++        (DB.onlyTracked and L("quetes suivies") or L("toutes"))))
++    Print(string.format(L("source=%s | module serveur=%s"), tostring(lastCounts.source),
++        (not DB.useModule and L("desactive")
++            or (QR.moduleSeen and L("detecte") or L("pas de reponse")))))
+     if lastCounts.pois == 0 then
+-        Print("0 POI: si la carte du monde n affiche pas non plus de pastilles numerotees, "
+-            .. "la table quest_poi du monde est vide cote serveur.")
++        Print(L("0 POI: si la carte du monde n affiche pas non plus de pastilles numerotees, la table quest_poi du monde est vide cote serveur."))
+     end
+ end
+ 
+@@ -630,7 +628,7 @@ local function Toggle(value)
+     else
+         ReleaseAll()
+     end
+-    Print(DB.enabled and "active." or "desactive.")
++    Print(DB.enabled and L("active.") or L("desactive."))
+ end
+ 
+ SLASH_QUESTRADAR1 = "/qr"
+@@ -651,30 +649,30 @@ SlashCmdList["QUESTRADAR"] = function(msg)
+     elseif cmd == "completed" then
+         DB.showCompleted = not DB.showCompleted
+         Invalidate()
+-        Print("quetes terminees: " .. (DB.showCompleted and "affichees" or "masquees"))
++        Print(string.format(L("quetes terminees: %s"), DB.showCompleted and L("affichees") or L("masquees")))
+     elseif cmd == "tracked" then
+         DB.onlyTracked = not DB.onlyTracked
+         Invalidate()
+         Print(DB.onlyTracked
+-            and "seules les quetes suivies sont affichees"
+-            or "toutes les quetes de la zone sont affichees")
++            and L("seules les quetes suivies sont affichees")
++            or L("toutes les quetes de la zone sont affichees"))
+     elseif cmd == "module" then
+         DB.useModule = not DB.useModule
+         Invalidate()
+-        Print("module serveur: " .. (DB.useModule and "utilise si present" or "ignore"))
++        Print(string.format(L("module serveur: %s"), DB.useModule and L("utilise si present") or L("ignore")))
+     elseif cmd == "edge" or cmd == "arrows" then
+         DB.showOffscreen = not DB.showOffscreen
+-        Print("objectifs hors de portee (colles au bord): "
+-            .. (DB.showOffscreen and "affiches" or "masques"))
++        Print(string.format(L("objectifs hors de portee (colles au bord): %s"),
++            DB.showOffscreen and L("affiches") or L("masques")))
+     elseif cmd == "scale" then
+         local value = tonumber(arg)
+         if value and value >= 0.5 and value <= 3 then
+             DB.scale = value
+             ApplyScale()
+             Invalidate()
+-            Print("echelle des icones = " .. value)
++            Print(string.format(L("echelle des icones = %s"), tostring(value)))
+         else
+-            Print("echelle: une valeur entre 0.5 et 3")
++            Print(L("echelle: une valeur entre 0.5 et 3"))
+         end
+     else
+         Print("/qr [on|off] | status | tracked | completed | edge | module | scale <0.5-3>")
+diff --git a/a/QuestRadar/QuestRadar.toc b/b/QuestRadar/QuestRadar.toc
+index 20a8b51..6b2875a 100644
+--- a/a/QuestRadar/QuestRadar.toc
++++ b/b/QuestRadar/QuestRadar.toc
+@@ -9,6 +9,7 @@
+ 
+ Libs\Astrolabe\Load.xml
+ 
++Locale.lua
+ QuestRadar.lua
+ Sync.lua
+ Options.lua

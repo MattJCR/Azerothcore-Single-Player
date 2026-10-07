@@ -65,9 +65,11 @@
 #include "LFGMgr.h"
 #include "Log.h"
 #include "Map.h"
+#include "ModLocale.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Optional.h"
+#include "party_here_locale.h"
 #include "Pet.h"
 #include "Player.h"
 #include "QuestDef.h"
@@ -869,7 +871,7 @@ namespace
         Group* group = player->GetGroup();
         if (group && group->GetLeaderGUID() != guid)
         {
-            TellError(player, "Ya estas en el grupo de otro: no se te forma ninguno.");
+            TellError(player, ModLocale::L(player, "Ya estas en el grupo de otro: no se te forma ninguno."));
             result.refused = true;
             return result;
         }
@@ -1103,7 +1105,7 @@ namespace
         result.joined = joined;
 
         if (joined)
-            Tell(player, Acore::StringFormat("Se unen a tu grupo: {} ({}/{}).", names, group->GetMembersCount(), size));
+            Tell(player, Acore::StringFormat(ModLocale::L(player, "Se unen a tu grupo: {} ({}/{})."), names, group->GetMembersCount(), size));
 
         if (joined < room && opts.wake)
         {
@@ -1162,9 +1164,9 @@ namespace
         party.lingerUntilMs = 0;
 
         if (gone)
-            Tell(player, Acore::StringFormat("{} companero(s) se despiden ({}).", gone, why));
+            Tell(player, Acore::StringFormat(ModLocale::L(player, "{} companero(s) se despiden ({})."), gone, ModLocale::L(player, why)));
         if (pending)
-            TellError(player, Acore::StringFormat("{} companero(s) estan en combate o de viaje: se iran en cuanto terminen.", pending));
+            TellError(player, Acore::StringFormat(ModLocale::L(player, "{} companero(s) estan en combate o de viaje: se iran en cuanto terminen."), pending));
 
         return gone;
     }
@@ -1194,7 +1196,7 @@ namespace
 
         if (now >= demand.expiresMs)
         {
-            why = Acore::StringFormat("no han llegado companeros en {} s", cfg.pendingTimeoutSecs);
+            why = Acore::StringFormat("no han llegado companeros en {} s", cfg.pendingTimeoutSecs);   // ver LocalizedWhy
             return DemandStep::Cancel;
         }
 
@@ -1308,9 +1310,20 @@ namespace
                  human->GetName(), completed ? "se completa" : "se queda", missing, minLevel, topLevel,
                  cfg.roleRespec ? " ni de una clase que pueda cambiar" : " (PartyHere.RoleRespec desactivado)");
         TellError(human, Acore::StringFormat(
-            "No hay {} libre de nivel {}-{}: tu grupo {} sin el. Una mazmorra necesita tanque y sanador; "
-            "prueba '.grupo cambia <nombre>' mas tarde o el buscador de mazmorras.",
-            missing, minLevel, topLevel, completed ? "se completa" : "se queda"));
+            ModLocale::L(human, "No hay {} libre de nivel {}-{}: tu grupo {} sin el. Una mazmorra necesita tanque y sanador; "
+            "prueba '.grupo cambia <nombre>' mas tarde o el buscador de mazmorras."),
+            ModLocale::L(human, missing), minLevel, topLevel,
+            completed ? ModLocale::L(human, "se completa") : ModLocale::L(human, "se queda")));
+    }
+
+    // El motivo de cancelar una petición se queda en español (la lógica busca "no han
+    // llegado" y el log lo escribe tal cual); aquí se traduce sólo para el jugador.
+    std::string LocalizedWhy(Player* human, std::string const& why)
+    {
+        static std::string const timeout = "no han llegado companeros en ";
+        if (why.compare(0, timeout.size(), timeout) == 0)
+            return Acore::StringFormat(ModLocale::L(human, "no han llegado companeros en {} s"), cfg.pendingTimeoutSecs);
+        return ModLocale::L(human, why);
     }
 
     void PumpDemand(ObjectGuid guid, uint64 now)
@@ -1331,7 +1344,7 @@ namespace
             LOG_INFO("module", "[party-here] Peticion de {} completada ({}/{}, {} intento(s)).",
                      human ? human->GetName() : "?", current, demand.size, demand.attempts);
             if (demand.announced && human)
-                Tell(human, Acore::StringFormat("Tu grupo esta completo ({}/{}).", current, demand.size));
+                Tell(human, Acore::StringFormat(ModLocale::L(human, "Tu grupo esta completo ({}/{})."), current, demand.size));
             WarnMissingRoles(human, demand, true);
             g_demands.erase(it);
             return;
@@ -1342,7 +1355,7 @@ namespace
             LOG_INFO("module", "[party-here] Peticion de companeros de {} cancelada{}{}.",
                      human ? human->GetName() : std::to_string(guid.GetCounter()), why.empty() ? "" : ": ", why);
             if (human && !why.empty())
-                TellError(human, Acore::StringFormat("Se cancela la peticion de companeros ({}/{}): {}.", current, demand.size, why));
+                TellError(human, Acore::StringFormat(ModLocale::L(human, "Se cancela la peticion de companeros ({}/{}): {}."), current, demand.size, LocalizedWhy(human, why)));
             // Sólo si la petición caducó con compañeros dentro: si la canceló
             // el jugador (salió del grupo, entró en una cola) no hace falta.
             if (current > 1 && why.find("no han llegado") != std::string::npos)
@@ -1357,7 +1370,7 @@ namespace
         {
             demand.announced = true;
             TellError(human, Acore::StringFormat(
-                "Preparando companeros ({}/{}): se estan despertando bots. Te aviso cuando esten (hasta {} s); '.grupo fuera' lo cancela.",
+                ModLocale::L(human, "Preparando companeros ({}/{}): se estan despertando bots. Te aviso cuando esten (hasta {} s); '.grupo fuera' lo cancela."),
                 current, demand.size, cfg.pendingTimeoutSecs));
         }
     }
@@ -1440,8 +1453,8 @@ namespace
 
         if (!kept)
         {
-            TellError(player, name.empty() ? "No tienes companeros automaticos que conservar."
-                                            : Acore::StringFormat("'{}' no es un companero automatico que conservar.", name));
+            TellError(player, name.empty() ? std::string(ModLocale::L(player, "No tienes companeros automaticos que conservar."))
+                                            : Acore::StringFormat(ModLocale::L(player, "'{}' no es un companero automatico que conservar."), name));
             return;
         }
 
@@ -1454,7 +1467,7 @@ namespace
         party.wantedSize = std::max(party.wantedSize, current);   // no traer bots de mas
         party.lingerUntilMs = 0;   // cancela la cuenta atras de despedida por mision/zona
 
-        Tell(player, Acore::StringFormat("Se quedan como grupo manual: {} ({}/{}).", names, current, party.wantedSize));
+        Tell(player, Acore::StringFormat(ModLocale::L(player, "Se quedan como grupo manual: {} ({}/{})."), names, current, party.wantedSize));
     }
 
     // ".grupo fuera <nombre>" y ".grupo cambia <nombre>" (M16). Echar a uno
@@ -1472,7 +1485,7 @@ namespace
         // Repetir la orden no vuelve a bajar el tamaño.
         if (companion->dismissPending)
         {
-            TellError(player, Acore::StringFormat("{} ya se va en cuanto termine.", name));
+            TellError(player, Acore::StringFormat(ModLocale::L(player, "{} ya se va en cuanto termine."), name));
             return;
         }
 
@@ -1497,15 +1510,15 @@ namespace
             companion->dismissPending = true;
             companion->replaceOnLeave = replace;
             companion->summonMs = 0;
-            TellError(player, Acore::StringFormat("{} esta en combate o de viaje: se ira en cuanto termine{}.",
-                                                  name, replace ? " y vendra otro" : ""));
+            TellError(player, Acore::StringFormat(ModLocale::L(player, "{} esta en combate o de viaje: se ira en cuanto termine{}."),
+                                                  name, replace ? ModLocale::L(player, " y vendra otro") : ""));
             return;
         }
 
         ReleaseSyncedQuests(botGuid, companion->syncedQuests);
         DetachBot(botGuid, true);
         party.bots.erase(companion);
-        Tell(player, Acore::StringFormat("{} se despide{}.", name, replace ? ": se busca otro companero" : ""));
+        Tell(player, Acore::StringFormat(ModLocale::L(player, "{} se despide{}."), name, replace ? ModLocale::L(player, ": se busca otro companero") : ""));
         if (replace)
             StartReplacement(player, party, automatic, now);
     }
@@ -1915,7 +1928,7 @@ private:
             Player* p = ObjectAccessor::FindConnectedPlayer(request.human);
             if (!p || !p->GetSession() || p->GetSession()->IsHeadless() || p->GetGroup())
                 return;
-            Tell(p, Acore::StringFormat("Se recompone tu grupo de antes ({} miembros).", wanted));
+            Tell(p, Acore::StringFormat(ModLocale::L(p, "Se recompone tu grupo de antes ({} miembros)."), wanted));
             StartDemand(p, wanted, DEMAND_RESTORE, false, {}, now);
             return;
         }
@@ -1964,14 +1977,14 @@ private:
                 if (it == g_parties.end() || it->second.bots.empty())
                 {
                     if (hadDemand)
-                        Tell(player, "Peticion de companeros cancelada.");
+                        Tell(player, ModLocale::L(player, "Peticion de companeros cancelada."));
                     else
-                        TellError(player, "No tienes companeros de este modulo en el grupo.");
+                        TellError(player, ModLocale::L(player, "No tienes companeros de este modulo en el grupo."));
                     break;
                 }
                 Dismiss(player, it->second, false, "a peticion tuya");
                 if (hadDemand)
-                    Tell(player, "Peticion de companeros pendiente cancelada.");
+                    Tell(player, ModLocale::L(player, "Peticion de companeros pendiente cancelada."));
                 break;
             }
             case REQ_KEEP:
@@ -1979,7 +1992,7 @@ private:
                 auto it = g_parties.find(request.human);
                 if (it == g_parties.end() || it->second.bots.empty())
                 {
-                    TellError(player, "No tienes companeros de este modulo en el grupo.");
+                    TellError(player, ModLocale::L(player, "No tienes companeros de este modulo en el grupo."));
                     break;
                 }
                 KeepAsManual(player, it->second, request.text, now);
@@ -1991,7 +2004,7 @@ private:
                 auto it = g_parties.find(request.human);
                 if (it == g_parties.end() || it->second.bots.empty())
                 {
-                    TellError(player, "No tienes companeros de este modulo en el grupo.");
+                    TellError(player, ModLocale::L(player, "No tienes companeros de este modulo en el grupo."));
                     break;
                 }
                 // FindConnectedPlayer: un compañero en pantalla de carga sigue
@@ -2003,7 +2016,7 @@ private:
                 });
                 if (b == it->second.bots.end())
                 {
-                    TellError(player, Acore::StringFormat("No tienes ningun companero llamado '{}'.", request.text));
+                    TellError(player, Acore::StringFormat(ModLocale::L(player, "No tienes ningun companero llamado '{}'."), request.text));
                     break;
                 }
                 DismissOne(player, it->second, b, request.kind == REQ_REPLACE_ONE, now);
@@ -2015,7 +2028,7 @@ private:
                 auto it = g_parties.find(request.human);
                 if (it == g_parties.end() || it->second.bots.empty())
                 {
-                    TellError(player, "No tienes companeros de este modulo en el grupo.");
+                    TellError(player, ModLocale::L(player, "No tienes companeros de este modulo en el grupo."));
                     break;
                 }
                 bool const hold = request.kind == REQ_HOLD;
@@ -2045,10 +2058,10 @@ private:
                     ++n;
                 }
                 if (!n && !request.text.empty())
-                    TellError(player, Acore::StringFormat("No tienes ningun companero llamado '{}'.", request.text));
+                    TellError(player, Acore::StringFormat(ModLocale::L(player, "No tienes ningun companero llamado '{}'."), request.text));
                 else
-                    Tell(player, Acore::StringFormat("{} companero(s) {}.", n,
-                                                     hold ? "se quedan quietos" : "vuelven a seguirte"));
+                    Tell(player, Acore::StringFormat(ModLocale::L(player, "{} companero(s) {}."), n,
+                                                     hold ? ModLocale::L(player, "se quedan quietos") : ModLocale::L(player, "vuelven a seguirte")));
                 break;
             }
             case REQ_STATUS:
@@ -2059,14 +2072,14 @@ private:
                 bool const hasBots = it != g_parties.end() && !it->second.bots.empty();
                 if (!hasBots && demand == g_demands.end())
                 {
-                    handler.SendSysMessage("Sin companeros de este modulo. Usa .grupo, .grupo N o .grupo banda [10|25|40].");
+                    handler.SendSysMessage(ModLocale::L(handler, "Sin companeros de este modulo. Usa .grupo, .grupo N o .grupo banda [10|25|40]."));
                     break;
                 }
                 if (demand != g_demands.end())
                 {
                     Group* group = player->GetGroup();
-                    handler.PSendSysMessage("Preparando companeros ({}): {}/{}; se deja de esperar en {} s.",
-                        DemandReasonText(demand->second.reason), group ? group->GetMembersCount() : 1u, demand->second.size,
+                    handler.PSendSysMessage(ModLocale::L(handler, "Preparando companeros ({}): {}/{}; se deja de esperar en {} s."),
+                        ModLocale::L(handler, DemandReasonText(demand->second.reason)), group ? group->GetMembersCount() : 1u, demand->second.size,
                         demand->second.expiresMs > now ? (demand->second.expiresMs - now) / 1000 : 0);
                 }
                 if (hasBots)
@@ -2075,12 +2088,12 @@ private:
                         Player* bot = ObjectAccessor::FindConnectedPlayer(companion.bot);
                         if (!bot)
                             continue;
-                        handler.PSendSysMessage("  {} (nivel {}, {}{}{}{})", bot->GetName(), bot->GetLevel(),
-                            BotRole(bot) == lfg::PLAYER_ROLE_TANK ? "tanque" : (BotRole(bot) == lfg::PLAYER_ROLE_HEALER ? "sanador" : "dano"),
-                            companion.automatic ? ", por mision de grupo" : "",
-                            companion.held ? ", quieto" : "",
-                            companion.dismissPending ? (companion.replaceOnLeave ? ", se cambia al terminar el combate"
-                                                                                  : ", se va al terminar el combate") : "");
+                        handler.PSendSysMessage(ModLocale::L(handler, "  {} (nivel {}, {}{}{}{})"), bot->GetName(), bot->GetLevel(),
+                            ModLocale::L(handler, BotRole(bot) == lfg::PLAYER_ROLE_TANK ? "tanque" : (BotRole(bot) == lfg::PLAYER_ROLE_HEALER ? "sanador" : "dano")),
+                            companion.automatic ? ModLocale::L(handler, ", por mision de grupo") : "",
+                            companion.held ? ModLocale::L(handler, ", quieto") : "",
+                            companion.dismissPending ? (companion.replaceOnLeave ? ModLocale::L(handler, ", se cambia al terminar el combate")
+                                                                                  : ModLocale::L(handler, ", se va al terminar el combate")) : "");
                     }
                 break;
             }
@@ -2179,7 +2192,7 @@ private:
             it = party.bots.erase(it);
         }
         if (!leaving.empty())
-            Tell(human, Acore::StringFormat("Se despiden: {}.", leaving));
+            Tell(human, Acore::StringFormat(ModLocale::L(human, "Se despiden: {}."), leaving));
         if (replace)
             StartReplacement(human, party, replaceAutomatic, now);
         group = human->GetGroup();   // sacar al último bot deshace el grupo
@@ -2278,7 +2291,7 @@ private:
                     LOG_INFO("module", "[party-here] {} tambien lleva '{}' de {} (companero de grupo).",
                              bot->GetName(), quest->GetTitle(), human->GetName());
                     if (cfg.announce)
-                        Tell(human, Acore::StringFormat("{} tambien lleva tu mision \"{}\".", bot->GetName(), quest->GetTitle()));
+                        Tell(human, Acore::StringFormat(ModLocale::L(human, "{} tambien lleva tu mision \"{}\"."), bot->GetName(), quest->GetTitle()));
                 }
             }
 
@@ -2446,19 +2459,19 @@ public:
         Player* player = handler->GetSession() ? handler->GetSession()->GetPlayer() : nullptr;
         if (!g_enabledHot.load(std::memory_order_relaxed))
         {
-            handler->SendSysMessage("mod-party-here esta desactivado.");
+            handler->SendSysMessage(ModLocale::L(handler, "mod-party-here esta desactivado."));
             return false;
         }
         if (!IsHuman(player))
             return false;
         if (player->InBattleground() || player->InBattlegroundQueue() || player->InArena())
         {
-            handler->SendSysMessage("No se forma grupo dentro de un campo de batalla, una arena o su cola.");
+            handler->SendSysMessage(ModLocale::L(handler, "No se forma grupo dentro de un campo de batalla, una arena o su cola."));
             return false;
         }
         if (sLFGMgr->GetState(player->GetGUID()) != lfg::LFG_STATE_NONE)
         {
-            handler->SendSysMessage("Estas en el buscador: de esa cola se ocupa mod-queue-bots.");
+            handler->SendSysMessage(ModLocale::L(handler, "Estas en el buscador: de esa cola se ocupa mod-queue-bots."));
             return false;
         }
         return true;
@@ -2510,7 +2523,7 @@ public:
             return true;
         if (!name || name->empty())
         {
-            handler->SendSysMessage("Uso: .grupo cambia <nombre del companero>");
+            handler->SendSysMessage(ModLocale::L(handler, "Uso: .grupo cambia <nombre del companero>"));
             return true;
         }
         Push({ player->GetGUID(), REQ_REPLACE_ONE, 0, *name });
@@ -2559,6 +2572,7 @@ public:
 
 void AddSC_mod_party_here()
 {
+    ModLocale::Register(PartyHereLocale::kEntries);
     new mod_party_here_world();
     new mod_party_here_player();
     new mod_party_here_command();

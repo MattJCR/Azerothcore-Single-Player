@@ -11,20 +11,22 @@ export function registerHelpRoutes(app, { worldDb, currentGmLevel, requireAuth, 
     try {
       const tier = securityTier(await currentGmLevel(request.session.sub));
       const [[categoryRows], [commandRows], [articleRows]] = await Promise.all([
-        worldDb.query('SELECT id, name, sort, min_security AS minSecurity, enabled FROM server_help_category'),
-        worldDb.query('SELECT command_path AS path, category_id AS categoryId, title, description, syntax, examples, keywords, min_security AS minSecurity, enabled FROM server_help_command'),
-        worldDb.query('SELECT id, category_id AS categoryId, title, body, keywords, command_path AS commandPath, min_security AS minSecurity, sort, enabled, is_hot AS isHot FROM server_help_article'),
+        worldDb.query('SELECT id, name, name_en AS nameEn, sort, min_security AS minSecurity, enabled FROM server_help_category'),
+        worldDb.query('SELECT command_path AS path, category_id AS categoryId, title, title_en AS titleEn, description, description_en AS descriptionEn, syntax, examples, keywords, min_security AS minSecurity, enabled FROM server_help_command'),
+        worldDb.query('SELECT id, category_id AS categoryId, title, title_en AS titleEn, body, body_en AS bodyEn, keywords, command_path AS commandPath, min_security AS minSecurity, sort, enabled, is_hot AS isHot FROM server_help_article'),
       ]);
+      // En inglés se usan las columnas *_en; vacías (aún sin traducir), cae al español, igual que el módulo del juego.
+      const pick = (spanish, english) => (request.lang === 'en' && english ? english : spanish);
       const categories = categoryRows.map((row) => ({
-        id: Number(row.id), name: row.name, sort: Number(row.sort), minSecurity: Number(row.minSecurity), enabled: Boolean(row.enabled),
+        id: Number(row.id), name: pick(row.name, row.nameEn), sort: Number(row.sort), minSecurity: Number(row.minSecurity), enabled: Boolean(row.enabled),
       }));
       const commands = commandRows.map((row) => ({
-        path: row.path, categoryId: Number(row.categoryId), title: row.title, description: row.description || '',
+        path: row.path, categoryId: Number(row.categoryId), title: pick(row.title, row.titleEn), description: pick(row.description, row.descriptionEn) || '',
         syntax: row.syntax || '', examples: row.examples || '', keywords: row.keywords || '',
         minSecurity: row.minSecurity == null ? null : Number(row.minSecurity), enabled: Boolean(row.enabled),
       }));
       const articles = articleRows.map((row) => ({
-        id: Number(row.id), categoryId: Number(row.categoryId), title: row.title, body: row.body,
+        id: Number(row.id), categoryId: Number(row.categoryId), title: pick(row.title, row.titleEn), body: pick(row.body, row.bodyEn),
         keywords: row.keywords || '', commandPath: row.commandPath || '', minSecurity: Number(row.minSecurity), sort: Number(row.sort),
         enabled: Boolean(row.enabled), isHot: Boolean(row.isHot),
       }));

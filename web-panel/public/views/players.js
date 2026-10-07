@@ -4,34 +4,35 @@
 // acciones rápidas por fila. Sin enter()/exit(): ya la mantiene al día el
 // sondeo general de refresh() (shared.js), como en el app.js original.
 import { $, $$, state, RACES, CLASSES, icon, escapeHtml, showView } from '../shared.js';
+import { t, lowerCase, compareText, formatTime } from '../i18n.js';
 import { openArmory } from './armory.js';
 import { selectModCharacterByName } from './moderation.js';
 import { focusCharacterOnMap } from './map.js';
 
-const ROLES = { tank: 'Tanque', healer: 'Sanador', dps: 'DPS' };
+const ROLES = { tank: t('Tanque'), healer: t('Sanador'), dps: t('DPS') };
 
 export function render(updatedAt) {
   closeRowMenu();
-  const search = $('#player-search').value.trim().toLocaleLowerCase('es');
+  const search = lowerCase($('#player-search').value.trim());
   const classFilter = $('#class-filter').value;
   const typeFilter = $('#type-filter').value;
   const filtered = state.players.filter((player) => {
-    return (!search || player.name.toLocaleLowerCase('es').includes(search))
+    return (!search || lowerCase(player.name).includes(search))
       && (!classFilter || String(player.class) === classFilter)
       && (!typeFilter || player.type === typeFilter);
   }).sort((a, b) => {
     let left = a[state.sort.key]; let right = b[state.sort.key];
     if (state.sort.key === 'race') { left = RACES[a.race]?.[0] || ''; right = RACES[b.race]?.[0] || ''; }
     if (state.sort.key === 'class') { left = CLASSES[a.class]?.[0] || ''; right = CLASSES[b.class]?.[0] || ''; }
-    if (typeof left === 'string') return left.localeCompare(right, 'es') * state.sort.direction;
+    if (typeof left === 'string') return compareText(left, right) * state.sort.direction;
     return (left - right) * state.sort.direction;
   });
 
   $('#players-body').innerHTML = filtered.map((player) => {
-    const [race] = RACES[player.race] || [`Raza ${player.race}`];
-    const [className, classColor] = CLASSES[player.class] || [`Clase ${player.class}`, '#9eb1a7'];
+    const [race] = RACES[player.race] || [t('Raza {id}', { id: player.race })];
+    const [className, classColor] = CLASSES[player.class] || [t('Clase {id}', { id: player.class }), '#9eb1a7'];
     const actionsCell = state.user?.isGm
-      ? `<td class="actions-cell"><button class="row-menu-btn" data-row-menu="${player.guid}" aria-label="Acciones de ${escapeHtml(player.name)}">⋮</button></td>`
+      ? `<td class="actions-cell"><button class="row-menu-btn" data-row-menu="${player.guid}" aria-label="${escapeHtml(t('Acciones de {name}', { name: player.name }))}">⋮</button></td>`
       : '';
     return `<tr>
       <td><div class="player-cell"><i class="player-dot"></i><button class="link-button" data-armory-guid="${player.guid}">${escapeHtml(player.name)}</button></div></td>
@@ -39,7 +40,7 @@ export function render(updatedAt) {
       <td><div class="identity-cell" style="--icon-color:${classColor}">${icon('class', player.class, className)}<span>${escapeHtml(className)}</span></div></td>
       <td><div class="role-cell"><span class="role-badge">${icon('role', player.role, ROLES[player.role])}${ROLES[player.role]}</span></div></td>
       <td><span class="level-badge">${player.level}</span></td>
-      <td><span class="type-badge ${player.type}">${player.type === 'bot' ? 'Bot' : 'Jugador'}</span></td>
+      <td><span class="type-badge ${player.type}">${player.type === 'bot' ? t('Bot') : t('Jugador')}</span></td>
       ${actionsCell}
     </tr>`;
   }).join('');
@@ -61,7 +62,7 @@ export function render(updatedAt) {
   $('#average-level').textContent = average || '—';
   $('#faction-count').textContent = `${alliance} / ${horde}`;
   $('#type-count').textContent = `${humans} / ${bots}`;
-  $('#updated-time').textContent = new Date(updatedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  $('#updated-time').textContent = formatTime(updatedAt, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 // Menú de acciones rápidas por fila (sólo GM): un único elemento flotante
@@ -78,10 +79,10 @@ export function openRowMenu(button, player) {
   if (wasOpenForThisRow) return;
   button.classList.add('is-open');
   const menu = $('#players-row-menu');
-  menu.innerHTML = `<p class="row-menu-label">${escapeHtml(player.name)} · Nv. ${player.level}</p>
-    <button class="row-menu-action" data-row-action="armory"><span class="menu-icon">⛨</span>Ver en armería</button>
-    <button class="row-menu-action" data-row-action="moderation"><span class="menu-icon">⚑</span>Moderar personaje</button>
-    <button class="row-menu-action" data-row-action="map"><span class="menu-icon">⌖</span>Ver en el mapa</button>`;
+  menu.innerHTML = `<p class="row-menu-label">${escapeHtml(player.name)} · ${t('Nv. {level}', { level: player.level })}</p>
+    <button class="row-menu-action" data-row-action="armory"><span class="menu-icon">⛨</span>${t('Ver en armería')}</button>
+    <button class="row-menu-action" data-row-action="moderation"><span class="menu-icon">⚑</span>${t('Moderar personaje')}</button>
+    <button class="row-menu-action" data-row-action="map"><span class="menu-icon">⌖</span>${t('Ver en el mapa')}</button>`;
   menu.dataset.guid = player.guid;
   menu.dataset.name = player.name;
   menu.classList.remove('hidden');
@@ -120,7 +121,7 @@ $('#players-row-menu').addEventListener('click', (event) => {
   closeRowMenu();
   if (action.dataset.rowAction === 'armory') { showView('armory'); openArmory(guid); }
   else if (action.dataset.rowAction === 'moderation') { showView('moderation'); selectModCharacterByName(name); }
-  else if (action.dataset.rowAction === 'map') { focusCharacterOnMap({ guid, name, sourceLabel: 'Jugadores' }); }
+  else if (action.dataset.rowAction === 'map') { focusCharacterOnMap({ guid, name, sourceLabel: t('Jugadores') }); }
 });
 document.addEventListener('click', (event) => {
   if (!event.target.closest('.row-menu, .row-menu-btn')) closeRowMenu();

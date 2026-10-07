@@ -3,23 +3,24 @@
 // Vista "Actualizaciones" (rango 3): compara los módulos fijados en
 // versions.lock contra sus ramas remotas de GitHub.
 import { $, $$, state, api, showLogin, escapeHtml } from '../shared.js';
+import { t, formatDateTime } from '../i18n.js';
 
 function updateStatus(status) {
   return {
-    current: { label: 'Al día', className: 'is-current' },
-    update: { label: 'Actualización disponible', className: 'has-update' },
-    unreachable: { label: 'Sin acceso', className: 'is-unreachable' },
-  }[status] || { label: 'Desconocido', className: 'is-unreachable' };
+    current: { label: t('Al día'), className: 'is-current' },
+    update: { label: t('Actualización disponible'), className: 'has-update' },
+    unreachable: { label: t('Sin acceso'), className: 'is-unreachable' },
+  }[status] || { label: t('Desconocido'), className: 'is-unreachable' };
 }
 
 function updateRepositoryRow(repository) {
   const status = updateStatus(repository.status);
   const remote = repository.remoteCommit ? repository.remoteCommit.slice(0, 10) : '?';
   const action = repository.compareUrl
-    ? `<a href="${escapeHtml(repository.compareUrl)}" target="_blank" rel="noreferrer">Ver cambios</a>`
-    : `<a href="${escapeHtml(repository.sourceUrl)}" target="_blank" rel="noreferrer">Repositorio</a>`;
+    ? `<a href="${escapeHtml(repository.compareUrl)}" target="_blank" rel="noreferrer">${t('Ver cambios')}</a>`
+    : `<a href="${escapeHtml(repository.sourceUrl)}" target="_blank" rel="noreferrer">${t('Repositorio')}</a>`;
   return `<tr>
-    <td><a class="update-repository" href="${escapeHtml(repository.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(repository.name)}</a><small>rama ${escapeHtml(repository.branch)}</small></td>
+    <td><a class="update-repository" href="${escapeHtml(repository.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(repository.name)}</a><small>${t('rama {branch}', { branch: escapeHtml(repository.branch) })}</small></td>
     <td>${escapeHtml(repository.pinnedDate)}</td>
     <td class="update-commits"><code>${escapeHtml(repository.pinnedCommit.slice(0, 10))}</code><span>→</span><code>${escapeHtml(remote)}</code></td>
     <td><span class="update-status ${status.className}">${status.label}</span></td>
@@ -28,16 +29,16 @@ function updateRepositoryRow(repository) {
 }
 
 function updateGroupTabCount(group) {
-  if (group.summary.updates) return { label: `${group.summary.updates} pendiente${group.summary.updates === 1 ? '' : 's'}`, className: 'has-update' };
-  if (group.summary.unreachable) return { label: `${group.summary.unreachable} sin comprobar`, className: 'is-unreachable' };
-  return { label: 'Al día', className: '' };
+  if (group.summary.updates) return { label: group.summary.updates === 1 ? t('1 pendiente') : t('{count} pendientes', { count: group.summary.updates }), className: 'has-update' };
+  if (group.summary.unreachable) return { label: t('{count} sin comprobar', { count: group.summary.unreachable }), className: 'is-unreachable' };
+  return { label: t('Al día'), className: '' };
 }
 
 function renderUpdateGroup(group) {
   return `<section class="update-group">
-    <div class="update-group-heading"><div><h4>${escapeHtml(group.label)}</h4><p>${escapeHtml(group.source)} · ${group.summary.total} seguidos</p></div></div>
+    <div class="update-group-heading"><div><h4>${escapeHtml(group.label)}</h4><p>${escapeHtml(group.source)} · ${t('{count} seguidos', { count: group.summary.total })}</p></div></div>
     <div class="table-wrap"><table class="updates-table">
-      <thead><tr><th>Repositorio</th><th>Fijado</th><th>Commit fijado → remoto</th><th>Estado</th><th></th></tr></thead>
+      <thead><tr><th>${t('Repositorio')}</th><th>${t('Fijado')}</th><th>${t('Commit fijado → remoto')}</th><th>${t('Estado')}</th><th></th></tr></thead>
       <tbody>${group.repositories.map(updateRepositoryRow).join('')}</tbody>
     </table></div>
   </section>`;
@@ -58,13 +59,13 @@ function selectUpdateGroup(id, { focus = false } = {}) {
 
 function renderUpdateResults(data) {
   const { summary } = data;
-  $('#updates-last-check').textContent = `Última comprobación: ${new Date(data.checkedAt).toLocaleString('es-ES')}`;
+  $('#updates-last-check').textContent = t('Última comprobación: {date}', { date: formatDateTime(data.checkedAt) });
   $('#updates-summary')?.remove();
   const summaryHtml = `<div id="updates-summary" class="update-summary">
-    <article><span>Actualizaciones</span><strong class="${summary.updates ? 'has-updates' : ''}">${summary.updates}</strong><small>disponibles</small></article>
-    <article><span>Al día</span><strong>${summary.current}</strong><small>repositorios</small></article>
-    <article><span>Sin acceso</span><strong class="${summary.unreachable ? 'has-warnings' : ''}">${summary.unreachable}</strong><small>no comprobados</small></article>
-    <article><span>Total</span><strong>${summary.total}</strong><small>seguidos</small></article>
+    <article><span>${t('Actualizaciones')}</span><strong class="${summary.updates ? 'has-updates' : ''}">${summary.updates}</strong><small>${t('disponibles')}</small></article>
+    <article><span>${t('Al día')}</span><strong>${summary.current}</strong><small>${t('repositorios')}</small></article>
+    <article><span>${t('Sin acceso')}</span><strong class="${summary.unreachable ? 'has-warnings' : ''}">${summary.unreachable}</strong><small>${t('no comprobados')}</small></article>
+    <article><span>${t('Total')}</span><strong>${summary.total}</strong><small>${t('seguidos')}</small></article>
   </div>`;
   $('#updates-tabs').insertAdjacentHTML('beforebegin', summaryHtml);
 
@@ -88,8 +89,8 @@ async function checkForUpdates() {
   const feedback = $('#updates-feedback');
   state.updates.checking = true;
   button.disabled = true;
-  button.textContent = 'Comprobando…';
-  feedback.textContent = 'Consultando las ramas remotas de GitHub. Puede tardar unos segundos…';
+  button.textContent = t('Comprobando…');
+  feedback.textContent = t('Consultando las ramas remotas de GitHub. Puede tardar unos segundos…');
   feedback.className = 'updates-feedback';
   try {
     const data = await api('/api/updates/check', { method: 'POST', body: '{}' });
@@ -103,7 +104,7 @@ async function checkForUpdates() {
   } finally {
     state.updates.checking = false;
     button.disabled = false;
-    button.textContent = 'Comprobar de nuevo';
+    button.textContent = t('Comprobar de nuevo');
   }
 }
 

@@ -10,6 +10,8 @@ import { config } from './config.js';
 const directory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'addons');
 const catalog = JSON.parse(fs.readFileSync(path.join(directory, 'catalog.json'), 'utf8'));
 const clientAddonsDirectory = path.resolve(config.addonsDirectory);
+// Descripciones en inglés por id de addon (catalog.json lleva las españolas). Si falta una, se sirve la española.
+const descriptionsEn = JSON.parse(fs.readFileSync(path.join(directory, 'descriptions-en.json'), 'utf8'));
 
 if (!Array.isArray(catalog.addons)) throw new Error('El catálogo de addons no es válido');
 
@@ -63,7 +65,7 @@ for (const addon of catalog.addons) {
   byId.set(addon.id, { ...addon, directoryPaths, contentVersion });
 }
 
-export function addonCatalog() {
+export function addonCatalog(lang = 'es') {
   return {
     version: catalog.version,
     sourceCommit: catalog.sourceCommit,
@@ -71,6 +73,7 @@ export function addonCatalog() {
     mirroredAt: catalog.mirroredAt,
     addons: catalog.addons.map((addon) => ({
       ...addon,
+      description: (lang === 'en' && descriptionsEn[addon.id]) || addon.description,
       contentVersion: byId.get(addon.id).contentVersion,
       downloadUrl: `/api/addons/${encodeURIComponent(addon.id)}/download`,
     })),

@@ -57,11 +57,13 @@
 #include "LFGMgr.h"
 #include "Log.h"
 #include "Map.h"
+#include "ModLocale.h"
 #include "ObjectAccessor.h"
 #include "Opcodes.h"
 #include "Pet.h"
 #include "Player.h"
 #include "QueueBotsPolicy.h"
+#include "queue_bots_locale.h"
 #include "Random.h"
 #include "ScriptMgr.h"
 #include "SlowTick.h"
@@ -1051,7 +1053,7 @@ public:
             ChatHandler handler(player->GetSession());
             if (!cfg.enabled)
             {
-                handler.SendSysMessage("mod-queue-bots esta desactivado.");
+                handler.SendSysMessage(ModLocale::L(handler, "mod-queue-bots esta desactivado."));
                 continue;
             }
 
@@ -1066,19 +1068,19 @@ public:
                     g_nextScanOf.erase(cmd.human);
                     g_waitingSince.erase(cmd.human);
                     g_raidNextAdd.erase(cmd.human);
-                    handler.SendSysMessage("Se revisara tu cola en la proxima pasada de rellenado.");
+                    handler.SendSysMessage(ModLocale::L(handler, "Se revisara tu cola en la proxima pasada de rellenado."));
                     break;
                 case QB_CMD_LEAVE:
                 {
                     auto fill = g_fills.find(cmd.human);
                     if (fill == g_fills.end() || fill->second.bots.empty())
                     {
-                        handler.SendSysMessage("No hay bots de este modulo en tu cola.");
+                        handler.SendSysMessage(ModLocale::L(handler, "No hay bots de este modulo en tu cola."));
                         break;
                     }
                     uint32 const gone = static_cast<uint32>(fill->second.bots.size());
                     CancelFill(cmd.human);
-                    handler.PSendSysMessage("Se han sacado {} bots de tu cola (tu sigues en ella).", gone);
+                    handler.PSendSysMessage(ModLocale::L(handler, "Se han sacado {} bots de tu cola (tu sigues en ella)."), gone);
                     break;
                 }
             }
@@ -1146,20 +1148,20 @@ private:
         auto fill = g_fills.find(player->GetGUID());
         if (fill == g_fills.end() || fill->second.bots.empty())
         {
-            handler.SendSysMessage("Sin bots de este modulo en cola. Ponte en una cola (mazmorra, banda, "
-                                   "campo de batalla, arena) y se rellenara sola.");
+            handler.SendSysMessage(ModLocale::L(handler, "Sin bots de este modulo en cola. Ponte en una cola (mazmorra, banda, "
+                                   "campo de batalla, arena) y se rellenara sola."));
             return;
         }
 
         Fill const& f = fill->second;
-        char const* kindName = "cola";
+        char const* kindName = ModLocale::L(handler, "cola");
         switch (f.kind)
         {
-            case FILL_ARENA_1V1:    kindName = "arena 1c1";       break;
-            case FILL_BATTLEGROUND: kindName = "campo de batalla"; break;
-            case FILL_ARENA:        kindName = "arena";            break;
-            case FILL_DUNGEON:      kindName = "mazmorra";         break;
-            case FILL_RAID:         kindName = "banda";            break;
+            case FILL_ARENA_1V1:    kindName = ModLocale::L(handler, "arena 1c1");       break;
+            case FILL_BATTLEGROUND: kindName = ModLocale::L(handler, "campo de batalla"); break;
+            case FILL_ARENA:        kindName = ModLocale::L(handler, "arena");            break;
+            case FILL_DUNGEON:      kindName = ModLocale::L(handler, "mazmorra");         break;
+            case FILL_RAID:         kindName = ModLocale::L(handler, "banda");            break;
             default: break;
         }
 
@@ -1173,15 +1175,15 @@ private:
                 else                                 ++damage;
             }
 
-        handler.PSendSysMessage("Cola de {}: {}/{} bots ({} tanque, {} sanador, {} dano).",
+        handler.PSendSysMessage(ModLocale::L(handler, "Cola de {}: {}/{} bots ({} tanque, {} sanador, {} dano)."),
                                 kindName, static_cast<uint32>(f.bots.size()), f.needed, tanks, healers, damage);
 
         uint32 const missing = f.needed > f.bots.size() ? f.needed - static_cast<uint32>(f.bots.size()) : 0;
         if (missing)
-            handler.PSendSysMessage("Faltan {} por entrar. '.queuebots traer' fuerza otra pasada; "
-                                    "'.queuebots salir' saca los bots.", missing);
+            handler.PSendSysMessage(ModLocale::L(handler, "Faltan {} por entrar. '.queuebots traer' fuerza otra pasada; "
+                                    "'.queuebots salir' saca los bots."), missing);
         else
-            handler.SendSysMessage("Cola completa. '.queuebots salir' saca los bots.");
+            handler.SendSysMessage(ModLocale::L(handler, "Cola completa. '.queuebots salir' saca los bots."));
     }
 
     void HandleLogout(ObjectGuid guid)
@@ -1597,7 +1599,7 @@ private:
                  addedMine, addedTheirs, fill.bots.size(), fill.needed, minLevel, maxLevel);
 
         if (cfg.announce)
-            ChatHandler(player->GetSession()).PSendSysMessage("Se han apuntado {} contrincantes a tu cola ({}/{}).",
+            ChatHandler(player->GetSession()).PSendSysMessage(ModLocale::L(player, "Se han apuntado {} contrincantes a tu cola ({}/{})."),
                                                               added, static_cast<uint32>(fill.bots.size()),
                                                               fill.needed);
     }
@@ -1724,7 +1726,7 @@ private:
                 LOG_INFO("module", "[queue-bots] Los roles de {} y su grupo no caben en una mazmorra {}/{}/{}: no se buscan bots.",
                          player->GetName(), cfg.dungeonTanks, cfg.dungeonHealers, cfg.dungeonDamage);
                 ChatHandler(player->GetSession()).SendSysMessage(
-                    "Los roles elegidos en tu grupo no caben en una mazmorra: cambialos para que se busquen companeros.");
+                    ModLocale::L(player, "Los roles elegidos en tu grupo no caben en una mazmorra: cambialos para que se busquen companeros."));
             }
             fill.needed = static_cast<uint32>(fill.bots.size());
             return;
@@ -1832,7 +1834,7 @@ private:
                  added, player->GetName(), fill.bots.size(), fill.needed, minLevel, maxLevel);
 
         if (cfg.announce)
-            ChatHandler(player->GetSession()).PSendSysMessage("Se han apuntado {} companeros a tu mazmorra ({}/{}).",
+            ChatHandler(player->GetSession()).PSendSysMessage(ModLocale::L(player, "Se han apuntado {} companeros a tu mazmorra ({}/{})."),
                                                               added, static_cast<uint32>(fill.bots.size()),
                                                               fill.needed);
     }
@@ -2078,7 +2080,7 @@ private:
             g_fills.erase(guid);
 
         if (cfg.announce && group->GetMembersCount() == 2)
-            ChatHandler(player->GetSession()).PSendSysMessage("Formando banda de {} con los bots disponibles.", size);
+            ChatHandler(player->GetSession()).PSendSysMessage(ModLocale::L(player, "Formando banda de {} con los bots disponibles."), size);
     }
 
     // ─── Lado del bot ───────────────────────────────────────────────────────
@@ -2767,6 +2769,7 @@ private:
 
 void AddSC_mod_queue_bots()
 {
+    ModLocale::Register(QueueBotsLocale::kEntries);
     new mod_queue_bots_config();
     new mod_queue_bots_player_events();
     new mod_queue_bots_world();

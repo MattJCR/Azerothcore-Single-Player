@@ -2178,6 +2178,38 @@ registrar cuentas nuevas con invitación, cambiar la contraseña, y moderar el
 reino (expulsar, banear, silenciar, anunciar, enviar objetos y oro) desde
 cuentas GM (ver «Cuentas» y «Moderación» más abajo).
 
+#### Idioma (español / inglés)
+
+El panel se ve en español o en inglés. Al abrirlo usa el idioma del navegador
+(cualquiera que no sea español abre en inglés); el selector de la cabecera, junto
+al indicador de estado, y el de las pantallas de entrada y registro lo cambian: se
+recuerda en el navegador y la página se recarga. La API contesta en el mismo
+idioma: el navegador manda el suyo en la cabecera `X-Panel-Lang` (sin ella, español)
+y se traducen los mensajes de error, los avisos de los trabajos de recursos y los
+nombres de objeto de la armería (en inglés salen de `item_template`, el original;
+en español, de `item_template_locale`).
+
+También se traducen los catálogos. El inglés de **Comandos** vive en las columnas
+`title_en`, `description_en` y `body_en` de `server_help_*` (las rellena
+`server_help.sql`, así que un cliente de juego en inglés también lo ve; si una está
+vacía, cae al español); las descripciones de **Configuración** están en
+`src/locales/config-*-en.js` (por clave del `.conf`), las de los addons en
+`addons/descriptions-en.json` (por id) y los textos de `doctor.sh` se traducen con
+plantillas en `src/locales/en.js`. No se traduce lo que escribe alguien en la
+partida (nombres de personajes y hermandades, motivos de sanción), lo que devuelve
+la consola del worldserver al ejecutar una acción de moderación, ni las palabras
+clave, la sintaxis y los ejemplos de las fichas de **Comandos** (son los comandos
+reales, en español).
+
+Para añadir o cambiar un texto: la clave es el propio texto en español. En
+`public/` se escribe `t('Texto con {marcador}', { marcador })` y su traducción va en
+`public/locales/en.js`; en `src/`, el mensaje de error en español y su traducción en
+`src/locales/en.js` (una plantilla `{x}` cubre los mensajes con valores). El HTML
+estático se traduce solo (nodos de texto y atributos `placeholder`, `title`,
+`aria-label` y `alt`); un fragmento con etiquetas dentro lleva `data-i18n-html` y su
+HTML interno es la clave. `test/i18n.test.js` y `test/server-i18n.test.js` fallan si
+falta una traducción, sobra una clave o no coinciden los marcadores.
+
 #### Actualizaciones
 
 La sección **Actualizaciones**, situada debajo de **Configuración**, sólo es

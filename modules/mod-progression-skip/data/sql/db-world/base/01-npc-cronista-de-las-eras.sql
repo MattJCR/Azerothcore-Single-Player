@@ -56,7 +56,7 @@ INSERT INTO `creature_template`
    `RegenHealth`, `CreatureImmunitiesId`, `flags_extra`, `ScriptName`, `VerifiedBuild`)
 VALUES
   (@ENTRY, 0, 0, 0, 0, 0,
-   'Cronista de las Eras', 'Salto de progresión', NULL, 0, 80, 80, 2, 35, 1,
+   'Chronicler of the Ages', 'Progression skip', NULL, 0, 80, 80, 2, 35, 1,
    1, 1.14286, 1, 1, 20, 0, 0,
    1, 2000, 2000, 1, 1, 1,
    768, 0, 0, 0, 7, 0, 0, 0,
@@ -69,27 +69,27 @@ INSERT INTO `creature_template_model`
 VALUES
   (@ENTRY, 0, @MODEL, 1, 1, 0);
 
--- ── Nombre/subtítulo en español para clientes esES/esMX ─────────────────────
+-- ── Nombre/subtítulo en español para clientes esES/esMX (la tabla base va en inglés) ──
 INSERT INTO `creature_template_locale` (`entry`, `locale`, `Name`, `Title`) VALUES
   (@ENTRY, 'esES', 'Cronista de las Eras', 'Salto de progresión'),
   (@ENTRY, 'esMX', 'Cronista de las Eras', 'Salto de progresión');
 
 -- ── Textos del NPC ─────────────────────────────────────────────────────────
---  Escritos en español en la tabla base (el volcado del core es enUS y este
---  NPC sólo existe en este servidor) y repetidos en npc_text_locale para que
---  el cliente en español no caiga al texto base por otra vía.
+--  La tabla base va en inglés (es lo que ve cualquier cliente que no sea
+--  esES/esMX, igual que el resto de textos del core, que son enUS) y el español
+--  va en npc_text_locale para esES y esMX.
 INSERT INTO `npc_text` (`ID`, `text0_0`, `text0_1`, `lang0`, `Probability0`) VALUES
   (600200,
-   'El tiempo no es un río, viajero: es una biblioteca. Puedo cerrar por ti los capítulos que no quieras leer. Elige, y quedará escrito para siempre en este personaje.',
-   'El tiempo no es un río, viajero: es una biblioteca. Puedo cerrar por ti los capítulos que no quieras leer. Elige, y quedará escrito para siempre en este personaje.',
+   'Time is not a river, traveller: it is a library. I can close for you the chapters you do not wish to read. Choose, and it will be written forever on this character.',
+   'Time is not a river, traveller: it is a library. I can close for you the chapters you do not wish to read. Choose, and it will be written forever on this character.',
    0, 1),
   (600201,
-   'Esta decisión es permanente para este personaje. No recibirás las recompensas ni los logros de las etapas omitidas. ¿Deseas continuar?',
-   'Esta decisión es permanente para este personaje. No recibirás las recompensas ni los logros de las etapas omitidas. ¿Deseas continuar?',
+   'This decision is permanent for this character. You will not receive the rewards or achievements of the skipped stages. Do you wish to continue?',
+   'This decision is permanent for this character. You will not receive the rewards or achievements of the skipped stages. Do you wish to continue?',
    0, 1),
   (600202,
-   'No te queda ninguna era por adelantar. Tu historia ya está al día.',
-   'No te queda ninguna era por adelantar. Tu historia ya está al día.',
+   'You have no era left to advance. Your story is already up to date.',
+   'You have no era left to advance. Your story is already up to date.',
    0, 1);
 
 INSERT INTO `npc_text_locale` (`ID`, `Locale`, `Text0_0`, `Text0_1`) VALUES

@@ -2159,6 +2159,37 @@ also allows registering new accounts by invitation, changing the password, and m
 realm (kick, ban, mute, announce, send items and gold) from GM accounts (see "Accounts" and
 "Moderation" below).
 
+#### Language (Spanish / English)
+
+The panel is available in Spanish or English. When opened it uses the browser's language
+(any language other than Spanish opens in English); the selector in the header, next to the
+status indicator, and the one on the login and sign-up screens change it: the choice is
+remembered in the browser and the page reloads. The API answers in the same language: the
+browser sends its own in the `X-Panel-Lang` header (Spanish without it) and the error messages,
+the resource-job notices and the item names in the armory are translated (in English they come
+from `item_template`, the original; in Spanish, from `item_template_locale`). Where this
+document gives a label in Spanish with its English meaning in parentheses, that is the label
+the panel shows when it is in Spanish.
+
+The catalogs are translated too. The English of **Commands** lives in the `title_en`,
+`description_en` and `body_en` columns of `server_help_*` (filled in by `server_help.sql`, so an
+English game client sees it as well; if one is empty it falls back to Spanish); the descriptions
+of **Configuration** are in `src/locales/config-*-en.js` (by `.conf` key), those of the addons in
+`addons/descriptions-en.json` (by id), and the texts of `doctor.sh` are translated with templates
+in `src/locales/en.js`. What is not translated is whatever someone writes in the game
+(character and guild names, sanction reasons), what the worldserver console returns when a
+moderation action runs, and the keywords, syntax and examples of the **Commands** entries (they
+are the real commands, in Spanish).
+
+To add or change a text: the key is the Spanish text itself. In `public/` you write
+`t('Texto con {marcador}', { marcador })` (the argument is the Spanish text) and its English
+translation goes in `public/locales/en.js`; in `src/`, the error message in Spanish and its
+translation in `src/locales/en.js` (one `{x}` template covers the messages with values). Static
+HTML is translated on its own (text nodes and the `placeholder`, `title`, `aria-label` and `alt`
+attributes); a fragment with tags inside carries `data-i18n-html` and its inner HTML is the key.
+`test/i18n.test.js` and `test/server-i18n.test.js` fail if a translation is missing, a key is
+left over or the placeholders do not match.
+
 #### Updates
 
 The **Actualizaciones** (Updates) section, located below **Configuración** (Settings), is

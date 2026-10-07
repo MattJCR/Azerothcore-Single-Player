@@ -67,6 +67,7 @@
 #include "Log.h"
 #include "Map.h"
 #include "MapMgr.h"
+#include "ModLocale.h"
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "Optional.h"
@@ -90,6 +91,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <deque>
+#include <functional>
 #include <limits>
 #include <list>
 #include <mutex>
@@ -586,13 +588,14 @@ namespace
         return out;
     }
 
-    void Announce(uint32 zoneId, uint32 mapId, std::string const& text)
+    // `build` compone el texto para cada jugador de la zona, en el idioma de su cliente.
+    void Announce(uint32 zoneId, uint32 mapId, std::function<std::string(Player*)> const& build)
     {
         if (!pcfg.announce)
             return;
         for (Player* human : Humans())
             if (human->GetMapId() == mapId && human->GetZoneId() == zoneId && human->GetSession())
-                ChatHandler(human->GetSession()).SendSysMessage(text);
+                ChatHandler(human->GetSession()).SendSysMessage(build(human));
     }
 
     // ─── Empezar un evento ──────────────────────────────────────────────────
@@ -774,11 +777,15 @@ namespace
                  gotAtt, TeamLabel(attackers), gotDef, TeamLabel(defenders), (ev.endMs - now) / 60000);
 
         if (duelMode)
-            Announce(spot.zoneId, spot.mapId, Acore::StringFormat("|cffff8800[Duelos]|r Unos aventureros se retan a las puertas de {}.", spot.label));
+            Announce(spot.zoneId, spot.mapId, [&](Player* human) {
+                return Acore::StringFormat(ModLocale::L(human, "|cffff8800[Duelos]|r Unos aventureros se retan a las puertas de {}."), spot.label);
+            });
         else
-            Announce(spot.zoneId, spot.mapId, Acore::StringFormat("|cffff8800[Guerra]|r {} marcha sobre {}. {} responde.",
-                                                                 attackers == PVP_ALLIANCE ? "La Alianza" : "La Horda", spot.label,
-                                                                 defenders == PVP_ALLIANCE ? "La Alianza" : "La Horda"));
+            Announce(spot.zoneId, spot.mapId, [&](Player* human) {
+                return Acore::StringFormat(ModLocale::L(human, "|cffff8800[Guerra]|r {} marcha sobre {}. {} responde."),
+                                           attackers == PVP_ALLIANCE ? ModLocale::L(human, "La Alianza") : ModLocale::L(human, "La Horda"), spot.label,
+                                           defenders == PVP_ALLIANCE ? ModLocale::L(human, "La Alianza") : ModLocale::L(human, "La Horda"));
+            });
         return true;
     }
 
@@ -798,12 +805,15 @@ namespace
             if (pcfg.captureObjective && ev.scoreAtt != ev.scoreDef && (ev.scoreAtt || ev.scoreDef))
             {
                 PvpTeam const winner = WorldBotsPolicy::AttackersLead(ev.scoreAtt, ev.scoreDef) ? ev.attackers : ev.defenders;
-                Announce(ev.zoneId, ev.mapId, Acore::StringFormat(
-                    "|cffff8800[Guerra]|r {} se impone en {} ({}-{}).",
-                    winner == PVP_ALLIANCE ? "La Alianza" : "La Horda", ev.label, ev.scoreAtt, ev.scoreDef));
+                Announce(ev.zoneId, ev.mapId, [&](Player* human) {
+                    return Acore::StringFormat(ModLocale::L(human, "|cffff8800[Guerra]|r {} se impone en {} ({}-{})."),
+                        winner == PVP_ALLIANCE ? ModLocale::L(human, "La Alianza") : ModLocale::L(human, "La Horda"), ev.label, ev.scoreAtt, ev.scoreDef);
+                });
             }
             else
-                Announce(ev.zoneId, ev.mapId, Acore::StringFormat("|cffff8800[Guerra]|r La escaramuza en {} se disuelve.", ev.label));
+                Announce(ev.zoneId, ev.mapId, [&](Player* human) {
+                    return Acore::StringFormat(ModLocale::L(human, "|cffff8800[Guerra]|r La escaramuza en {} se disuelve."), ev.label);
+                });
         }
     }
 
@@ -911,9 +921,10 @@ namespace
                 {
                     ev.nextProgressMs = now + 60000;
                     PvpTeam const lead = WorldBotsPolicy::AttackersLead(ev.scoreAtt, ev.scoreDef) ? ev.attackers : ev.defenders;
-                    Announce(ev.zoneId, ev.mapId, Acore::StringFormat(
-                        "|cffff8800[Guerra]|r {} controla {} ({}-{}).",
-                        lead == PVP_ALLIANCE ? "La Alianza" : "La Horda", ev.label, ev.scoreAtt, ev.scoreDef));
+                    Announce(ev.zoneId, ev.mapId, [&](Player* human) {
+                        return Acore::StringFormat(ModLocale::L(human, "|cffff8800[Guerra]|r {} controla {} ({}-{})."),
+                            lead == PVP_ALLIANCE ? ModLocale::L(human, "La Alianza") : ModLocale::L(human, "La Horda"), ev.label, ev.scoreAtt, ev.scoreDef);
+                    });
                 }
 
                 if (WorldBotsPolicy::CaptureGoalReached(ev.scoreAtt, ev.scoreDef, pcfg.captureGoal))
@@ -1310,11 +1321,12 @@ private:
 
     void Handle(Request const& r, uint64_t now)
     {
+        Player* const gm = ObjectAccessor::FindPlayer(r.gm);   // sólo para elegir idioma (null = español)
         switch (r.kind)
         {
             case REQ_STATUS:
             {
-                Reply(r.gm, Acore::StringFormat("Guerra de mundo: {} eventos activos, {} puntos calientes ({} activos).",
+                Reply(r.gm, Acore::StringFormat(ModLocale::L(gm, "Guerra de mundo: {} eventos activos, {} puntos calientes ({} activos)."),
                                                 g_events.size(), g_hotspots.size(),
                                                 std::count_if(g_hotspots.begin(), g_hotspots.end(), [](Hotspot const& h) { return h.enabled; })));
                 for (PvpEvent const& ev : g_events)
@@ -1322,23 +1334,23 @@ private:
                     uint32 att = 0, def = 0;
                     for (Member const& m : ev.members)
                         (m.attacker ? att : def) += 1;
-                    Reply(r.gm, Acore::StringFormat("  #{} {} ({}) {} vs {}: {} + {} bots, control {}-{}, {} min restantes{}",
-                                                    ev.id, ev.spotName, ev.duelMode ? "duelos" : "escaramuza",
-                                                    TeamLabel(ev.attackers), TeamLabel(ev.defenders), att, def,
+                    Reply(r.gm, Acore::StringFormat(ModLocale::L(gm, "  #{} {} ({}) {} vs {}: {} + {} bots, control {}-{}, {} min restantes{}"),
+                                                    ev.id, ev.spotName, ev.duelMode ? ModLocale::L(gm, "duelos") : ModLocale::L(gm, "escaramuza"),
+                                                    ModLocale::L(gm, TeamLabel(ev.attackers)), ModLocale::L(gm, TeamLabel(ev.defenders)), att, def,
                                                     ev.scoreAtt, ev.scoreDef,
-                                                    ev.endMs > now ? (ev.endMs - now) / 60000 : 0, ev.ending ? ", terminando" : ""));
+                                                    ev.endMs > now ? (ev.endMs - now) / 60000 : 0, ev.ending ? ModLocale::L(gm, ", terminando") : ""));
                 }
                 break;
             }
             case REQ_LIST:
             {
                 for (Hotspot const& h : g_hotspots)
-                    Reply(r.gm, Acore::StringFormat("  #{} {} [{}] {}: {} vs {}, nivel {}-{}, zona {}, {}-{} min, peso {}{}",
+                    Reply(r.gm, Acore::StringFormat(ModLocale::L(gm, "  #{} {} [{}] {}: {} vs {}, nivel {}-{}, zona {}, {}-{} min, peso {}{}"),
                                                     h.id, h.name, h.label,
                                                     h.autoManaged ? (h.enabled ? "auto" : "auto-espera") : (h.enabled ? "on" : "off"),
-                                                    TeamLabel(h.attackers), TeamLabel(h.defenders),
+                                                    ModLocale::L(gm, TeamLabel(h.attackers)), ModLocale::L(gm, TeamLabel(h.defenders)),
                                                     h.minLevel, h.maxLevel, h.zoneId, h.durationMin, h.durationMax, h.weight,
-                                                    (h.lastStartMs && now - h.lastStartMs < TimeMs::SecsToMs(h.cooldownSecs)) ? ", enfriando" : ""));
+                                                    (h.lastStartMs && now - h.lastStartMs < TimeMs::SecsToMs(h.cooldownSecs)) ? ModLocale::L(gm, ", enfriando") : ""));
                 break;
             }
             case REQ_START:
@@ -1349,14 +1361,14 @@ private:
                         spot = &h;
                 if (!spot)
                 {
-                    Reply(r.gm, Acore::StringFormat("No hay ningun punto caliente llamado '{}'. Usa .wpvp lista.", r.name));
+                    Reply(r.gm, Acore::StringFormat(ModLocale::L(gm, "No hay ningun punto caliente llamado '{}'. Usa .wpvp lista."), r.name));
                     break;
                 }
                 std::string why;
                 if (StartEvent(*spot, now, &why))
-                    Reply(r.gm, Acore::StringFormat("Evento #{} arrancado en {}.", g_events.back().id, spot->label));
+                    Reply(r.gm, Acore::StringFormat(ModLocale::L(gm, "Evento #{} arrancado en {}."), g_events.back().id, spot->label));
                 else
-                    Reply(r.gm, Acore::StringFormat("No arranca en {}: {}.", spot->label, why));
+                    Reply(r.gm, Acore::StringFormat(ModLocale::L(gm, "No arranca en {}: {}."), spot->label, ModLocale::L(gm, why)));
                 break;
             }
             case REQ_STOP:
@@ -1372,13 +1384,13 @@ private:
                         BeginEnd(ev, now, "parado por el GM");
                         ++stopped;
                     }
-                Reply(r.gm, Acore::StringFormat("{} evento(s) terminando: los bots vuelven a casa.", stopped));
+                Reply(r.gm, Acore::StringFormat(ModLocale::L(gm, "{} evento(s) terminando: los bots vuelven a casa."), stopped));
                 break;
             }
             case REQ_RELOAD:
             {
                 LoadHotspots();
-                Reply(r.gm, Acore::StringFormat("Puntos calientes recargados: {}.", g_hotspots.size()));
+                Reply(r.gm, Acore::StringFormat(ModLocale::L(gm, "Puntos calientes recargados: {}."), g_hotspots.size()));
                 break;
             }
         }
@@ -1418,7 +1430,7 @@ public:
             return ObjectGuid::Empty;
         if (!pcfg.enabled)
         {
-            handler->SendSysMessage("La guerra de mundo de mod-world-bots esta desactivada (WorldBots.Pvp.Enable).");
+            handler->SendSysMessage(ModLocale::L(handler, "La guerra de mundo de mod-world-bots esta desactivada (WorldBots.Pvp.Enable)."));
             return ObjectGuid::Empty;
         }
         return player->GetGUID();

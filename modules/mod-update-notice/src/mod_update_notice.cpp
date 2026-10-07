@@ -30,8 +30,10 @@
 #include "CommandScript.h"
 #include "Config.h"
 #include "Log.h"
+#include "ModLocale.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
+#include "update_notice_locale.h"
 #include "ScriptMgr.h"
 #include "TimeMs.h"
 #include "WorldSession.h"
@@ -224,14 +226,14 @@ namespace
         // confunde con un informe vacio valido.
         if (report.exists && !report.ok)
         {
-            handler.SendSysMessage("|cffff6060[Actualizaciones]|r No se pudo leer el informe (revisa permisos del fichero).");
+            handler.SendSysMessage(ModLocale::L(handler, "|cffff6060[Actualizaciones]|r No se pudo leer el informe (revisa permisos del fichero)."));
             return 0;
         }
 
         if (report.lines.empty())
         {
             if (sayIfNone)
-                handler.SendSysMessage("|cff00ff00[Actualizaciones]|r Todo al dia: ningun repositorio tiene commits nuevos sobre versions.lock.");
+                handler.SendSysMessage(ModLocale::L(handler, "|cff00ff00[Actualizaciones]|r Todo al dia: ningun repositorio tiene commits nuevos sobre versions.lock."));
             return 0;
         }
 
@@ -242,7 +244,7 @@ namespace
         uint32 const omitted = report.lines.size() > maxLines
             ? static_cast<uint32>(report.lines.size() - maxLines) : 0;
 
-        handler.SendSysMessage("|cffffcc00[Actualizaciones]|r Hay versiones nuevas rio arriba (tools/revisar-actualizaciones.sh):");
+        handler.SendSysMessage(ModLocale::L(handler, "|cffffcc00[Actualizaciones]|r Hay versiones nuevas rio arriba (tools/revisar-actualizaciones.sh):"));
 
         // Severidad: separa el prefijo, ordena de más grave a menos y colorea.
         struct Row { std::string text; int weight; char const* color; };
@@ -262,27 +264,27 @@ namespace
             handler.PSendSysMessage("|cff{}  {}|r", row.color, row.text);
 
         if (omitted)
-            handler.PSendSysMessage("|cffffcc00  ... y {} lineas mas (sube UpdateNotice.MaxLines para verlas).|r", omitted);
+            handler.PSendSysMessage(ModLocale::L(handler, "|cffffcc00  ... y {} lineas mas (sube UpdateNotice.MaxLines para verlas).|r"), omitted);
 
         if (report.mtime)
         {
             uint32 const ageDays = static_cast<uint32>((std::time(nullptr) - report.mtime) / 86400);
             if (c->maxDaysStale && ageDays >= c->maxDaysStale)
-                handler.PSendSysMessage("|cffff6060  Informe del {} ({} dias): la revision semanal puede haber fallado.|r",
+                handler.PSendSysMessage(ModLocale::L(handler, "|cffff6060  Informe del {} ({} dias): la revision semanal puede haber fallado.|r"),
                                         DateOf(report.mtime), ageDays);
             else
-                handler.PSendSysMessage("|cffffcc00  Informe del {}.|r", DateOf(report.mtime));
+                handler.PSendSysMessage(ModLocale::L(handler, "|cffffcc00  Informe del {}.|r"), DateOf(report.mtime));
 
             // Si versions.lock se ha tocado (un --freeze) despues del informe, lo
             // que este lista puede estar ya fijado: conviene rehacerlo.
             struct stat lockSt{};
             if (!c->versionsLock.empty() && ::stat(c->versionsLock.c_str(), &lockSt) == 0
                 && lockSt.st_mtime > report.mtime + 60)
-                handler.PSendSysMessage("|cffff6060  versions.lock es posterior al informe ({}): puede estar desfasado, "
-                                        "vuelve a ejecutar tools/revisar-actualizaciones.sh.|r", DateOf(lockSt.st_mtime));
+                handler.PSendSysMessage(ModLocale::L(handler, "|cffff6060  versions.lock es posterior al informe ({}): puede estar desfasado, "
+                                        "vuelve a ejecutar tools/revisar-actualizaciones.sh.|r"), DateOf(lockSt.st_mtime));
         }
 
-        handler.SendSysMessage("|cffffcc00  El servidor NO se ha tocado. Actualizar: ./install.sh --only 3, --from 4, --freeze.|r");
+        handler.SendSysMessage(ModLocale::L(handler, "|cffffcc00  El servidor NO se ha tocado. Actualizar: ./install.sh --only 3, --from 4, --freeze.|r"));
         return static_cast<uint32>(report.lines.size());
     }
 }
@@ -414,14 +416,14 @@ public:
         auto const c = Cfg();
         if (!c->enabled)
         {
-            handler->SendSysMessage("mod-update-notice esta desactivado.");
+            handler->SendSysMessage(ModLocale::L(handler, "mod-update-notice esta desactivado."));
             return true;
         }
         if (static_cast<uint32>(handler->GetSession()->GetSecurity()) < c->minSecurity)
         {
             // return false haria que el nucleo imprima la ayuda/sintaxis del
             // comando, revelando que existe a un jugador raso. Mensaje limpio.
-            handler->SendSysMessage("No tienes permiso para ver los avisos de actualizacion.");
+            handler->SendSysMessage(ModLocale::L(handler, "No tienes permiso para ver los avisos de actualizacion."));
             return true;
         }
         Show(player, true);
@@ -431,6 +433,7 @@ public:
 
 void AddSC_mod_update_notice()
 {
+    ModLocale::Register(UpdateNoticeLocale::kEntries);
     new mod_update_notice_world();
     new mod_update_notice_player();
     new mod_update_notice_command();

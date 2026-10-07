@@ -4,6 +4,7 @@
 // también lo usan Jugadores/Armería/Moderación ("Ver en el mapa"), por eso se
 // exporta en vez de quedar privado a esta vista.
 import { $, state, api, CLASSES, escapeHtml, showView, showLogin, showToast, demoteFromGm, sizeMapView, createMapController } from '../shared.js';
+import { t, lowerCase } from '../i18n.js';
 
 const gmMap = createMapController({
   viewport: $('#world-map'), stage: $('#map-stage'), image: $('#map-image'), markers: $('#map-markers'),
@@ -18,11 +19,11 @@ const gmMap = createMapController({
     }
   },
   buildMarker(player) {
-    const [className, classColor] = CLASSES[player.class] || [`Clase ${player.class}`, '#d9ae62'];
+    const [className, classColor] = CLASSES[player.class] || [t('Clase {id}', { id: player.class }), '#d9ae62'];
     const isFocus = state.mapFocus && Number(player.guid) === state.mapFocus.guid;
     const label = isFocus
-      ? `<span class="marker-label">${escapeHtml(player.name)}<small>Nv. ${player.level} · ${escapeHtml(className)}</small></span>`
-      : `<span class="marker-tip"><strong>${escapeHtml(player.name)}</strong> · Nv. ${player.level}<br><small>${escapeHtml(className)} · ${player.x.toFixed(0)}, ${player.y.toFixed(0)}</small></span>`;
+      ? `<span class="marker-label">${escapeHtml(player.name)}<small>${t('Nv. {level}', { level: player.level })} · ${escapeHtml(className)}</small></span>`
+      : `<span class="marker-tip"><strong>${escapeHtml(player.name)}</strong> · ${t('Nv. {level}', { level: player.level })}<br><small>${escapeHtml(className)} · ${player.x.toFixed(0)}, ${player.y.toFixed(0)}</small></span>`;
     return `<button class="marker${isFocus ? ' you' : ''}" data-map-x="${player.mapX}" data-map-y="${player.mapY}" style="--class-color:${classColor}" aria-label="${escapeHtml(player.name)}">${label}</button>`;
   },
   afterRender(projected, visible, { centerOnMarker }) {
@@ -84,10 +85,11 @@ function updateMapContextBanner(projectedPlayers) {
     banner.classList.add('hidden');
   } else {
     const player = projectedPlayers.find((candidate) => Number(candidate.guid) === state.mapFocus.guid);
-    const sourceText = state.mapFocus.sourceLabel ? ` · llegaste desde ${escapeHtml(state.mapFocus.sourceLabel)}` : '';
+    const sourceText = state.mapFocus.sourceLabel ? ` · ${t('llegaste desde {source}', { source: escapeHtml(state.mapFocus.sourceLabel) })}` : '';
+    const focusName = `<strong>${escapeHtml(state.mapFocus.name)}</strong>`;
     $('#map-context-text').innerHTML = player?.onMap
-      ? `Mostrando la posición de <strong>${escapeHtml(state.mapFocus.name)}</strong>${sourceText}`
-      : `<strong>${escapeHtml(state.mapFocus.name)}</strong> no está en el mapa ahora mismo${sourceText}`;
+      ? `${t('Mostrando la posición de {name}', { name: focusName })}${sourceText}`
+      : `${t('{name} no está en el mapa ahora mismo', { name: focusName })}${sourceText}`;
     banner.classList.remove('hidden');
   }
   // El aviso ocupa parte del alto fijo de #map-view (sizeMapView()): al
@@ -99,13 +101,13 @@ document.addEventListener('click', (event) => {
   if (!event.target.closest('.map-goto')) $('#map-goto-results')?.classList.add('hidden');
 });
 $('#map-goto-input').addEventListener('input', () => {
-  const query = $('#map-goto-input').value.trim().toLocaleLowerCase('es');
+  const query = lowerCase($('#map-goto-input').value.trim());
   const results = $('#map-goto-results');
   if (!query) { results.innerHTML = ''; results.classList.add('hidden'); return; }
-  const matches = state.mapPlayers.filter((player) => player.name.toLocaleLowerCase('es').includes(query)).slice(0, 8);
+  const matches = state.mapPlayers.filter((player) => lowerCase(player.name).includes(query)).slice(0, 8);
   results.innerHTML = matches.length
-    ? matches.map((player) => `<button type="button" data-map-goto-guid="${player.guid}">${escapeHtml(player.name)} <small>Nv. ${player.level}</small></button>`).join('')
-    : '<button type="button" disabled>Sin coincidencias</button>';
+    ? matches.map((player) => `<button type="button" data-map-goto-guid="${player.guid}">${escapeHtml(player.name)} <small>${t('Nv. {level}', { level: player.level })}</small></button>`).join('')
+    : `<button type="button" disabled>${t('Sin coincidencias')}</button>`;
   results.classList.remove('hidden');
 });
 $('#map-goto-results').addEventListener('click', (event) => {

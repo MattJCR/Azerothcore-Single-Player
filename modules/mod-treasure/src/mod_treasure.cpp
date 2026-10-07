@@ -14,11 +14,13 @@
 #include "GameObject.h"
 #include "GameTime.h"
 #include "Log.h"
+#include "ModLocale.h"
 #include "Map.h"
 #include "MapMgr.h"
 #include "ObjectAccessor.h"
 #include "PathGenerator.h"
 #include "Player.h"
+#include "treasure_locale.h"
 #include "Random.h"
 #include "ScriptMgr.h"
 #include "SlowTick.h"
@@ -751,7 +753,7 @@ public:
         Player* player = target.GetConnectedPlayer();
         if (!cfg.enabled || !player || !player->GetSession() || player->GetSession()->IsHeadless())
         {
-            handler->SendSysMessage("El modulo debe estar activo y el personaje humano conectado.");
+            handler->SendSysMessage(ModLocale::L(handler, "El modulo debe estar activo y el personaje humano conectado."));
             return true;
         }
         uint32 zoneId = lootZone.value_or(player->GetZoneId());
@@ -759,28 +761,28 @@ public:
         if (quality < 1 || quality > 3 || zone == zones.end() ||
             !zone->second.quotas[quality - 1])
         {
-            handler->SendSysMessage("Calidad o zona sin cofre configurado (calidades: 1 basico, 2 raro, 3 epico).");
+            handler->SendSysMessage(ModLocale::L(handler, "Calidad o zona sin cofre configurado (calidades: 1 basico, 2 raro, 3 epico)."));
             return true;
         }
         uint32 ownerGuid = player->GetGUID().GetCounter();
         if (std::count_if(testChests.begin(), testChests.end(),
             [ownerGuid](TestChest const& chest) { return chest.ownerGuid == ownerGuid; }) >= 12)
         {
-            handler->SendSysMessage("Ya hay doce cofres de prueba para este personaje; retiralos primero.");
+            handler->SendSysMessage(ModLocale::L(handler, "Ya hay doce cofres de prueba para este personaje; retiralos primero."));
             return true;
         }
         uint32 entry = ENTRY_BASE + zoneId * 3 + quality;
         if (GameObject* go = SpawnTestChest(player, entry))
-            handler->PSendSysMessage("Cofre de prueba {} (calidad {}, botin zona {}) frente a {}. Se retira en {} s o con .tesoro prueba retirar {}.",
+            handler->PSendSysMessage(ModLocale::L(handler, "Cofre de prueba {} (calidad {}, botin zona {}) frente a {}. Se retira en {} s o con .tesoro prueba retirar {}."),
                 go->GetGUID().GetCounter(), quality, zoneId, player->GetName(), cfg.testSeconds, player->GetName());
         else
-            handler->SendSysMessage("No hay suelo accesible y libre frente al personaje; muévelo a un espacio abierto.");
+            handler->SendSysMessage(ModLocale::L(handler, "No hay suelo accesible y libre frente al personaje; muévelo a un espacio abierto."));
         return true;
     }
     static bool HandleTestRemove(ChatHandler* handler, PlayerIdentifier target)
     {
         uint32 count = RemoveTestChests(target.GetGUID().GetCounter());
-        handler->PSendSysMessage("Retirados {} cofres de prueba de {}.", count, target.GetName());
+        handler->PSendSysMessage(ModLocale::L(handler, "Retirados {} cofres de prueba de {}."), count, target.GetName());
         return true;
     }
     static bool HandleTestEquipment(ChatHandler* handler, PlayerIdentifier target,
@@ -789,28 +791,28 @@ public:
         Player* player = target.GetConnectedPlayer();
         if (!cfg.enabled || !player || !player->GetSession() || player->GetSession()->IsHeadless())
         {
-            handler->SendSysMessage("El modulo debe estar activo y el personaje humano conectado.");
+            handler->SendSysMessage(ModLocale::L(handler, "El modulo debe estar activo y el personaje humano conectado."));
             return true;
         }
         if ((tier != 1 && tier != 2) || (variant != 1 && variant != 2))
         {
-            handler->SendSysMessage("Uso: .tesoro prueba equipo <personaje> <tramo 1 intermedio / 2 final> <variante 1 / 2>.");
+            handler->SendSysMessage(ModLocale::L(handler, "Uso: .tesoro prueba equipo <personaje> <tramo 1 intermedio / 2 final> <variante 1 / 2>."));
             return true;
         }
         uint32 ownerGuid = player->GetGUID().GetCounter();
         if (std::count_if(testChests.begin(), testChests.end(),
             [ownerGuid](TestChest const& chest) { return chest.ownerGuid == ownerGuid; }) >= 12)
         {
-            handler->SendSysMessage("Ya hay doce cofres de prueba para este personaje; retiralos primero.");
+            handler->SendSysMessage(ModLocale::L(handler, "Ya hay doce cofres de prueba para este personaje; retiralos primero."));
             return true;
         }
         constexpr uint32 equipmentSeconds = 600;
         uint32 entry = 799000 + (tier - 1) * 2 + variant;
         if (GameObject* go = SpawnTestChest(player, entry, equipmentSeconds))
-            handler->PSendSysMessage("Cofre de equipo {} (tramo {}, variante {}) frente a {}. Se retira en {} s o con .tesoro prueba retirar {}.",
+            handler->PSendSysMessage(ModLocale::L(handler, "Cofre de equipo {} (tramo {}, variante {}) frente a {}. Se retira en {} s o con .tesoro prueba retirar {}."),
                 go->GetGUID().GetCounter(), tier, variant, player->GetName(), equipmentSeconds, player->GetName());
         else
-            handler->SendSysMessage("No hay suelo accesible y libre frente al personaje; muevelo a un espacio abierto.");
+            handler->SendSysMessage(ModLocale::L(handler, "No hay suelo accesible y libre frente al personaje; muevelo a un espacio abierto."));
         return true;
     }
     static bool HandleStatus(ChatHandler* handler)
@@ -820,7 +822,7 @@ public:
         auto it = zones.find(player->GetZoneId());
         if (it == zones.end())
         {
-            handler->SendSysMessage("Esta zona no tiene tesoros configurados.");
+            handler->SendSysMessage(ModLocale::L(handler, "Esta zona no tiene tesoros configurados."));
             return true;
         }
         Zone const& zone = it->second;
@@ -828,18 +830,18 @@ public:
         for (Point const& point : zone.points)
             approved += point.validated ? 1 : 0;
         handler->PSendSysMessage(
-            "Tesoros zona {}: {}. Puntos aprobados {}/{}. Cuotas basico/raros/epicos: {}/{}/{}.",
-            player->GetZoneId(), zone.enabled ? "activos" : "inactivos", approved,
+            ModLocale::L(handler, "Tesoros zona {}: {}. Puntos aprobados {}/{}. Cuotas basico/raros/epicos: {}/{}/{}."),
+            player->GetZoneId(), zone.enabled ? ModLocale::L(handler, "activos") : ModLocale::L(handler, "inactivos"), approved,
             zone.points.size(), uint32(zone.quotas[0]), uint32(zone.quotas[1]),
             uint32(zone.quotas[2]));
-        handler->PSendSysMessage("Ultimo veto a bot: interaccion GUID {}, botin GUID {}.",
+        handler->PSendSysMessage(ModLocale::L(handler, "Ultimo veto a bot: interaccion GUID {}, botin GUID {}."),
             lastBotInteractionDenied.load(std::memory_order_relaxed),
             lastBotLootDenied.load(std::memory_order_relaxed));
         for (auto const& [key, slot] : slots)
             if (key.zoneId == player->GetZoneId())
             {
                 Point const* point = FindPoint(zone, slot.pointId);
-                handler->PSendSysMessage("  calidad {} plaza {}: punto {} anterior {} vence {} repone {} abierto {} pos {} {} {}",
+                handler->PSendSysMessage(ModLocale::L(handler, "  calidad {} plaza {}: punto {} anterior {} vence {} repone {} abierto {} pos {} {} {}"),
                     uint32(key.quality), uint32(key.number), slot.pointId,
                     slot.previousPointId, slot.locationUntil, slot.respawnAt, slot.opened,
                     point ? point->x : 0, point ? point->y : 0, point ? point->z : 0);
@@ -853,7 +855,7 @@ public:
         auto it = zones.find(player->GetZoneId());
         if (it == zones.end())
         {
-            handler->SendSysMessage("Esta zona no tiene candidatos.");
+            handler->SendSysMessage(ModLocale::L(handler, "Esta zona no tiene candidatos."));
             return true;
         }
         uint32 checked = 0, passed = 0;
@@ -870,7 +872,7 @@ public:
                 ++passed;
             RecordValidation(player, point, reason, valid);
         }
-        handler->PSendSysMessage("Tesoros: {} puntos examinados; {} aprobados desde su posicion.", checked, passed);
+        handler->PSendSysMessage(ModLocale::L(handler, "Tesoros: {} puntos examinados; {} aprobados desde su posicion."), checked, passed);
         return true;
     }
     static bool HandleActivate(ChatHandler* handler)
@@ -887,13 +889,13 @@ public:
         uint32 separated = CountSeparatedPoints(zone);
         if (separated < std::max(2u, quota * 2))
         {
-            handler->PSendSysMessage("Faltan puntos accesibles: {} aprobados, {} separados, {} necesarios.",
+            handler->PSendSysMessage(ModLocale::L(handler, "Faltan puntos accesibles: {} aprobados, {} separados, {} necesarios."),
                                       approved, separated, std::max(2u, quota * 2));
             return true;
         }
         zone.enabled = true;
         WorldDatabase.DirectExecute("UPDATE sp_treasure_zone SET enabled=1 WHERE zone_id={}", player->GetZoneId());
-        handler->PSendSysMessage("Tesoros activados en la zona {}.", player->GetZoneId());
+        handler->PSendSysMessage(ModLocale::L(handler, "Tesoros activados en la zona {}."), player->GetZoneId());
         return true;
     }
     static bool HandleDeactivate(ChatHandler* handler)
@@ -907,7 +909,7 @@ public:
         for (auto& [key, slot] : slots)
             if (key.zoneId == player->GetZoneId() && slot.pointId)
                 Retire(key, slot, false);
-        handler->PSendSysMessage("Tesoros desactivados en la zona {}.", player->GetZoneId());
+        handler->PSendSysMessage(ModLocale::L(handler, "Tesoros desactivados en la zona {}."), player->GetZoneId());
         return true;
     }
 };
@@ -916,6 +918,7 @@ public:
 
 void AddSC_mod_treasure()
 {
+    ModLocale::Register(TreasureLocale::kEntries);
     new TreasureWorld();
     new TreasureChest();
     new TreasureLootGuard();

@@ -37,7 +37,7 @@
 
 namespace SharedAbi
 {
-    inline constexpr uint32_t kSharedAbiVersion = 7;
+    inline constexpr uint32_t kSharedAbiVersion = 8;
 }
 
 #endif // WOTLK_SP_SHARED_ABI_H

@@ -8,6 +8,7 @@
 // unos 100 MB en total frente a varios GB de cliente), lo envía al panel y el panel
 // lo convierte con sus generadores. El jugador no ejecuta ningún programa.
 import { MpqArchive, archivePriority, blobSource } from './mpq.js';
+import { t } from './i18n.js';
 
 export const LANGUAGES = ['esES', 'enUS'];
 const DBF = 'DBFilesClient\\';
@@ -30,11 +31,11 @@ export function iconKey(name) {
 // ItemDisplayInfo.dbc de 3.3.5a: los campos 5 y 6 son InventoryIcon[2].
 export function parseItemDisplayInfo(bytes) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (bytes.length < 20 || view.getUint32(0, true) !== 0x43424457) throw new Error('ItemDisplayInfo.dbc no tiene el formato esperado');
+  if (bytes.length < 20 || view.getUint32(0, true) !== 0x43424457) throw new Error(t('ItemDisplayInfo.dbc no tiene el formato esperado'));
   const records = view.getInt32(4, true);
   const fields = view.getInt32(8, true);
   const size = view.getInt32(12, true);
-  if (fields < 7 || size !== fields * 4 || 20 + records * size > bytes.length) throw new Error('ItemDisplayInfo.dbc no es de WotLK 3.3.5a');
+  if (fields < 7 || size !== fields * 4 || 20 + records * size > bytes.length) throw new Error(t('ItemDisplayInfo.dbc no es de WotLK 3.3.5a'));
   const strings = bytes.subarray(20 + records * size);
   const text = (offset) => {
     if (offset <= 0 || offset >= strings.length) return '';
@@ -95,8 +96,8 @@ export function describeClient(client) {
   const core = ['common.mpq', 'expansion.mpq', 'lichking.mpq', 'patch.mpq'];
   const missing = core.filter((name) => !names.has(name));
   const languages = client.languages();
-  if (missing.length) throw new Error(`No parece un cliente 3.3.5a completo: faltan ${missing.join(', ')} en Data/.`);
-  if (!languages.length) throw new Error('No encuentro ninguna carpeta de idioma esES o enUS en Data/.');
+  if (missing.length) throw new Error(t('No parece un cliente 3.3.5a completo: faltan {files} en Data/.', { files: missing.join(', ') }));
+  if (!languages.length) throw new Error(t('No encuentro ninguna carpeta de idioma esES o enUS en Data/.'));
   return { languages };
 }
 
@@ -106,9 +107,9 @@ export async function collectInputs(client, languages, onProgress = () => {}) {
   const declared = {};
   const first = languages[0];
 
-  onProgress({ fase: 'leyendo', texto: 'Leyendo ItemDisplayInfo.dbc' });
+  onProgress({ fase: 'leyendo', texto: t('Leyendo ItemDisplayInfo.dbc') });
   const display = await client.read(`${DBF}ItemDisplayInfo.dbc`, first);
-  if (!display) throw new Error('No encuentro ItemDisplayInfo.dbc en el cliente.');
+  if (!display) throw new Error(t('No encuentro ItemDisplayInfo.dbc en el cliente.'));
   inputs.set('dbc/ItemDisplayInfo.dbc', display.data);
   const rows = parseItemDisplayInfo(display.data);
 
@@ -125,7 +126,7 @@ export async function collectInputs(client, languages, onProgress = () => {}) {
     const name = keys.get(key);
     const result = await client.read(`${ICONS}${key}.blp`, first) || await client.read(`${ICONS}${name}`, first);
     number += 1;
-    if (number % 200 === 0) onProgress({ fase: 'leyendo', texto: `Leyendo iconos ${number}/${sortedKeys.length}`, hecho: number, total: sortedKeys.length });
+    if (number % 200 === 0) onProgress({ fase: 'leyendo', texto: t('Leyendo iconos {done}/{total}', { done: number, total: sortedKeys.length }), hecho: number, total: sortedKeys.length });
     if (!result) continue;
     found += 1;
     const id = String(found);
@@ -139,9 +140,9 @@ export async function collectInputs(client, languages, onProgress = () => {}) {
   for (const language of languages) {
     const parts = [];
     for (const name of ['Item', 'Spell']) {
-      onProgress({ fase: 'leyendo', texto: `Leyendo ${name}.dbc (${language})` });
+      onProgress({ fase: 'leyendo', texto: t('Leyendo {name}.dbc ({language})', { name, language }) });
       const result = await client.read(`${DBF}${name}.dbc`, language);
-      if (!result) throw new Error(`No encuentro ${name}.dbc para ${language} en el cliente.`);
+      if (!result) throw new Error(t('No encuentro {name}.dbc para {language} en el cliente.', { name, language }));
       inputs.set(`dbc/${language}/${name}.dbc`, result.data);
       parts.push(await sha256Hex(result.data));
     }
@@ -189,7 +190,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // Ciclo completo. `http` ofrece json(method, path, body) y put(path, bytes).
 export async function prepareResources({ client, http, JSZip, languages, force = [], onProgress = () => {}, signal }) {
   const { inputs, declared, summary } = await collectInputs(client, languages, onProgress);
-  onProgress({ fase: 'consultando', texto: 'Comprobando qué recursos hacen falta' });
+  onProgress({ fase: 'consultando', texto: t('Comprobando qué recursos hacen falta') });
   const created = await http.json('POST', '/api/recursos/trabajos', { idiomas: languages, entradas: declared, regenerar: force });
   if (!created.trabajo) return { estado: 'alDia', plan: created.plan, resumen: summary };
   const job = created.trabajo;
@@ -199,14 +200,14 @@ export async function prepareResources({ client, http, JSZip, languages, force =
   // Cancelar en cualquier punto deja el trabajo borrado en el servidor, no a medias.
   const cancelJob = async () => {
     try { await http.json('DELETE', `/api/recursos/trabajos/${job.id}`); } catch { /* el servidor lo sustituye con el siguiente trabajo */ }
-    throw new Error('Preparación cancelada');
+    throw new Error(t('Preparación cancelada'));
   };
   for (const entries of batches(chosen)) {
     if (signal?.aborted) await cancelJob();
     const bytes = await zipBatch(entries, JSZip);
     await http.put(`/api/recursos/trabajos/${job.id}/lote`, bytes);
     done += entries.length;
-    onProgress({ fase: 'enviando', texto: `Enviando al servidor ${done}/${chosen.size} ficheros`, hecho: done, total: chosen.size });
+    onProgress({ fase: 'enviando', texto: t('Enviando al servidor {done}/{total} ficheros', { done, total: chosen.size }), hecho: done, total: chosen.size });
   }
   if (signal?.aborted) await cancelJob();
   await http.json('POST', `/api/recursos/trabajos/${job.id}/iniciar`);

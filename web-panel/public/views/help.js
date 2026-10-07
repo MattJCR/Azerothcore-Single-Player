@@ -3,6 +3,7 @@
 // Vista "Comandos y ayuda": catálogo de comandos y artículos con filtro por
 // categoría y buscador.
 import { $, state, api, showLogin, showToast, escapeHtml } from '../shared.js';
+import { t, lowerCase } from '../i18n.js';
 
 export function enter() {
   loadHelp();
@@ -10,13 +11,13 @@ export function enter() {
 
 function helpEntryHtml(kind, entry) {
   if (kind === 'command') {
-    const levelNames = ['Jugador', 'Moderador', 'Game Master', 'Administrador'];
+    const levelNames = [t('Jugador'), t('Moderador'), t('Game Master'), t('Administrador')];
     return `<details class="help-entry">
-      <summary><span class="help-kind">.${escapeHtml(entry.path)}</span><strong>${escapeHtml(entry.title || entry.path)}</strong><span class="help-badges">${entry.isFamily ? '<em class="help-family">Familia</em>' : ''}<em class="help-level help-level-${entry.minSecurity}">${levelNames[entry.minSecurity] || `Nivel ${entry.minSecurity}`}</em></span></summary>
+      <summary><span class="help-kind">.${escapeHtml(entry.path)}</span><strong>${escapeHtml(entry.title || entry.path)}</strong><span class="help-badges">${entry.isFamily ? `<em class="help-family">${t('Familia')}</em>` : ''}<em class="help-level help-level-${entry.minSecurity}">${levelNames[entry.minSecurity] || t('Nivel {level}', { level: entry.minSecurity })}</em></span></summary>
       <div class="help-entry-body">
         ${entry.description ? `<p>${escapeHtml(entry.description).replaceAll('\n', '<br>')}</p>` : ''}
-        ${entry.syntax ? `<p class="help-label">Uso</p><code>${escapeHtml(entry.syntax)}</code>` : ''}
-        ${entry.examples ? `<p class="help-label">Ejemplos</p><code>${escapeHtml(entry.examples).replaceAll('\n', '<br>')}</code>` : ''}
+        ${entry.syntax ? `<p class="help-label">${t('Uso')}</p><code>${escapeHtml(entry.syntax)}</code>` : ''}
+        ${entry.examples ? `<p class="help-label">${t('Ejemplos')}</p><code>${escapeHtml(entry.examples).replaceAll('\n', '<br>')}</code>` : ''}
       </div>
     </details>`;
   }
@@ -28,16 +29,16 @@ function helpEntryHtml(kind, entry) {
 
 function renderHelp() {
   if (!state.help) return;
-  const search = $('#help-search').value.trim().toLocaleLowerCase('es');
+  const search = lowerCase($('#help-search').value.trim());
   const categoryFilter = state.helpCategory;
-  const matches = (text) => !search || String(text || '').toLocaleLowerCase('es').includes(search);
+  const matches = (text) => !search || lowerCase(text || '').includes(search);
 
   const searchedCommands = state.help.commands.filter((command) => matches(command.path) || matches(command.title) || matches(command.description) || matches(command.keywords) || matches(command.syntax) || matches(command.examples));
   const searchedArticles = state.help.articles.filter((article) => matches(article.title) || matches(article.body) || matches(article.keywords));
 
   // Barra siempre visible con el recuento por categoría, en vez de un
   // desplegable que esconde de un vistazo cuánto hay en cada una.
-  $('#help-rail').innerHTML = [{ id: '', name: 'Todas' }, ...state.help.categories].map((category) => {
+  $('#help-rail').innerHTML = [{ id: '', name: t('Todas') }, ...state.help.categories].map((category) => {
     const count = category.id === ''
       ? searchedCommands.length + searchedArticles.length
       : searchedCommands.filter((command) => command.categoryId === category.id).length

@@ -14,6 +14,7 @@ import { createPatchCatalog } from './patches.js';
 import { createResourceStore } from './resources.js';
 import { useIconSource } from './item-icons.js';
 import { soapClient as defaultSoapClient } from './soap.js';
+import { languageMiddleware, translate } from './i18n.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerPlayersRoutes } from './routes/players.js';
 import { registerSocialMapRoutes } from './routes/socialMap.js';
@@ -71,6 +72,7 @@ export function createApp(overrides = {}) {
 
   app.disable('x-powered-by');
   app.set('trust proxy', 'loopback');
+  app.use(languageMiddleware);
   app.use((request, response, next) => {
     response.set({
       'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
@@ -278,7 +280,7 @@ export function createApp(overrides = {}) {
   app.use(express.static(publicDirectory, { index: false, maxAge: '1h' }));
   app.get('/{*path}', (request, response) => {
     if (request.path.startsWith('/api/')) return response.status(404).json({ error: 'Endpoint no encontrado' });
-    if (path.extname(request.path)) return response.status(404).type('text').send('Recurso no encontrado');
+    if (path.extname(request.path)) return response.status(404).type('text').send(translate('Recurso no encontrado', request.lang));
     response.sendFile(path.join(publicDirectory, 'index.html'));
   });
 
