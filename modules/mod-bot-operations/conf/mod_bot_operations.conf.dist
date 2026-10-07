@@ -1,0 +1,69 @@
+[worldserver]
+
+###################################################################################################
+# MOD-BOT-OPERATIONS
+#
+#   Puente entre modules/shared/BotOperations.h (en memoria, dentro del
+#   worldserver) y MySQL (acore_world), para que el panel web tenga una vista
+#   "Operaciones de bots" sin leer memoria privada de otros modulos ni
+#   interpretar texto de SOAP:
+#
+#     - Publica una instantanea (bot_operations_snapshot) cada
+#       SnapshotIntervalSeconds, con lo que mod-queue-bots/mod-world-bots/
+#       mod-party-here/mod-quest-mates/mod-home-guild reportan, mas las
+#       reservas de login (BotPopulationCoordinator) y la ocupacion de bots
+#       (BotClaims).
+#     - Procesa una cola de acciones estrictamente limitada
+#       (bot_operations_action): adelantar la proxima pasada normal de
+#       poblacion/etapa, colas o cuidado de grupos/hermandades; parar un
+#       evento de guerra de mundo atascado; refrescar la instantanea. Ninguna
+#       teletransporta, desconecta, sube de nivel, reequipa ni fuerza logins
+#       masivos: solo adelanta relojes que el modulo destino ya respeta con
+#       sus propios limites.
+#
+#   No ofrece ningun comando de juego: solo lee/escribe estas dos tablas.
+#
+###################################################################################################
+
+#
+#    BotOperations.Enable
+#        Descripcion: Interruptor general del modulo. Con 0 no publica
+#                     instantaneas ni procesa acciones: el panel mostrara que
+#                     no hay una instantanea reciente.
+#        Por defecto: 0 - (desactivado)
+#                     1 - (activado)
+
+BotOperations.Enable = 0
+
+#
+#    BotOperations.SnapshotIntervalSeconds
+#        Descripcion: Cada cuanto se publica bot_operations_snapshot.
+#        Por defecto: 10
+
+BotOperations.SnapshotIntervalSeconds = 10
+
+#
+#    BotOperations.ActionPollIntervalSeconds
+#        Descripcion: Cada cuanto se revisan las filas pendientes de
+#                     bot_operations_action.
+#        Por defecto: 2
+
+BotOperations.ActionPollIntervalSeconds = 2
+
+#
+#    BotOperations.ActionQueueMax
+#        Descripcion: Maximo de filas pendientes que se procesan en cada
+#                     revision. El resto espera a la siguiente.
+#        Por defecto: 20
+
+BotOperations.ActionQueueMax = 20
+
+#
+#    BotOperations.ActionMaxAgeSeconds
+#        Descripcion: Una accion pendiente mas vieja que esto se marca
+#                     'expired' en vez de ejecutarse tarde (p.ej. si el modulo
+#                     destino estaba apagado, o el worldserver se reinicio con
+#                     la peticion a medias). 0 = sin limite (no recomendado).
+#        Por defecto: 120
+
+BotOperations.ActionMaxAgeSeconds = 120

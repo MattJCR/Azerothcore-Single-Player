@@ -1,0 +1,15 @@
+Licencia: la del proyecto que modifica, que no la declara en el código fijado; sólo se publica esta diferencia (ver THIRD-PARTY-NOTICES.txt).
+
+diff --git a/a/Chatter/Modules/AltNames.lua b/b/Chatter/Modules/AltNames.lua
+index a4aa7aa..f1f34c8 100644
+--- a/a/Chatter/Modules/AltNames.lua
++++ b/b/Chatter/Modules/AltNames.lua
+@@ -328,7 +328,7 @@ function mod:ScanGuildNotes()
+ 	for i=1,GetNumGuildMembers(true) do
+ 		local name, rank, rankIndex, level, class, zone, note, officernote, online, status = GetGuildRosterInfo(i);
+ 		local success
+-		for word in gmatch(strlower(note), "[%a\128-\255]+") do
++		for word in gmatch(strlower(note or ""), "[%a\128-\255]+") do
+ 			if names[word] then
+ 				GUILDNOTES[name] = names[word]
+ 				success = true

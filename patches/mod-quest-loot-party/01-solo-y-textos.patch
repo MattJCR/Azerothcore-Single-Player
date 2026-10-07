@@ -1,0 +1,39 @@
+Licencia: AGPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+SP04: el hook original convierte en freeforall los objetos blancos de misión
+también para personajes sin grupo. Sólo queremos copias para miembros del grupo
+presentes al generarse el botín; en solitario manda el core. Se cierra además
+el color del anuncio en esES/esMX y se explica lo que realmente hace.
+Escrito contra mod-quest-loot-party 6f073c1bef1bba1aa73787d1e30db7429f2b1c7b.
+
+diff --git a/src/qlp_main.cpp b/src/qlp_main.cpp
+--- a/src/qlp_main.cpp
++++ b/src/qlp_main.cpp
+@@ -22,6 +22,9 @@ public:
+ 
+-    void OnPlayerBeforeFillQuestLootItem(Player* /*player*/, LootItem& item) override
++    void OnPlayerBeforeFillQuestLootItem(Player* player, LootItem& item) override
+     {
++        if (!player || !player->GetGroup())
++            return;
++
+         if (sConfigMgr->GetOption<bool>("QuestParty.Enable", true))
+         {
+             ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(item.itemid);
+diff --git a/data/sql/db-world/base/qlp_2026_04_19_00.sql b/data/sql/db-world/base/qlp_2026_04_19_00.sql
+--- a/data/sql/db-world/base/qlp_2026_04_19_00.sql
++++ b/data/sql/db-world/base/qlp_2026_04_19_00.sql
+@@ -1,6 +1,6 @@
+ DELETE FROM `module_string` WHERE `module`='mod-quest-loot-party';
+ INSERT INTO `module_string` (`module`, `id`, `string`) VALUES
+-('mod-quest-loot-party', 1, 'This server is running the |cff4CFF00Quest Loot Party |rmodule.');
++('mod-quest-loot-party', 1, 'White quest loot can be collected once by each eligible party member.');
+ 
+ DELETE FROM `module_string_locale` WHERE `module`='mod-quest-loot-party';
+ INSERT INTO `module_string_locale` (`module`, `id`, `locale`, `string`) VALUES
+@@ -8,3 +8,3 @@
+ ('mod-quest-loot-party', 1, 'deDE', 'Dieser Server verwendet das |cff4CFF00Quest Loot Party |rModul.'),
+-('mod-quest-loot-party', 1, 'esES', 'Este servidor está ejecutando el módulo |cff4CFF00Quest Loot Party.'),
+-('mod-quest-loot-party', 1, 'esMX', 'Este servidor está ejecutando el módulo |cff4CFF00Quest Loot Party.');
++('mod-quest-loot-party', 1, 'esES', 'En grupo, cada miembro elegible puede recoger su copia del botín blanco de misión.'),
++('mod-quest-loot-party', 1, 'esMX', 'En grupo, cada miembro elegible puede recoger su copia del botín blanco de misión.');

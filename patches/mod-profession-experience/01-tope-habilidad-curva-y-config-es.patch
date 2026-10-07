@@ -1,0 +1,194 @@
+Licencia: AGPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+SP01: bloquear XP al alcanzar el rango aprendido y corregir la curva.
+Base: Tereneckla/mod-profession-experience d1bd97085d27bb8de11d13af097d02460556b0f3.
+Problema: los hooks premian antes de comprobar el máximo; minSkill/450 es entero.
+Solución: opción BlockAtSkillCap para las tres familias, valores puros y división
+real. Configuración explicada en español. No se excluyen bots ni basura.
+La fuente 42 se conserva explícita; no hay dependencia con otros módulos.
+
+--- a/src/ProfessionExp.cpp
++++ b/src/ProfessionExp.cpp
+@@ -38,6 +38,8 @@
+     MULT_GRANDMASTER,
+     MULT_CURVE,
+ 
++    BLOCK_AT_SKILL_CAP,
++
+     NUM_CONFIGS,
+ };
+ 
+@@ -48,6 +50,7 @@
+ 
+     void BuildConfigCache() override
+     {
++        SetConfigValue<bool>(PEConfig::BLOCK_AT_SKILL_CAP, "ProfessionExperience.BlockAtSkillCap", true, ConfigValueCache::Reloadable::Yes);
+         SetConfigValue<float>(PEConfig::ALCHEMY_EXPERIENCE,        "ProfessionExperience.Alchemy.Experience",        0.00f, ConfigValueCache::Reloadable::Yes, [](float const& value) { return value >= 0.0f; }, ">= 0");
+         SetConfigValue<float>(PEConfig::BLACKSMITH_EXPERIENCE,     "ProfessionExperience.Blacksmith.Experience",     0.00f, ConfigValueCache::Reloadable::Yes, [](float const& value) { return value >= 0.0f; }, ">= 0");
+         SetConfigValue<float>(PEConfig::COOKING_EXPERIENCE,        "ProfessionExperience.Cooking.Experience",        0.00f, ConfigValueCache::Reloadable::Yes, [](float const& value) { return value >= 0.0f; }, ">= 0");
+@@ -83,6 +86,10 @@
+ };
+ static PEConfigData peConfigData;
+ 
++// Fuente propia del módulo original. Guild Levels no la bonifica ni la suma.
++// Challenge Modes reconoce el mismo 42 para vetarla en «sólo misiones».
++static constexpr uint8 PROFESSION_XP_SOURCE = 42;
++
+ class RewardExperienceScript : public PlayerScript
+ {
+ public:
+@@ -94,6 +101,9 @@
+ 
+     bool OnPlayerUpdateFishingSkill(Player* player, int32 skill, int32 zone_skill, int32 /*chance*/, int32 /*roll*/) override
+     {
++        if (IsSkillCapped(player, SKILL_FISHING))
++            return true;
++
+         if (zone_skill < 1)
+             zone_skill = 1;
+ 
+@@ -105,6 +115,9 @@
+ 
+     void OnPlayerUpdateGatheringSkill(Player* player, uint32 skillId, uint32 currentLevel, uint32 gray, uint32 green, uint32 yellow, uint32& /*gain*/) override
+     {
++        if (IsSkillCapped(player, skillId))
++            return;
++
+         PEConfig experienceSetting;
+         switch (skillId)
+         {
+@@ -130,6 +143,9 @@
+ 
+     void OnPlayerUpdateCraftingSkill(Player *player, SkillLineAbilityEntry const* skill, uint32 currentLevel, uint32& /*gain*/) override
+     {
++        if (IsSkillCapped(player, skill->SkillLine))
++            return;
++
+         PEConfig experienceSetting;
+         switch (skill->SkillLine)
+         {
+@@ -180,6 +196,13 @@
+             uint32 min = skill->MinSkillLineRank;
+             RewardXP(player, currentLevel, gray, green, yellow, min, xpFactor);
+         }
++    }
++
++    bool IsSkillCapped(Player* player, uint32 skillId) const
++    {
++        // Valores base: una caña o encantamiento no cambia el rango aprendido.
++        return peConfigData.GetConfigValue<bool>(PEConfig::BLOCK_AT_SKILL_CAP)
++            && player->GetPureSkillValue(skillId) >= player->GetPureMaxSkillValue(skillId);
+     }
+ 
+     void RewardXP(Player* player, uint32 currentLevel, uint32 gray, uint32 green, uint32 yellow, uint32 minSkill, float xpFraction)
+@@ -208,9 +231,9 @@
+             xp = xp * peConfigData.GetConfigValue<float>(PEConfig::MULT_APPRENTICE);
+ 
+         if (float curve = peConfigData.GetConfigValue<float>(PEConfig::MULT_CURVE))
+-            xp = xp * pow(curve,(minSkill/450));
+-
+-        sScriptMgr->OnPlayerGiveXP(player, xp, nullptr, PlayerXPSource(42));
++            xp = xp * pow(curve, minSkill / 450.0f);
++
++        sScriptMgr->OnPlayerGiveXP(player, xp, nullptr, PROFESSION_XP_SOURCE);
+         player->GiveXP(xp, nullptr);
+     }
+ };
+--- a/conf/mod-profession-experience.conf.dist
++++ b/conf/mod-profession-experience.conf.dist
+@@ -2,69 +2,42 @@
+ # Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license: https://github.com/azerothcore/azerothcore-wotlk/blob/master/LICENSE-AGPL3
+ #
+ 
++# Experiencia por profesiones. Configuración del módulo y adaptación SP01.
++# Las opciones se pueden recargar con .reload config.
+ [worldserver]
+ 
+-########################################
+-# Profession Experience Configuration
+-########################################
+-#
+-#    ProfessionExperience.MultGray
+-#    ProfessionExperience.MultGreen
+-#    ProfessionExperience.MultYellow
+-#    ProfessionExperience.MultOrange
+-#        Description: Multiplicator to experience when using a skill with this difficulty
+-#        Default:     0.0  - (ProfessionExperience.MultGray)
+-#                     0.75 - (ProfessionExperience.MultGreen)
+-#                     1.0  - (ProfessionExperience.MultYellow)
+-#                     1.25 - (ProfessionExperience.MultOrange)
++# Impedir XP al alcanzar el máximo del rango aprendido (también 450/450).
++# Se compara habilidad base, sin bonificaciones de equipo. No impide fabricar,
++# recolectar o pescar ni modifica la subida de habilidad del core.
++ProfessionExperience.BlockAtSkillCap = 1
+ 
+-ProfessionExperience.MultGray   = 0.0
+-ProfessionExperience.MultGreen  = 0.75
++# Multiplicadores por dificultad de la actividad. La fase 5 fija los valores
++# de config.sh: naranja 1, amarillo 0.5, verde 0.25 y gris 0.
++ProfessionExperience.MultGray = 0.0
++ProfessionExperience.MultGreen = 0.75
+ ProfessionExperience.MultYellow = 1.0
+ ProfessionExperience.MultOrange = 1.25
+ 
+-
+-#
+-#    ProfessionExperience.MultApprentice    1-75
+-#    ProfessionExperience.MultJourneyman   76-150
+-#    ProfessionExperience.MultExpert      151-225
+-#    ProfessionExperience.MultArtisan     226-300
+-#    ProfessionExperience.MultMaster      301-375
+-#    ProfessionExperience.MultGrandMaster 376-450
+-#        Description: Multiplicator to experience when using a skill in this skill range
+-#        Default:     1.0 - (ProfessionExperience.MultApprentice)
+-#                     1.0 - (ProfessionExperience.MultJourneyman)
+-#                     1.0 - (ProfessionExperience.MultExpert)
+-#                     1.0 - (ProfessionExperience.MultArtisan)
+-#                     1.0 - (ProfessionExperience.MultMaster)
+-#                     1.0 - (ProfessionExperience.MultGrandMaster)
+-
+-ProfessionExperience.MultApprentice  = 1.0
+-ProfessionExperience.MultJourneyman  = 1.0
+-ProfessionExperience.MultExpert      = 1.0
+-ProfessionExperience.MultArtisan     = 1.0
+-ProfessionExperience.MultMaster      = 1.0
++# Multiplicadores según el requisito de habilidad del contenido, no el nivel
++# del personaje: 1-75, 76-150, 151-225, 226-300, 301-375 y 376-450.
++ProfessionExperience.MultApprentice = 1.0
++ProfessionExperience.MultJourneyman = 1.0
++ProfessionExperience.MultExpert = 1.0
++ProfessionExperience.MultArtisan = 1.0
++ProfessionExperience.MultMaster = 1.0
+ ProfessionExperience.MultGrandMaster = 1.0
+ 
+-
+-#
+-#    ProfessionExperience.MultCurve
+-#        Description: Multiplicator to Experience applied as an exponential curve. Formula is "xp x mult ^ (minSkill/450).
+-#                     Close to 1 at skill 1. Square root at skill 225. Values below 1.0 apply a penalty at higher level instead.
+-#        Default:     5.0
+-#        Disabled:    0.0
+-
++# Curva adicional: XP * MultCurve^(requisito/450.0). Cero la desactiva.
++# La fase 5 la desactiva para conservar los porcentajes elegidos.
+ ProfessionExperience.MultCurve = 5.0
+ 
+-
+-#
+-#    ProfessionExperience.*.Experience
+-#        Description: Part of a level gained for performing the action
+-#        Default:     0.01 - (1%, ProfessionExperience.Fishing.Experience)
+-#                     0.01 - (1%, ProfessionExperience.Herbalism.Experience)
+-#                     0.01 - (1%, ProfessionExperience.Mining.Experience)
+-#                     0.00 - (Disabled, the rest)
+-
++# Fracción de la XP TOTAL requerida para subir el nivel actual: 0.01 = 1 %.
++# Cero desactiva la actividad. Se aplican después dificultad y rango/curva.
++# Estos son los valores upstream; config.sh activa las 17 actividades a 0.01.
++# Se recompensa la actividad aunque no suba habilidad, incluida basura de pesca.
++# Bots incluidos. Sin reducción por nivel alto ni protección al reaprender.
++# Prospección y molienda no se remuneran: se conserva la cobertura original.
++# Respeta los modificadores/vetos de XP del servidor; fuente independiente 42.
+ ProfessionExperience.Alchemy.Experience        = 0.00
+ ProfessionExperience.Blacksmith.Experience     = 0.00
+ ProfessionExperience.Cooking.Experience        = 0.00

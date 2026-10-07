@@ -1,0 +1,578 @@
+[worldserver]
+
+###################################################################################################
+# MOD-WORLD-BOTS
+#
+#   Que la zona en la que estas no este vacia. Al entrar en una zona se cuentan
+#   los bots que hay en ella de tu tramo de nivel y, si faltan hasta el
+#   objetivo, se traen: primero bots libres de otras zonas (teletransportados a
+#   puntos de caza a mas de 250 yardas de ti, asi que no los ves aparecer) y, si
+#   no hay bastantes despiertos, se encienden dormidos de la reserva.
+#
+#   Mientras sigues en la zona se repone cada minuto lo que se haya ido o
+#   muerto. Al salir no se hace nada: se quedan donde estan.
+#
+#   Requiere mod-playerbots con bots aleatorios. Sin el, el modulo compila y no
+#   hace nada.
+#
+###################################################################################################
+
+#
+#    WorldBots.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+WorldBots.Enable = 1
+
+#
+#    WorldBots.MinBots / WorldBots.MaxBots
+#        Descripcion: Cuantos bots de tu tramo de nivel se quieren en tu zona.
+#                     El objetivo se elige al azar entre los dos cada vez que
+#                     entras en una zona, para que no todas parezcan iguales.
+#                     Solo cuentan los bots de tu tramo: los de otros niveles
+#                     que ya estuvieran alli no se tocan ni se cuentan.
+#        Por defecto: 12 / 25
+
+WorldBots.MinBots = 12
+WorldBots.MaxBots = 25
+
+#
+#    WorldBots.LevelBelow / WorldBots.LevelAbove
+#        Descripcion: El tramo de nivel de los bots que se traen, respecto al
+#                     tuyo: [nivel - LevelBelow, nivel + LevelAbove].
+#        Por defecto: 5 / 3
+
+WorldBots.LevelBelow = 5
+WorldBots.LevelAbove = 3
+
+#
+#    WorldBots.MinDistance
+#        Descripcion: Distancia minima, en yardas, entre tu y el punto donde se
+#                     suelta a un bot. Por debajo de 150 el jugador lo veria
+#                     aparecer (es el margen que se impone el propio
+#                     playerbots), asi que 150 es el minimo admitido. Si en la
+#                     zona no hay ningun punto de caza tan lejos, se usa 150.
+#        Por defecto: 250
+
+WorldBots.MinDistance = 250
+
+#
+#    WorldBots.OppositeFactionShare
+#        Descripcion: En zonas contestadas, que parte del objetivo se cubre con
+#                     bots de la faccion contraria. En zonas de una sola faccion
+#                     (Elwynn, Durotar...) todos son de esa faccion, sea la tuya
+#                     o no. Con 0 solo se traen bots de tu faccion.
+#        Por defecto: 0.35
+
+WorldBots.OppositeFactionShare = 0.35
+
+#
+#    WorldBots.MaxPerPass
+#        Descripcion: Cuantos bots se teletransportan como maximo en cada
+#                     pasada. Es lo que evita las oleadas: la zona se va llenando
+#                     en tandas cada 15 segundos hasta llegar al objetivo.
+#        Por defecto: 5
+
+WorldBots.MaxPerPass = 5
+
+#
+#    WorldBots.MaxTeleportsPerPass
+#        Descripcion: Tope global de operaciones de poblacion caras en una pasada
+#                     (teletransportes y tambien logins de bot dormido),
+#                     compartido por todos los jugadores y zonas. MaxPerPass
+#                     sigue limitando cada zona individual.
+#        Por defecto: 10 (0 pausa las reubicaciones y los logins de world-bots)
+
+WorldBots.MaxTeleportsPerPass = 10
+
+#
+#    WorldBots.ScanSeconds
+#        Descripcion: Cada cuantos segundos se mira en que zona esta cada
+#                     jugador. El cambio de zona se detecta antes (lo avisa el
+#                     propio nucleo); esto es el ritmo del resto.
+#        Por defecto: 5
+
+WorldBots.ScanSeconds = 5
+
+#
+#    WorldBots.TopUpSeconds
+#        Descripcion: Con la zona ya llena, cada cuantos segundos se vuelve a
+#                     contar para reponer a los que se hayan ido o muerto.
+#        Por defecto: 60
+
+WorldBots.TopUpSeconds = 60
+
+#
+#    WorldBots.WakeBots
+#        Descripcion: Si no hay bastantes bots libres de tu tramo en el mundo,
+#                     encender dormidos de la reserva (del tramo y la faccion
+#                     que hagan falta). Si el mundo ya esta en su tope de bots,
+#                     antes se manda a dormir a otros tantos que esten ociosos,
+#                     fuera de tu tramo y lejos de cualquier jugador.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+WorldBots.WakeBots = 1
+
+#
+#    WorldBots.WakeMax
+#        Descripcion: Tope de bots que se despiertan de una vez. Hay un margen
+#                     de 15 segundos entre tandas, que es lo que tardan en
+#                     entrar al mundo.
+#        Por defecto: 20
+
+WorldBots.WakeMax = 20
+
+#
+#    WorldBots.BotMinWorldSeconds
+#        Descripcion: Antiguedad minima de la sesion de un bot antes de poder
+#                     teletransportarlo para poblar una zona o un evento PvP.
+#                     Protege las fases finales del login de playerbots.
+#        Por defecto: 60 (0 desactiva la guarda)
+
+WorldBots.BotMinWorldSeconds = 60
+
+#
+#    WorldBots.CityZones
+#        Descripcion: Zonas que se tratan como capital: no tienen puntos de
+#                     caza, tienen NPC de servicio (posaderos, banqueros,
+#                     subastadores, vendedores, entrenadores, maestros de
+#                     vuelo), y delante de ellos se suelta a los bots. Por
+#                     defecto las ocho capitales mas Shattrath y Dalaran.
+#        Por defecto: "1519,1537,1657,3557,1637,1638,1497,3487,3703,4395"
+
+WorldBots.CityZones = "1519,1537,1657,3557,1637,1638,1497,3487,3703,4395"
+
+#
+#    WorldBots.CityMinBots / WorldBots.CityMaxBots
+#        Descripcion: Cuantos bots se quieren en una capital, de CUALQUIER nivel
+#                     (en la ciudad lo que se quiere es gente). Al azar entre
+#                     los dos cada vez que entras.
+#        Por defecto: 30 / 50
+
+WorldBots.CityMinBots = 30
+WorldBots.CityMaxBots = 50
+
+#
+#    WorldBots.CityMinDistance
+#        Descripcion: Distancia minima a ti para soltar a un bot en la ciudad.
+#                     Las ciudades son pequenas: 150 (el minimo admitido) deja
+#                     sitio en todas.
+#        Por defecto: 150
+
+WorldBots.CityMinDistance = 150
+
+#
+#    WorldBots.Announce
+#        Descripcion: Avisar por chat de cuantos bots han llegado a la zona.
+#                     Apagado por defecto: la gracia es que no se note.
+#        Por defecto: 0 - (desactivado)
+#                     1 - (activado)
+
+WorldBots.Announce = 0
+
+#
+#    WorldBots.Verbose
+#        Descripcion: Elevar a INFO los mensajes recurrentes de relleno y
+#                     recuento. Con 0 siguen disponibles en DEBUG sin llenar
+#                     Server.log durante la actividad normal.
+#        Por defecto: 0
+
+WorldBots.Verbose = 0
+
+#
+#    WorldBots.NearbyPlayerRadius
+#        Descripcion: Radio (yardas) de la comprobacion "alguien lo esta viendo"
+#                     antes de reubicar un bot. Tambien es el suelo de MinDistance
+#                     y CityMinDistance. Minimo 50.
+#        Por defecto: 150
+
+WorldBots.NearbyPlayerRadius = 150
+
+#
+#    WorldBots.WakeBatchSeconds / WorldBots.ZoneSettleSeconds / WorldBots.RetrySeconds
+#        Descripcion: WakeBatchSeconds  - margen entre tandas de despertar bots.
+#                     ZoneSettleSeconds - espera a que la zona se asiente al
+#                                         cambiar de zona antes de contar/rellenar.
+#                     RetrySeconds      - reintento cuando faltan bots libres o el
+#                                         teletransporte no cabe esta pasada.
+#        Por defecto: 15 / 2 / 15
+
+WorldBots.WakeBatchSeconds = 15
+WorldBots.ZoneSettleSeconds = 2
+WorldBots.RetrySeconds = 15
+
+#
+#    WorldBots.DeficitGraceSeconds
+#        Descripcion: Una vez alcanzado el objetivo de una zona, cuanto se
+#                     espera tras detectar un hueco (una baja, alguien que se
+#                     ha ido) antes de reponerlo. El primer relleno de una
+#                     visita nunca espera: esto sólo evita reponer de golpe
+#                     una baja que playerbots va a resucitar solo enseguida,
+#                     lo que acababa sobrepoblando la zona al volver.
+#        Por defecto: 20 (0 desactiva la espera: repone al primer hueco)
+#
+#    WorldBots.ArrivalGraceSeconds
+#        Descripcion: Un bot enviado con un salto entre mapas no aparece en el
+#                     recuento de la zona destino hasta que playerbots remata
+#                     el salto (HandleTeleportAck, un tick despues). Mientras
+#                     tanto cuenta como "en camino" hasta este margen; pasado,
+#                     se descarta (el salto no llego a completarse).
+#        Por defecto: 30
+#
+#    WorldBots.TeleportMaxAttempts
+#        Descripcion: Puntos de caza que se prueban como maximo por bot en
+#                     cada teletransporte, antes de darlo por fallido esta
+#                     pasada (agua o altura invalida). Acota el coste cuando
+#                     la zona tiene muchos puntos; los intentos no probados
+#                     los recoge la pasada siguiente (cursor por zona, no se
+#                     pierden).
+#        Por defecto: 12
+
+WorldBots.DeficitGraceSeconds = 20
+WorldBots.ArrivalGraceSeconds = 30
+WorldBots.TeleportMaxAttempts = 12
+
+#
+#    WorldBots.AdaptiveDensity / .AdaptiveDensityPerHuman / .AdaptiveDensityMax
+#        Descripcion: Densidad adaptativa. Con 0 (por defecto) el objetivo de
+#                     bots de una zona es un valor al azar del rango
+#                     MinBots-MaxBots, elegido al entrar. Con 1, se usa un punto
+#                     medio estable MAS AdaptiveDensityPerHuman bots por cada
+#                     humano de mas que haya en la zona (util si juegas con
+#                     amigos), topado en AdaptiveDensityMax (0 = 2x MaxBots, o
+#                     2x CityMaxBots en capitales).
+#        Por defecto: 0 / 4 / 0
+
+WorldBots.AdaptiveDensity = 0
+WorldBots.AdaptiveDensityPerHuman = 4
+WorldBots.AdaptiveDensityMax = 0
+
+#
+#    WorldBots.Samaritan  (y .SamaritanHpPercent / .SamaritanRadius /
+#    .SamaritanMaxHelpers / .SamaritanCooldownSeconds / .SamaritanDurationSeconds /
+#    .SamaritanLevelBelow / .SamaritanLevelAbove)
+#        Descripcion: EXPERIMENTAL, arranca en 0. Modo "buen samaritano": cuando
+#                     un jugador esta en combate por debajo de SamaritanHpPercent
+#                     de vida, hasta SamaritanMaxHelpers bots libres cercanos
+#                     (dentro de SamaritanRadius yardas, del tramo del jugador)
+#                     se teletransportan a su lado y se ponen a "cazar" ahi
+#                     durante SamaritanDurationSeconds: limpian lo que le rodea
+#                     sin agruparse ni tocarle el botin. Luego vuelven a donde
+#                     estaban. Un jugador puede rechazarlo con
+#                     ".wbots samaritano off" (hasta el reinicio).
+#                     Reacciona en la siguiente pasada de escaneo (hasta
+#                     WorldBots.ScanSeconds de retardo).
+#        Por defecto: 0 / 35 / 45 / 2 / 120 / 45 / 3 / 8
+
+WorldBots.Samaritan = 0
+WorldBots.SamaritanHpPercent = 35
+WorldBots.SamaritanRadius = 45
+WorldBots.SamaritanMaxHelpers = 2
+WorldBots.SamaritanCooldownSeconds = 120
+WorldBots.SamaritanDurationSeconds = 45
+WorldBots.SamaritanLevelBelow = 3
+WorldBots.SamaritanLevelAbove = 8
+
+#
+#    Claves de mod-playerbots que el modulo LEE directamente (no las duplica):
+#      AiPlayerbot.RandomBotMaps   -> de aqui salen los mapas donde vive la
+#                                     poblacion (cfg.maps).
+#      AiPlayerbot.MaxRandomBots   -> tope global; el modulo no despierta bots
+#                                     por encima de este numero.
+#      AiPlayerbot.MaxAddedBots    -> tope de bots que un jugador puede sumar.
+#    Y con WorldBots.Stage.Enable = 1 el modulo MUTA EN CALIENTE
+#      AiPlayerbot.RandomBotMaxLevel y AiPlayerbot.RandomBotMaps segun la etapa
+#    de individual-progression del jugador conectado (los restaura al desactivar
+#    la etapa o el modulo, y los reaplica tras un .reload config).
+#
+###################################################################################################
+# GUERRA DE MUNDO (WorldBots.Pvp.*)
+#
+#   Escaramuzas entre facciones en puntos calientes (Costasur, Molino Tarren,
+#   El Cruce, Astranaar...) y duelos a las puertas de las capitales. Fork
+#   propio de mod-playerbot-world-pvp: mismos puntos (tabla
+#   world_bots_pvp_hotspot en acore_world) y mismo ciclo, pero solo con bots
+#   libres, con las estrategias restauradas al acabar, sin "respuesta
+#   reactiva", y por defecto solo en zonas donde hay un jugador.
+#
+#   Comandos GM: .wpvp estado | lista | iniciar <nombre> | parar [id] | recargar
+#
+###################################################################################################
+
+#
+#    WorldBots.Pvp.Enable
+#        Por defecto: 1 - (activado)
+
+WorldBots.Pvp.Enable = 1
+
+#
+#    WorldBots.Pvp.TickSeconds / WorldBots.Pvp.EventChancePerTick
+#        Descripcion: Cada cuantos segundos se tira el dado, y con que
+#                     probabilidad decimal (0-100) arranca un evento si hay hueco.
+#        Por defecto: 60 / 25 (un evento cada ~4 minutos de media)
+
+WorldBots.Pvp.TickSeconds = 60
+WorldBots.Pvp.EventChancePerTick = 25
+
+#
+#    WorldBots.Pvp.MaxActiveEvents
+#        Descripcion: Eventos a la vez. Con un jugador, uno.
+#        Por defecto: 1
+
+WorldBots.Pvp.MaxActiveEvents = 1
+
+#
+#    WorldBots.Pvp.StartupDelaySeconds
+#        Descripcion: Segundos tras arrancar antes del primer evento, para que
+#                     los bots terminen de entrar.
+#        Por defecto: 120
+
+WorldBots.Pvp.StartupDelaySeconds = 120
+
+#
+#    WorldBots.Pvp.OnlyWithPlayerInZone
+#        Descripcion: Solo puntos calientes de una zona donde haya un jugador.
+#                     Una guerra que nadie ve es CPU.
+#        Por defecto: 1 - (activado)
+
+WorldBots.Pvp.OnlyWithPlayerInZone = 1
+
+#
+#    WorldBots.Pvp.MinLevel / WorldBots.Pvp.MaxBotsPerSide
+#        Descripcion: Nivel minimo de los bots (por encima del de cada punto)
+#                     y tope de bots por bando.
+#        Por defecto: 20 / 8
+
+WorldBots.Pvp.MinLevel = 20
+WorldBots.Pvp.MaxBotsPerSide = 8
+
+#
+#    WorldBots.Pvp.MinBotsToStart
+#        Descripcion: Minimo de bots por bando para que una escaramuza arranque.
+#                     Con menos, el evento no empieza y se prueba otro punto.
+#        Por defecto: 2
+
+WorldBots.Pvp.MinBotsToStart = 2
+
+#
+#    WorldBots.Pvp.AutoEnableHighHotspots
+#        Descripcion: Reactivar en automatico los puntos calientes de 50-60
+#                     (SearingGorge, BlackrockMountain, LightHopeChapel: vienen
+#                     apagados en el SQL) cuando hay al menos MinBotsToStart bots
+#                     libres de ese tramo en las DOS facciones. Se vuelven a
+#                     apagar si esa poblacion desaparece.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+WorldBots.Pvp.AutoEnableHighHotspots = 1
+
+#
+#    WorldBots.Pvp.CaptureObjective / .CaptureRadius / .CaptureGoal
+#        Descripcion: Objetivo de captura. Cada ~15 s, el bando con mas bots
+#                     vivos dentro de CaptureRadius yardas del punto suma un tick
+#                     de control. Al llegar a CaptureGoal ticks ese bando
+#                     "captura" y el evento termina antes de tiempo; se anuncia
+#                     el ganador. Con CaptureObjective = 0 el evento solo termina
+#                     por duracion.
+#        Por defecto: 1 / 40 / 10
+
+WorldBots.Pvp.CaptureObjective = 1
+WorldBots.Pvp.CaptureRadius = 40
+WorldBots.Pvp.CaptureGoal = 10
+
+#
+#    WorldBots.Pvp.GearMode / .GearMargin / .GearTolerance / .GearMinItemLevel
+#        Descripcion: Topar el equipo de los bots de la guerra a la fase de
+#                     progresion del humano de la zona. Mismas claves y mismo
+#                     criterio que QueueBots.Gear* (ver mod_queue_bots.conf).
+#                     0 = no tocar el equipo.
+#        Por defecto: 1 / 6 / 8 / 0
+
+WorldBots.Pvp.GearMode = 1
+WorldBots.Pvp.GearMargin = 6
+WorldBots.Pvp.GearTolerance = 8
+WorldBots.Pvp.GearMinItemLevel = 0
+
+#
+#    WorldBots.Pvp.KeepAwayDistance / WorldBots.Pvp.RepositionDistance
+#        Descripcion: Un punto de la escaramuza nunca a menos de KeepAwayDistance
+#                     yardas de un humano: se reproyecta a RepositionDistance en
+#                     direccion contraria.
+#        Por defecto: 160 / 200
+
+WorldBots.Pvp.KeepAwayDistance = 160
+WorldBots.Pvp.RepositionDistance = 200
+
+#
+#    WorldBots.Pvp.NearbyPlayerRadius
+#        Descripcion: Radio de "alguien lo esta viendo" al teletransportar un bot
+#                     de la guerra. Si no se pone, hereda WorldBots.NearbyPlayerRadius.
+#        Por defecto: (WorldBots.NearbyPlayerRadius, 150)
+
+WorldBots.Pvp.NearbyPlayerRadius = 150
+
+#
+#    WorldBots.Pvp.CombatGraceSeconds
+#        Descripcion: Al terminar un evento, segundos que se deja a un bot
+#                     acabar la pelea antes de forzarle la vuelta a casa.
+#        Por defecto: 60
+
+WorldBots.Pvp.CombatGraceSeconds = 60
+
+#
+#    WorldBots.Pvp.MoveDelaySeconds / WorldBots.Pvp.PositionJitter
+#        Descripcion: Segundos que los atacantes esperan en el punto de
+#                     reunion antes de avanzar, y dispersion en yardas al
+#                     soltarlos.
+#        Por defecto: 15 / 8
+
+WorldBots.Pvp.MoveDelaySeconds = 15
+WorldBots.Pvp.PositionJitter = 8
+
+#
+#    WorldBots.Pvp.Duels / DuelPairs / DuelDelaySeconds / DuelSpellId
+#        Descripcion: Duelos en los puntos de misma faccion: cuantas parejas,
+#                     cuanto esperan y con que hechizo se reta (7266 = Duelo).
+#        Por defecto: 1 / 4 / 8 / 7266
+
+WorldBots.Pvp.Duels = 1
+WorldBots.Pvp.DuelPairs = 4
+WorldBots.Pvp.DuelDelaySeconds = 8
+
+#
+#    WorldBots.Pvp.DuelRange / WorldBots.Pvp.DuelMaxTries
+#        Descripcion: Distancia maxima (yardas) para lanzar el hechizo de duelo,
+#                     y cuantas veces se intenta acercar al retado antes de
+#                     abandonar la pareja.
+#        Por defecto: 35 / 20
+
+WorldBots.Pvp.DuelRange = 35
+WorldBots.Pvp.DuelMaxTries = 20
+WorldBots.Pvp.DuelSpellId = 7266
+
+#
+#    WorldBots.Pvp.Announce
+#        Descripcion: Avisar a los jugadores de la zona ("La Horda marcha
+#                     sobre Costasur").
+#        Por defecto: 1 - (activado)
+
+WorldBots.Pvp.Announce = 1
+
+#
+#    WorldBots.Pvp.CombatStrategies / WorldBots.Pvp.NonCombatStrategies
+#        Descripcion: Estrategias de playerbots que se activan a los bots
+#                     durante el evento (se restauran al acabar).
+#        Por defecto: "+pvp,+boost,+dps debuff,-passive,-stay" /
+#                     "+pvp,+duel,+boost,-passive,-stay"
+
+WorldBots.Pvp.CombatStrategies = "+pvp,+boost,+dps debuff,-passive,-stay"
+WorldBots.Pvp.NonCombatStrategies = "+pvp,+duel,+boost,-passive,-stay"
+
+#
+#    WorldBots.Stage.Enable
+#        Descripcion: Poblacion por etapa (mod-individual-progression). Con un
+#                     jugador conectado, los bots aleatorios solo suben hasta
+#                     el nivel tope de su etapa y viven en sus mapas: en
+#                     Vanilla no hay bots de 61+ ni bots en Terrallende o
+#                     Rasganorte. La etapa activa es la MAS ALTA de los
+#                     jugadores conectados (no se toca la experiencia del
+#                     avanzado); sin jugadores, sin restriccion. Todos los bots
+#                     que pasan del tope se re-aleatorizan por debajo
+#                     (playerbots les da nivel,
+#                     equipo y zona nuevos), unos pocos cada 5 s y nunca
+#                     delante de un jugador. ".wbots etapa" lo ensena.
+#        Por defecto: 1
+#
+#    WorldBots.Stage.TbcFrom / WorldBots.Stage.WotlkFrom
+#        Descripcion: Nivel de progresion de individual-progression desde el
+#                     que la etapa es TBC (8 = PRE_TBC) y WotLK (13 =
+#                     TBC_TIER_5, que abre Naxxramas de WotLK).
+#        Por defecto: 8 / 13
+#
+#    WorldBots.Stage.VanillaCap / VanillaMaps / TbcCap / TbcMaps
+#        Descripcion: Nivel tope y mapas de cada etapa inferior. WotLK no
+#                     restringe nada.
+#        Por defecto: 60 / "0,1" / 70 / "0,1,530"
+#
+#    WorldBots.Stage.PerPass / WorldBots.Stage.SyncSeconds
+#        Descripcion: Tope de bots re-aleatorizados (por nivel) y, aparte,
+#                     tope de bots recolocados (por mapa) en cada pasada (5 s)
+#                     -el nivel va siempre primero y con prioridad, asi que
+#                     puede haber hasta el doble de acciones por pasada-, y
+#                     cada cuanto se comprueba que otra recarga no haya pisado
+#                     el tope y los mapas aplicados a playerbots. Un intervalo
+#                     de sincronizacion 0 desactiva esa comprobacion.
+#        Por defecto: 3 / 60
+#
+#    NOTA: con Stage.Enable=1 el modulo MUTA EN CALIENTE
+#    AiPlayerbot.RandomBotMaxLevel y AiPlayerbot.RandomBotMaps mientras hay
+#    jugadores. Al desactivar WorldBots.Enable o WorldBots.Stage.Enable con
+#    ".reload config" se restauran los valores originales; tras un ".reload
+#    config" de playerbots el modulo los vuelve a aplicar. Si el worldserver
+#    se para a mitad de etapa esos dos campos quedan con el valor topado en
+#    el fichero de playerbots hasta el siguiente arranque (no afecta a la
+#    ejecucion, playerbots relee su config al arrancar).
+WorldBots.Stage.Enable = 1
+WorldBots.Stage.TbcFrom = 8
+WorldBots.Stage.WotlkFrom = 13
+WorldBots.Stage.VanillaCap = 60
+WorldBots.Stage.VanillaMaps = "0,1"
+WorldBots.Stage.TbcCap = 70
+WorldBots.Stage.TbcMaps = "0,1,530"
+WorldBots.Stage.PerPass = 3
+WorldBots.Stage.SyncSeconds = 60
+
+#
+#    WorldBots.PlayerScale.Enable
+#        Descripcion: Servidor de una sola persona: el min/max fijo de
+#                     playerbots (AiPlayerbot.MinRandomBots/MaxRandomBots,
+#                     tipicamente 500/600) gasta esa RAM las 24 h que haya
+#                     alguien dentro, sea uno o varios. Con esto activo esos
+#                     dos campos dejan de salir del .conf de playerbots en
+#                     caliente: los calcula este modulo como PerPlayer x
+#                     jugadores reales conectados (nunca por encima de
+#                     Ceiling). Sin ningun jugador no se toca nada: no hace
+#                     falta, DisabledWithoutRealPlayer de playerbots ya vacia
+#                     el mundo por su cuenta.
+#        Por defecto: 0
+#
+#    WorldBots.PlayerScale.PerPlayer / .Ceiling
+#        Descripcion: Bots objetivo por cada jugador real conectado, y tope
+#                     duro del total (aunque se conecten muchos jugadores).
+#        Por defecto: 150 / 600
+#
+#    WorldBots.PlayerScale.SyncSeconds
+#        Descripcion: Cada cuanto se recalcula el objetivo. Bajarlo no
+#                     expulsa bots de golpe -solo se deja de admitir altas
+#                     nuevas hasta que EnablePeriodicOnlineOffline (o un
+#                     reinicio) rebaje la poblacion sola-, asi que no hace
+#                     falta que sea muy corto. Un intervalo 0 desactiva la
+#                     comprobacion (el ultimo objetivo aplicado se queda fijo).
+#        Por defecto: 60
+#
+#    NOTA: igual que WorldBots.Stage, muta en caliente campos publicos de
+#    playerbots (aqui MinRandomBots/MaxRandomBots). Al desactivar esto o todo
+#    el modulo con ".reload config" se restauran los valores que tuviera el
+#    .conf de playerbots antes de la primera vez que este modulo los toco.
+WorldBots.PlayerScale.Enable = 0
+WorldBots.PlayerScale.PerPlayer = 150
+WorldBots.PlayerScale.Ceiling = 600
+WorldBots.PlayerScale.SyncSeconds = 60
+
+#
+#    BotPopulation.*
+#        Descripcion: Coordinador compartido de los logins solicitados por
+#                     queue-bots, world-bots, party-here y home-guild. Las
+#                     reservas caducan si el login no aparece; los tres topes
+#                     reparten la rafaga global, por faccion y por tramo.
+#                     Un presupuesto 0 desactiva solo ese limite intermedio.
+#        Por defecto: 90 s / 40 total / 24 faccion / 12 tramo
+BotPopulation.PendingTimeoutSeconds = 90
+BotPopulation.MaxPendingTotal = 40
+BotPopulation.MaxPendingPerFaction = 24
+BotPopulation.MaxPendingPerRange = 12
+
+#
+###################################################################################################

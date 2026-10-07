@@ -1,0 +1,251 @@
+[worldserver]
+
+###################################################################################################
+# MOD-HOME-GUILD
+#
+#   Tu hermandad. El modulo no crea ninguna ni adopta las que ya existen. Cuando
+#   un jugador funda una hermandad mediante el flujo normal del juego, queda
+#   marcada como su hermandad de casa y se rellena con bots de su faccion y
+#   nivel. Solo el fundador mientras siga siendo lider activa el cuidado.
+#
+#   Los bots de la hermandad no se mandan nunca a dormir para hacer sitio, y
+#   playerbots no les cambia el nivel por su cuenta (LevelBrackets ignora a
+#   las hermandades lideradas por un humano): de su nivel se ocupa este modulo.
+#
+#   Requiere mod-playerbots con bots aleatorios. Sin el, compila y no hace nada.
+#
+###################################################################################################
+
+#
+#    HomeGuild.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+HomeGuild.Enable = 1
+
+#
+#    HomeGuild.LegacyName / HomeGuild.LegacyMotd
+#        Descripcion: Firma de las hermandades que la version antigua creaba
+#                     automaticamente. Solo se usa en la limpieza unica; no
+#                     determina el nombre ni el MOTD de una guild nueva.
+
+HomeGuild.LegacyName = "Companeros de {name}"
+HomeGuild.LegacyMotd = "Bienvenido a casa. Escribe .grupo para salir de mazmorra con nosotros."
+
+#
+#    HomeGuild.CleanupLegacyAutoGuilds
+#        Descripcion: En el primer arranque, disolver las hermandades que
+#                     coincidan con toda la firma segura de la version antigua:
+#                     nombre generado, MOTD y solo bots/personajes de la cuenta
+#                     del lider. La migracion queda registrada y no se repite.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+HomeGuild.CleanupLegacyAutoGuilds = 1
+
+#
+#    HomeGuild.Members
+#        Descripcion: Cuantos bots se quieren en la hermandad (sin contarte).
+#                     Con 15 hay tanques y sanadores de sobra para una banda de
+#                     10 y una mazmorra; para bandas de 25 pon 30.
+#        Por defecto: 15
+
+HomeGuild.Members = 15
+
+#
+#    HomeGuild.LevelBelow / HomeGuild.LevelAbove
+#        Descripcion: Tramo de nivel de los bots que se reclutan, respecto al
+#                     tuyo.
+#        Por defecto: 3 / 2
+
+HomeGuild.LevelBelow = 3
+HomeGuild.LevelAbove = 2
+
+#
+#    HomeGuild.KeepOnline
+#        Descripcion: Mientras estes conectado, mantener conectados a los bots
+#                     de tu hermandad (se despiertan de la reserva si hace
+#                     falta, haciendo sitio con otros que no sean tuyos).
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+HomeGuild.KeepOnline = 1
+
+#
+#    HomeGuild.ReLevel / HomeGuild.ReLevelBehind
+#        Descripcion: Subir de nivel a los bots que se queden mas de
+#                     ReLevelBehind niveles por debajo de ti (con la fabrica
+#                     de playerbots: nivel, talentos y equipo nuevos, como en
+#                     "rndbot init"). Uno por pasada, nunca en combate ni en
+#                     grupo.
+#        Por defecto: 1 / 4
+
+HomeGuild.ReLevel = 1
+HomeGuild.ReLevelBehind = 4
+
+#
+#    HomeGuild.Announce
+#        Descripcion: Al conectarte, decir cuantos de tu hermandad hay.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+HomeGuild.Announce = 1
+
+#
+#    HomeGuild.AutoAdopt
+#        Descripcion: Fundar una hermandad por el flujo normal del juego la
+#                     convierte en tu hermandad de casa automaticamente. Con 0,
+#                     hay que activarla a mano con ".hermandad activar" (util si
+#                     montas una hermandad seria con amigos y no quieres bots).
+#                     ".hermandad estado" y ".hermandad desactivar" funcionan en
+#                     los dos modos.
+#        Por defecto: 1 - (adopcion automatica)
+#                     0 - (solo con ".hermandad activar")
+
+HomeGuild.AutoAdopt = 1
+
+#
+#    HomeGuild.InactiveOwnerReclaimDays
+#        Descripcion: Si el fundador-lider de una hermandad de casa lleva estos
+#                     dias sin entrar (y no esta conectado), se expulsa a sus
+#                     bots de la hermandad y se devuelven al pool de bots libres,
+#                     que si no se erosiona con la vida del servidor. Con 0 no se
+#                     reclama nunca.
+#        Por defecto: 30
+
+HomeGuild.InactiveOwnerReclaimDays = 30
+
+#
+#    HomeGuild.AnnounceWhenGuildless
+#        Descripcion: Aviso "monta una hermandad" al entrar sin hermandad
+#                     (ademas de HomeGuild.Announce).
+#        Por defecto: 1
+
+HomeGuild.AnnounceWhenGuildless = 1
+
+#
+#    HomeGuild.CareIntervalSeconds / HomeGuild.RecruitBackoffSeconds
+#        Descripcion: Cada cuanto se cuida cada hermandad, y cuanto se espera si
+#                     ya esta llena antes de volver a mirarla.
+#        Por defecto: 30 / 300
+
+HomeGuild.CareIntervalSeconds = 30
+HomeGuild.RecruitBackoffSeconds = 300
+
+#
+#    HomeGuild.KeepOnlineIntervalSeconds / HomeGuild.KeepOnlineBatch
+#        Descripcion: Cada cuanto se despiertan bots de la hermandad y cuantos
+#                     por pasada.
+#        Por defecto: 15 / 5
+
+HomeGuild.KeepOnlineIntervalSeconds = 15
+HomeGuild.KeepOnlineBatch = 5
+
+#
+#    HomeGuild.MaxOnlineBots
+#        Descripcion: Tope propio de bots de hermandad conectados a la vez. Con
+#                     0 usa AiPlayerbot.MaxRandomBots. Nunca lo supera.
+#        Por defecto: 0
+
+HomeGuild.MaxOnlineBots = 0
+
+#
+#    HomeGuild.ReLevelPerPass
+#        Descripcion: Bots de la hermandad re-nivelados por pasada (subir de
+#                     nivel a los rezagados es caro).
+#        Por defecto: 1
+
+HomeGuild.ReLevelPerPass = 1
+
+#
+#    HomeGuild.ReLevelTargetJitter
+#        Descripcion: Cuantos niveles por debajo del owner (al azar) se re-nivela
+#                     un bot, para que no vayan todos al mismo nivel. Con 0 usa
+#                     HomeGuild.LevelBelow.
+#        Por defecto: 0
+
+HomeGuild.ReLevelTargetJitter = 0
+
+#
+#    HomeGuild.ReLevelMinWorldSeconds
+#        Descripcion: Segundos que un bot de la hermandad tiene que llevar
+#                     conectado antes de renivelarlo (playerbots todavia lo
+#                     mueve al conectar). Nunca se renivela a un bot reservado
+#                     por otro modulo, en cola, en vuelo o en grupo, y el
+#                     objetivo nunca baja de su nivel actual ni pasa del tuyo
+#                     ni de la etapa activa de world-bots. 0 = sin espera.
+#        Por defecto: 60
+
+HomeGuild.ReLevelMinWorldSeconds = 60
+
+#
+#    HomeGuild.RecruitFromOfflinePool
+#        Descripcion: Reclutar tambien de la tabla de personajes (bots
+#                     desconectados), no solo de los ya conectados y libres.
+#        Por defecto: 1
+
+HomeGuild.RecruitFromOfflinePool = 1
+
+#
+#    HomeGuild.AllianceRaces / HomeGuild.HordeRaces
+#        Descripcion: Razas (ids, separadas por coma) de las que se reclutan
+#                     bots para cada faccion.
+#        Por defecto: "1,3,4,7,11" / "2,5,6,8,10"
+
+HomeGuild.AllianceRaces = "1,3,4,7,11"
+HomeGuild.HordeRaces = "2,5,6,8,10"
+
+#
+#    HomeGuild.Tanks / HomeGuild.Healers
+#        Descripcion: Objetivo de tanques y sanadores en el roster: al reclutar,
+#                     los candidatos conectados que llenan un hueco de rol se
+#                     prueban primero. Con 0 se decide por el tamano (Members):
+#                     <=10 -> 2/3, <=20 -> 3/5, mas -> 4/6.
+#        Por defecto: 0 / 0
+
+HomeGuild.Tanks = 0
+HomeGuild.Healers = 0
+
+#
+#    HomeGuild.GearMode / .GearMargin / .GearTolerance / .GearMinItemLevel
+#        Descripcion: Mantener el equipo de los bots de casa conectados a la fase
+#                     de progresion del owner, aunque no esten en su grupo, para
+#                     que esten listos para una banda sin pasar antes por una
+#                     mazmorra. Mismas claves y criterio que QueueBots.Gear*.
+#                     GearMode 0 = no tocar el equipo.
+#        Por defecto: 1 / 6 / 8 / 0
+
+HomeGuild.GearMode = 1
+HomeGuild.GearMargin = 6
+HomeGuild.GearTolerance = 8
+HomeGuild.GearMinItemLevel = 0
+
+#
+#    HomeGuild.GearIntervalSeconds
+#        Descripcion: Cada cuanto se revisa el equipo de los bots del roster
+#                     conectados. Minimo 15.
+#        Por defecto: 120
+
+HomeGuild.GearIntervalSeconds = 120
+
+#
+#    HomeGuild.LegacyNumberMax
+#        Descripcion: Numero maximo del sufijo de un nombre de hermandad
+#                     automatica antigua ("Companeros de X N") para considerarla
+#                     de la version vieja al hacer la limpieza unica.
+#        Por defecto: 100
+
+HomeGuild.LegacyNumberMax = 100
+
+#
+#    BotPopulation.*  (coordinador compartido de logins de bot)
+#        home-guild reserva cada GUID en el coordinador transversal antes de
+#        conectar un bot de hermandad. El bloque de opciones
+#        (PendingTimeoutSeconds / MaxPendingTotal / MaxPendingPerFaction /
+#        MaxPendingPerRange) se documenta en mod_world_bots.conf; sin world-bots
+#        se usan los valores por defecto (90 / 40 / 24 / 12) y el tope global
+#        sale de AiPlayerbot.MaxRandomBots.
+
+#
+###################################################################################################

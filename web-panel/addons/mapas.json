@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "descripcion": "Mapas de continente del panel (Warcraft Wiki; arte de Blizzard). No van en el repositorio público: web-panel/tools/fetch-maps.mjs los descarga con el UA fijado y comprueba el SHA-256. La CDN de la wiki entrega a veces una variante recomprimida (otros bytes, mismo aspecto) que cambia con la URL de caché y el momento: se prueban las variantes de `variantes` y sólo se acepta el SHA-256 fijado. Si algún día entrega otros bytes, el mapa queda pendiente y el panel muestra un fondo neutro.",
+  "userAgent": "azeroth-installer",
+  "base": "https://warcraft.wiki.gg/images/",
+  "variantes": ["", "?v=1", "?v=2", "?v=3", "?v=4", "?v=5", "?v=6"],
+  "mapas": [
+    { "id": "0", "nombre": "Reinos del Este", "ruta": "WorldMap-EasternKingdoms-old.jpg", "sha256": "4cdc5d05de82ae8637382ed7756ea032138dd7989a1517ab91793dadf8d69b0a" },
+    { "id": "1", "nombre": "Kalimdor", "ruta": "WorldMap-Kalimdor.jpg", "sha256": "2238f18cf232a1f024c06d7afd2d173d869870f7f8e8be07ca400b04d7042394" },
+    { "id": "530", "nombre": "Terrallende", "ruta": "WorldMap-Outland_Updated.jpg", "sha256": "93767f30d825051becb0c41e43f04bc0a2b944f57bd9aec0e5219e8874a8851d" },
+    { "id": "571", "nombre": "Rasganorte", "ruta": "archive/20190319145152%21WorldMap-Northrend.jpg", "sha256": "b67278ef031bde9769bf000aa69f7dcab02508b365c89040ad1504c11991c891" }
+  ]
+}

@@ -1,0 +1,1007 @@
+[worldserver]
+
+###################################################################################################
+# MOD-ADAPTIVE-AI
+#
+#   Bots que aprenden. Una capa de decision encima de la IA de mod-playerbots:
+#   en cada punto de decision de un combate PvP (el enemigo empieza a castear,
+#   la vida cruza un umbral, se libera un cooldown...) el modulo elige QUE
+#   deberia hacer el bot (interrumpir, cargar, control, defensiva, o nada) y
+#   playerbots decide COMO (que hechizo, rango, vision, cooldown). Lo que pasa
+#   despues (dano, interrupcion lograda, control, muerte, victoria) puntua la
+#   decision y una tabla por (clase, clase enemiga, estado, accion) aprende.
+#
+#   Entrenamiento: los bots luchan entre ellos en arenas instanciadas en
+#   segundo plano (el jugador ni las ve ni le afectan). Cada cierto tiempo se
+#   comprueba que la tabla candidata gana a la validada antes de que la usen
+#   los bots que se cruzan con el jugador.
+#
+#   Fase 1: 1c1, guerrero contra mago. Las demas clases solo tienen la accion
+#   "nada" (playerbots de serie) hasta que se les escriba el catalogo.
+#
+#   Comandos GM: .adaptive (estado), .adaptive arena lanzar <clase> <clase>,
+#   .adaptive calibrar, .adaptive modelo lista, .adaptive bot <nombre>,
+#   .adaptive explicar <nombre>. Tablas adaptive_* en acore_playerbots.
+#
+#   Requiere mod-playerbots con bots aleatorios de nivel 80. Sin el, el modulo
+#   compila y no hace nada.
+#
+###################################################################################################
+
+#
+#    AdaptiveAI.Enable
+#        Descripcion: Interruptor del decisor. Con 0 los bots son playerbots de
+#                     serie, pero las arenas de entrenamiento siguen (y sirven
+#                     de linea base).
+#        Por defecto: 1
+
+AdaptiveAI.Enable = 1
+
+#
+#    AdaptiveAI.Learn
+#        Descripcion: Aprender de los combates (actualizar la tabla candidata).
+#        Por defecto: 1
+#
+#    AdaptiveAI.Learn.SoloEnArena
+#        Descripcion: 1 = aprender solo en las arenas de entrenamiento; los
+#                     combates reales (contra jugadores o bots fuera de ellas)
+#                     no tocan la tabla.
+#        Por defecto: 0
+#
+#    AdaptiveAI.Real.Enable
+#        Descripcion: Que el decisor actue en los combates reales de los bots
+#                     contra jugadores (o contra otros bots fuera de las
+#                     arenas de entrenamiento), con la tabla validada.
+#        Por defecto: 1
+
+AdaptiveAI.Learn = 1
+AdaptiveAI.Learn.SoloEnArena = 0
+AdaptiveAI.Real.Enable = 1
+
+#
+#    AdaptiveAI.Arena.Enable
+#        Descripcion: Arena de entrenamiento en segundo plano.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Arena.Simultaneas
+#        Descripcion: Cuantos combates 1c1 a la vez (cada uno ocupa dos bots).
+#        Por defecto: 20
+#
+#    AdaptiveAI.Arena.EquipoSimultaneas
+#        Descripcion: Arenas de equipo (2c2, 3c3, 5c5) a la vez en el
+#                     automatico. El grueso del entrenamiento va a 1c1, que es
+#                     donde mas deprisa se aprende, y las de equipo se turnan
+#                     en la rueda con este tope (con 1: una de equipo rotando
+#                     entre los tres tamanos). Las series a mano no cuentan.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Arena.BotsMax
+#        Descripcion: Bots a la vez en arenas de entrenamiento, sumando todos
+#                     los tamanos. Con 82 bots de nivel 80, veinte 3c3 se los
+#                     comerian todos y no quedaria ninguno para los campos de
+#                     batalla ni para los jugadores. Las series y el
+#                     automatico esperan a que acabe alguna.
+#        Por defecto: 40
+#
+#    AdaptiveAI.Arena.ConJugador
+#        Descripcion: Con algun jugador de verdad conectado, el automatico
+#                     se limita a estas partidas a la vez por tamano
+#                     ("1c1:21", o "1c1:1,2c2:1,3c3:1,5c5:1"). Sin jugadores,
+#                     todo lo que permitan Simultaneas y BotsMax. Vacio = no
+#                     bajar nunca. Los tamanos que no se nombran no se lanzan.
+#                     Por defecto todo a 1c1, que es donde mas deprisa se
+#                     aprende: 21 partidas son 42 bots, los mismos que una de
+#                     cada tamano mas un campo de 10 por bando.
+#                     Las series lanzadas a mano no se limitan. No toca nada
+#                     del PvE: solo cuantas arenas de entrenamiento se lanzan.
+#        Por defecto: "1c1:21"
+#
+#    AdaptiveAI.Bg.ConJugador
+#        Descripcion: Campos automaticos a la vez con un jugador conectado.
+#        Por defecto: 0
+#
+#    AdaptiveAI.FranjasConJugador
+#        Descripcion: Conmuta el reparto por franjas de nivel de playerbots
+#                     segun haya alguien jugando o no.
+#                     Playerbots reparte sus bots en nueve grupos de nivel y
+#                     baja de nivel (Randomize entero) a los que sobran en un
+#                     grupo. Tiene dos repartos: el fijo del playerbots.conf
+#                     (BOTS_LEVEL80_PCT, 36 % a la franja de 80, que es la que
+#                     usa el entrenamiento) y el automatico, que acerca la
+#                     poblacion al nivel de los jugadores conectados y pisa al
+#                     fijo. Sin nadie dentro el automatico no tiene a quien
+#                     seguir y reparte a partes iguales (11 % a cada franja):
+#                     28 bots de nivel 80 por faccion contra los 200 que pide
+#                     el entrenamiento, y el gestor bajandolos mientras la
+#                     fabrica los sube (12 por minuto el 03/09/2026).
+#                     Con esta clave a 1: automatico mientras haya un jugador
+#                     conectado, fijo cuando el servidor entrena solo.
+#                     A 0 no se toca nada y manda lo que diga playerbots.conf.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Arena.PausaEntreCombates
+#        Descripcion: Segundos entre dos lanzamientos (se llenan los huecos
+#                     poco a poco, sin oleadas de teletransportes).
+#        Por defecto: 5
+#
+#    AdaptiveAI.Clases
+#        Descripcion: Clases que deciden y entrenan, separadas por comas
+#                     (warrior, mage, rogue, priest, hunter, paladin,
+#                     deathknight, shaman, warlock, druid). Vacio = todas. Un
+#                     bot de una clase que no este aqui juega de serie, y las
+#                     composiciones que la nombran no se lanzan solas.
+#        Por defecto: ""
+#
+#    AdaptiveAI.Bots.Nivel80
+#        Descripcion: Cuantos bots de nivel 80 de cada clase se quieren
+#                     conectados, "clase:numero" separados por comas
+#                     ("warrior:16,mage:16"). Si hay menos, cada 10 s se sube
+#                     un bot aleatorio libre de esa clase a 80 con la fabrica
+#                     de playerbots (talentos, hechizos y equipo incluidos).
+#                     Es el tope real de arenas 1c1 de esa pareja: con 5-8
+#                     de cada clase conectados no salen mas de 5-8 a la vez.
+#                     Vacio = no tocar los niveles. Tope 60 por clase.
+#        Por defecto: ""
+#
+#    AdaptiveAI.Arena.Specs
+#        Descripcion: Spec premade de playerbots que llevan los bots de cada
+#                     clase al entrar en arena o subir a 80 ("clase:nombre",
+#                     separados por comas; los nombres son los de
+#                     AiPlayerbot.PremadeSpecName.<clase>.<n>: arms pvp, frost
+#                     pvp, subtlety pvp, unholy pvp, affli pvp, mm pvp, cat pvp,
+#                     ret pvp, shadow pvp, ele pvp, holy pvp, disc pvp...). Con
+#                     una spec PvP la fabrica de playerbots pondera resiliencia
+#                     y da el abalorio anti-control. La tabla Q va por clase:
+#                     mejor una sola spec por clase mientras se entrena. Vacio =
+#                     cada bot con la que traiga (un tercio de los guerreros
+#                     eran proteccion y un tercio de los magos arcano).
+#        Por defecto: ""  (en este servidor: las de PvP Matchup Reference.md)
+#
+#    AdaptiveAI.Loadout.Enable
+#        Descripcion: Doble spec y equipo por proposito en todos los bots
+#                     aleatorios de nivel 40 o mas: la spec 0 es la PvE (la
+#                     premade que playerbots le dio, completa) y la 1 la PvP de
+#                     AdaptiveAI.Arena.Specs (o Loadout.SpecPvP). Al entrar en
+#                     arena, campo de batalla o duelo se activa la PvP; en
+#                     mazmorra, banda o mundo, la PvE. El equipo se regenera
+#                     con la fabrica de playerbots segun el proposito: PvP por
+#                     el rating del bot (Loadout.EquipoPvP) y PvE por el
+#                     contenido (Loadout.EquipoPvE). Si va con un jugador, el
+#                     equipo lo topa mod-queue-bots a la fase del jugador.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Loadout.SpecPvP
+#        Descripcion: Igual que AdaptiveAI.Arena.Specs y manda sobre ella si no
+#                     esta vacia.
+#        Por defecto: ""
+#
+#    AdaptiveAI.Loadout.EquipoPvP
+#        Descripcion: "rating minimo:nivel de objeto" separados por comas.
+#                     232 Gladiador Furioso (honor), 251 Implacable, 264 y 270
+#                     Colerico. El rating es el Elo del bot (adaptive_bot).
+#        Por defecto: "0:232,1600:251,1800:264,2200:270"
+#
+#    AdaptiveAI.Loadout.EquipoPvE
+#        Descripcion: Nivel de objeto por contenido de la expansion 2 (nivel
+#                     80) cuando el bot entra sin jugador: normal (mazmorra),
+#                     heroica, banda10, banda25, y mundo (0 = no tocar lo que
+#                     traiga). Con un jugador en el grupo manda mod-queue-bots.
+#        Por defecto: "normal:187,heroica:200,banda10:219,banda25:232,mundo:0"
+#
+#    AdaptiveAI.Loadout.NivelesTope
+#        Descripcion: Niveles tope de etapa (60, 70, 80 y el maximo del reino).
+#                     Por el mundo lo normal es ir con equipo PvE; el PvP es de
+#                     arenas y campos, y solo a estos niveles es normal verlo
+#                     por el mundo. Un bot por debajo del tope que aparece por
+#                     el mundo con resiliencia (sale de un campo, de un duelo o
+#                     conecta asi) se vuelve a equipar PvE por nivel: que el
+#                     que levea no se cruce con un bot con ventaja de PvP.
+#        Por defecto: "60,70,80"
+#
+#    AdaptiveAI.Loadout.PorPasada
+#        Descripcion: Cuantos bots reciben la doble spec en cada pasada de 30 s
+#                     (cuesta decimas de segundo por bot).
+#        Por defecto: 5
+#
+#    AdaptiveAI.Objetivos
+#        Descripcion: Porcentaje que se espera que la primera clase gane a la
+#                     segunda ("a:b=70", separados por comas), sacado de la
+#                     tabla de emparejamientos de referencia
+#                     (REFERENCES.md; de donde sale, en CHANGELOG.md
+#                     anexo A1 §16.16). Se ensena junto
+#                     al contraste y, con Objetivos.Parar, el automatico deja
+#                     de lanzar un 1c1 cuando el adaptativo alcanza el
+#                     objetivo (menos el margen) en las dos orientaciones con
+#                     PartidasMinimas partidas cada una. Se comprueba cada 10
+#                     minutos. A mano se puede lanzar siempre.
+#        Por defecto: ""  (en este servidor: la matriz completa)
+#
+#    AdaptiveAI.Objetivos.Parar / .PartidasMinimas / .Margen
+#        Por defecto: 1 / 200 / 5
+#
+#    AdaptiveAI.Arena.Tipos
+#        Descripcion: Tamanos de arena que entrena el automatico: 1c1, 2c2,
+#                     3c3, 5c5 (separados por comas). A mano se puede lanzar
+#                     cualquiera.
+#        Por defecto: "1c1,2c2,3c3,5c5"
+#
+#    AdaptiveAI.Arena.Pares
+#        Descripcion: Que composiciones se entrenan, separadas por comas. Un
+#                     equipo contra otro con ":", miembros con "+", * =
+#                     cualquier clase habilitada: "warrior:mage",
+#                     "warrior+priest:mage+rogue", "*+*+*:*+*+*".
+#                     Clase con especializacion opcional: warrior.arms,
+#                     mage.frost, mage.2 (0/1/2 = pestanas de talentos).
+#        Por defecto: "warrior:mage"
+#
+#    AdaptiveAI.Arena.Modo
+#        Descripcion: entrenar  = los dos bots deciden y aprenden (autojuego)
+#                     contraste = uno decide y aprende, el otro es playerbots
+#                                 de serie (la medida de si el sistema mejora)
+#                     mixto     = alterna los dos
+#        Por defecto: "mixto"
+#
+#    AdaptiveAI.Arena.CederAJugadores
+#        Descripcion: No lanzar combates nuevos mientras haya un jugador en
+#                     cola de arena o campo de batalla (para no quitarle bots).
+#        Por defecto: 1
+#
+#    AdaptiveAI.Arena.Mapa
+#        Descripcion: 559 Nagrand, 562 Filospada, 572 Ruinas de Lordaeron,
+#                     617 Cloacas de Dalaran, 618 Anillo del Valor; 0 = al azar.
+#        Por defecto: 559
+#
+#    AdaptiveAI.Arena.PreparacionSegundos
+#        Descripcion: Cuenta atras antes de abrir las puertas (Arena.PrepTime
+#                     del worldserver.conf no afecta a estas arenas).
+#        Por defecto: 15
+#
+#    AdaptiveAI.Arena.Nivel
+#        Descripcion: Nivel minimo de los bots que se usan.
+#        Por defecto: 80
+#
+#    AdaptiveAI.Arena.NivelObjeto
+#        Descripcion: Nivel de objeto al que se iguala el equipo de los dos
+#                     (264 = Gladiador Colérico, la temporada 8 de 3.3.5; con
+#                     spec PvP la fabrica elige piezas con resiliencia)
+#                     bots antes de cada combate (fabrica de playerbots, como
+#                     "autogear"). 0 = no tocar el equipo.
+#        Por defecto: 200
+#
+#    AdaptiveAI.Arena.NivelObjetoTolerancia
+#        Descripcion: Solo se reequipa si el bot se sale de +-tolerancia.
+#        Por defecto: 15
+#
+#    AdaptiveAI.Arena.EsperaSegundos
+#        Descripcion: Si en este tiempo no han llegado los dos bots, se aborta.
+#        Por defecto: 90
+#
+#    AdaptiveAI.Arena.DuracionMaxSegundos
+#        Descripcion: Duracion maxima de un combate (despues, empate).
+#        Por defecto: 600
+#
+#    AdaptiveAI.Arena.Referencia
+#        Descripcion: Porcentaje de las partidas automaticas que se juegan
+#                     serie contra serie (los dos bots sin decisor): la linea
+#                     base viva con la que ".adaptive" compara el contraste.
+#                     Tope 50. 0 = ninguna.
+#        Por defecto: 10
+
+AdaptiveAI.Clases = ""
+AdaptiveAI.Bots.Nivel80 = ""
+AdaptiveAI.Arena.Specs = ""
+AdaptiveAI.Loadout.Enable = 1
+AdaptiveAI.Loadout.SpecPvP = ""
+AdaptiveAI.Loadout.EquipoPvP = "0:232,1600:251,1800:264,2200:270"
+AdaptiveAI.Loadout.EquipoPvE = "normal:187,heroica:200,banda10:219,banda25:232,mundo:0"
+AdaptiveAI.Loadout.NivelesTope = "60,70,80"
+AdaptiveAI.Loadout.PorPasada = 5
+AdaptiveAI.Objetivos = ""
+AdaptiveAI.Objetivos.Parar = 1
+AdaptiveAI.Objetivos.PartidasMinimas = 200
+AdaptiveAI.Objetivos.Margen = 5
+AdaptiveAI.Arena.Tipos = "1c1,2c2,3c3,5c5"
+AdaptiveAI.Arena.Enable = 1
+AdaptiveAI.Arena.Simultaneas = 20
+AdaptiveAI.Arena.EquipoSimultaneas = 1
+AdaptiveAI.Arena.BotsMax = 40
+AdaptiveAI.Arena.ConJugador = "1c1:21"
+AdaptiveAI.Bg.ConJugador = 0
+AdaptiveAI.FranjasConJugador = 1
+AdaptiveAI.Arena.PausaEntreCombates = 5
+AdaptiveAI.Arena.Pares = "warrior:mage"
+AdaptiveAI.Arena.Modo = "mixto"
+AdaptiveAI.Arena.CederAJugadores = 1
+AdaptiveAI.Arena.Mapa = 559
+AdaptiveAI.Arena.PreparacionSegundos = 15
+AdaptiveAI.Arena.Nivel = 80
+AdaptiveAI.Arena.NivelObjeto = 200
+AdaptiveAI.Arena.NivelObjetoTolerancia = 15
+AdaptiveAI.Arena.EsperaSegundos = 90
+AdaptiveAI.Arena.DuracionMaxSegundos = 600
+AdaptiveAI.Arena.Referencia = 10
+
+#
+#    AdaptiveAI.Bg.Enable
+#        Descripcion: Campos de batalla de entrenamiento automaticos (fase 6,
+#                     primer corte): N bots de la Alianza contra N de la Horda
+#                     en una instancia propia. Los objetivos los juegan las
+#                     estrategias de campo de playerbots; el modulo decide el
+#                     combate, cobra los objetivos (banderas, bases, torres)
+#                     y aprende. Con 0, solo a mano (.adaptive bg lanzar).
+#        Por defecto: 0
+#
+#    AdaptiveAI.Bg.Mapas
+#        Descripcion: Que campos: WS (Garganta), AB (Arathi), EY (Ojo), AV
+#                     (Alterac), SA (Playa), IC (Isla). En rueda.
+#        Por defecto: "WS,AB,EY"
+#
+#    AdaptiveAI.Bg.CadaMinutos / AdaptiveAI.Bg.Simultaneos
+#        Descripcion: Cada cuanto se lanza uno y cuantos a la vez.
+#        Por defecto: 30 / 1
+#
+#    AdaptiveAI.Bg.PorEquipo
+#        Descripcion: Bots por bando. 0 = el minimo del campo (WS 10, AB 15,
+#                     EY 15, AV 40, SA 15, IC 20). Con menos se baja el minimo
+#                     de la instancia para que el core no la cierre.
+#        Por defecto: 0
+#
+#    AdaptiveAI.Bg.Nivel
+#        Descripcion: Nivel del bracket (los bots se eligen dentro de el).
+#        Por defecto: 80
+#
+#    AdaptiveAI.Bg.DuracionMaxMinutos / AdaptiveAI.Bg.EsperaSegundos
+#        Descripcion: Duracion maxima (despues, empate) y tiempo para que
+#                     lleguen todos (despues, se aborta).
+#        Por defecto: 30 / 150
+#
+#    AdaptiveAI.Bg.Modo
+#        Descripcion: entrenar | contraste | mixto | referencia (como en la arena).
+#        Por defecto: "contraste"
+
+AdaptiveAI.Bg.Enable = 0
+AdaptiveAI.Bg.Mapas = "WS,AB,EY"
+AdaptiveAI.Bg.CadaMinutos = 30
+AdaptiveAI.Bg.Simultaneos = 1
+AdaptiveAI.Bg.PorEquipo = 0
+AdaptiveAI.Bg.Nivel = 80
+AdaptiveAI.Bg.DuracionMaxMinutos = 30
+AdaptiveAI.Bg.EsperaSegundos = 150
+AdaptiveAI.Bg.Modo = "contraste"
+
+#
+#    AdaptiveAI.Calibrar.CadaMinutos
+#        Descripcion: Cada cuanto se comprueba si la candidata gana a la
+#                     validada (0 = solo con ".adaptive calibrar").
+#        Por defecto: 60
+#
+#    AdaptiveAI.Calibrar.Combates
+#        Descripcion: Combates de cada calibracion (repartidos entre los pares).
+#        Por defecto: 5000
+#
+#    AdaptiveAI.Calibrar.MargenMinimo
+#        Descripcion: Tasa de victoria minima de la candidata para pasar a
+#                     validada (0.55 = 55 %).
+#        Por defecto: 0.60
+#
+#    AdaptiveAI.Calibrar.DecisionesNuevasMinimas
+#        Descripcion: No calibrar si la candidata no ha aprendido al menos
+#                     tantas decisiones desde la ultima vez.
+#        Por defecto: 200
+#
+#    AdaptiveAI.Calibrar.Reloj
+#        Descripcion: El examen va por el reloj del sistema, no por el tiempo
+#                     desde el arranque. El dia se parte en periodos de
+#                     CadaMinutos + MinutosMaximos desde la medianoche local
+#                     y los ultimos MinutosMaximos de cada periodo son de
+#                     examen (con 60 y 60: de 01:00 a 02:00, de 03:00 a
+#                     04:00...). Un reinicio en mitad de una ventana retoma el
+#                     examen si queda al menos un tercio; al apagar, un examen
+#                     con media ventana hecha concluye con lo que tiene.
+#                     0 = temporizador desde el arranque (lo de antes).
+#        Por defecto: 1
+
+#
+#    AdaptiveAI.Calibrar.PorClase
+#        Descripcion: Aprobado por clase. Con el margen global la candidata no
+#                     promociona mientras alguna clase de playerbots pierda con
+#                     todos (picaro, sacerdote): la nota es la media. Con esto
+#                     cada clase se compara consigo misma: como la calibracion
+#                     alterna lados, la clase juega unas veces con la candidata
+#                     y otras con la validada en las mismas parejas. Aprueba si
+#                     con la candidata gana MejoraPorClase puntos mas que con
+#                     la validada (sumando las ultimas tres calibraciones, con
+#                     PartidasPorClase por lado), o si ya gana el 90 % o mas
+#                     sin empeorar (saturada: no hay nada que aprender). La
+#                     clase aprobada pasa ella sola a la validada y deja sus
+#                     arenas a las que siguen suspensas (en un 1c1 con una de
+#                     cada, aprende la suspensa). Cuando aprueban todas empieza
+#                     una ronda nueva contra la validada nueva.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Calibrar.PartidasPorClase
+#        Descripcion: Partidas por clase y lado (ultimas tres calibraciones
+#                     sumadas) para decidir el aprobado.
+#        Por defecto: 100
+#
+#
+#    AdaptiveAI.Calibrar.CortarAlJuzgar
+#        Descripcion: El examen se corta en cuanto TODAS las clases que se
+#                     juzgan tienen ya PartidasPorClase partidas por lado (el
+#                     estado "ya se puede juzgar" del informe), y el resto de
+#                     la ventana vuelve al entrenamiento. Con Exclusiva = 1 el
+#                     examen se come una hora de cada dos y el minimo se
+#                     alcanza en 15-20 min. Las clases aprobadas juegan pero no
+#                     se juzgan, asi que no cuentan; si no queda ninguna por
+#                     juzgar el examen agota su ventana como siempre.
+#                     0 = el examen dura siempre MinutosMaximos.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Calibrar.PartidasCorte
+#        Descripcion: Partidas por lado que se exigen para ese corte. 0 = las
+#                     mismas que PartidasPorClase. Subirlo a 100-120 hace el
+#                     veredicto menos ruidoso a cambio de menos entrenamiento:
+#                     con 60 partidas el margen de error de un porcentaje ronda
+#                     los +-6 puntos y el aprobado pide MejoraPorClase.
+#        Por defecto: 0
+#    AdaptiveAI.Calibrar.MejoraPorClase
+#        Descripcion: Puntos de tasa de victoria que la clase tiene que ganar
+#                     con la candidata por encima de lo que gana con la
+#                     validada para aprobar.
+#        Por defecto: 5
+#
+#    AdaptiveAI.Calibrar.CiclosMaximos
+#        Descripcion: Calibraciones seguidas sin aprobar tras las que una clase
+#                     que no mejora vuelve a lo anterior: sus filas de la
+#                     candidata se sustituyen por las de la validada y empieza
+#                     de nuevo (lo aprendido en esa ronda no valia). Si iba
+#                     mejorando sin llegar al margen, sigue con lo que tiene.
+#                     0 = nunca.
+#        Por defecto: 6
+#
+#    AdaptiveAI.Calibrar.PorPareja
+#        Descripcion: Partidas a la vez POR PAREJA durante el examen. Cada
+#                     pareja tenia el aforo entero (Arena.Simultaneas), asi que
+#                     las primeras de Arena.Pares agotaban su cuota antes de que
+#                     a las ultimas les tocara y en una hora el examen solo
+#                     llegaba a la mitad de la lista: al druida, el ultimo, no
+#                     se le examinaba nunca. Con 1 las 42 parejas avanzan a la
+#                     par (y la lista rota en cada examen).
+#        Por defecto: 4
+#
+#    AdaptiveAI.Calibrar.RondaMaxExamenes
+#        Descripcion: Examenes tras los que la ronda se cierra AUNQUE no hayan
+#                     aprobado todas las clases. Mientras la ronda no cierra,
+#                     las clases ya aprobadas no vuelven a aprender en 1c1: se
+#                     quedan de sparring para las que van atras. Con una sola
+#                     clase atascada eso congela a todas las demas (el 04/09,
+#                     cuatro clases paradas por el brujo). 0 = esperar a todas.
+#        Por defecto: 6
+#
+#    AdaptiveAI.Calibrar.SaltarSaturadas
+#        Descripcion: Porcentaje por debajo del cual (o por encima de 100 menos
+#                     eso) una pareja se considera SIN SENAL y no entra en el
+#                     examen: si playerbots de serie ya gana casi todas, la
+#                     candidata y la validada no se pueden distinguir ahi y el
+#                     examen gasta combates para nada. Se mira sobre las
+#                     partidas de referencia (serie contra serie) con al menos
+#                     20 partidas. El caballero de la muerte gana el 97-100 % a
+#                     ocho clases en referencia (04/09/2026). 0 = jugarlas todas.
+#        Por defecto: 5
+#
+#    AdaptiveAI.Acciones.Excluir
+#        Descripcion: Acciones que NO se ofrecen a una clase aunque el bot las
+#                     tenga, separadas por comas: "druid:travel form,
+#                     warlock:kitear". No se borran del catalogo, asi que los
+#                     indices no se mueven y no se pierde nada de lo aprendido:
+#                     poner o quitar una es reversible sin recompilar. Para el
+#                     kit de otra forma o de otra rama, que el bot conoce (la
+#                     comprobacion de "no la tiene" no lo filtra) pero que en su
+#                     spec de arena solo dispersa el aprendizaje.
+#        Por defecto: ""
+#
+#    AdaptiveAI.Calibrar.VentanaCiclos
+#        Descripcion: Examenes que cuentan para el aprobado por clase. Antes se
+#                     sumaba sin limite hasta aprobar o revertir, y con
+#                     CiclosMaximos = 0 la suma no se cortaba nunca: una clase
+#                     con 574 partidas acumuladas no podia mover su media
+#                     aunque mejorase de verdad.
+#        Por defecto: 2
+#
+#    AdaptiveAI.Calibrar.MismoRival
+#        Descripcion: El examen juega tres brazos por pareja en vez de dos:
+#                     candidata contra validada (alternando el lado) y, el
+#                     tercero, validada contra validada. La nota "con la
+#                     candidata" de una clase sale de los dos primeros y la
+#                     nota "con la validada" SOLO del tercero, asi que las dos
+#                     se miden contra el mismo rival (el rival con la
+#                     validada). Con dos brazos, la segunda nota salia de
+#                     partidas donde el rival llevaba la candidata, y el
+#                     aprobado media "mi mejora mas la de mis rivales": una
+#                     clase aprobaba porque sus rivales habian mejorado, o
+#                     suspendia porque habian mejorado ellos (05/09/2026).
+#                     Cuesta un 50 % mas de partidas por pareja. 0 = dos brazos.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Calibrar.VaraSerie
+#        Descripcion: La serie como unica vara del aprobado (05/09/2026, REVISION
+#                     parte 2, N2+N6). La candidata sin explorar se mide en la
+#                     escalera como un peldano mas (partidas "sonda", ver
+#                     Arena.EscaleraCandidata) y en cada examen se calcula, por
+#                     clase, si su peldano supera al mejor actual (la serie o la
+#                     validada) con margen Z x error tipico (y al menos
+#                     MejoraPorClase en rating). Con 0 solo se traza al lado del
+#                     veredicto de hoy ("Veredicto por escalera (sombra)"); con 1
+#                     ese es el aprobado y la nota del examen solo informa.
+#        Por defecto: 0
+#
+#    AdaptiveAI.Arena.EscaleraCandidata
+#        Descripcion: % de partidas automaticas en que la candidata juega SIN
+#                     explorar contra playerbots de serie ("sonda"): es su
+#                     peldano en la escalera. El contraste mide la candidata
+#                     explorando (un 15-20 % de sus decisiones son pruebas) y
+#                     nadie media lo que de verdad sale al examen.
+#        Por defecto: 5
+#
+#    AdaptiveAI.Decision.VisitasMinimas
+#        Descripcion: Sin aprender (validada, generacion, mundo) solo se elige
+#                     entre acciones con al menos estas visitas (contando la
+#                     fila "contra cualquiera"); si ninguna llega, none. Hasta el
+#                     05/09/2026 la mejor accion de un estado tenia UNA visita en
+#                     el 52-58 % de los estados, y con la tabla sin filas todas
+#                     valian 0 y elegia la personalidad del bot (una politica
+#                     fija que gana el 42 % donde la serie gana el 50 %).
+#        Por defecto: 5
+#
+#    AdaptiveAI.Decision.RechazoAprende
+#        Descripcion: Si una accion que playerbots rechaza aprende "mejor Q del
+#                     estado - 1" y cuenta como visita (lo de antes del
+#                     05/09/2026). Con eso quedaba como segunda mejor del estado
+#                     sin haberse ejecutado nunca: el 3-8 % de las casillas de
+#                     una visita llevaban esa huella. Apagado, el rechazo solo
+#                     cuenta en la sesion (a la segunda deja de ofrecerse) y en
+#                     el premio de accion fallida.
+#        Por defecto: 0
+#
+#    AdaptiveAI.Arena.AprobadasEntrenan
+#        Descripcion: Las clases aprobadas siguen aprendiendo en 1c1 durante la
+#                     ronda. Con 0, lo de antes: la aprobada juega de serie y
+#                     deja sus arenas a las suspensas (0 lados con la candidata
+#                     desde que aprueba hasta que cierra la ronda, medido el
+#                     05/09/2026), y las suspensas se examinan contra un modelo
+#                     contra el que nunca entrenaron.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Arena.AprobadaConModelo
+#        Descripcion: Con AprobadasEntrenan, % de las partidas de contraste en
+#                     que la aprobada que ocupa el lado no adaptativo lleva su
+#                     validada en vez de jugar de serie. Esas partidas no entran
+#                     en el contraste ni en la escalera (ningun lado es "ninguna").
+#        Por defecto: 50
+#
+#    AdaptiveAI.Calibrar.TodasJuegan
+#        Descripcion: En el examen, las clases aprobadas y las que ya llegaron
+#                     al tope de partidas siguen jugando como las demas: ninguna
+#                     pareja deja de lanzar y el reparto por clase no las manda
+#                     al final. Al sacarlas, las que quedaban jugaban menos
+#                     contra ellas (peticion del usuario, 05/09/2026). El corte
+#                     del examen no cambia. 0 = lo de antes.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Calibrar.Z
+#        Descripcion: Ademas de MejoraPorClase, la mejora tiene que superar
+#                     Z veces el error tipico de la diferencia de los dos
+#                     porcentajes (sqrt(wc(1-wc)/nc + wv(1-wv)/nv)). Con
+#                     200-300 partidas por lado el error ronda los 4-4,5
+#                     puntos, y un umbral fijo de 5 dejaba pasar un falso
+#                     aprobado por clase cada ocho examenes. 1,64 es el 95 %
+#                     a una cola; 0 = solo el umbral fijo.
+#        Por defecto: 1.64
+#
+#    AdaptiveAI.Arena.Escalera
+#        Descripcion: % de partidas automaticas que miden un peldano (la
+#                     validada o una generacion) contra playerbots de serie.
+#                     Es lo que coloca cada modelo en la escalera por clase;
+#                     sin esto, elegir "el mejor" para el mundo seria a ciegas.
+#        Por defecto: 15
+#
+#    AdaptiveAI.Escalera.PartidasMinimas
+#        Descripcion: Partidas de un peldano en una clase para que entre en la
+#                     escalera. Por debajo no se usa en el mundo.
+#        Por defecto: 30
+#
+#    AdaptiveAI.Escalera.Ventana
+#        Descripcion: Ultimas partidas por peldano y clase que se miran (por
+#                     clase; la consulta pide diez veces esto y agrupa).
+#        Por defecto: 200
+#
+#    AdaptiveAI.Real.Modo
+#        Descripcion: Que modelo sale al mundo. "validada": la validada para
+#                     todos, sin comprobar. "mejor": por clase, el peldano con
+#                     mas rating medido, que puede ser playerbots de serie (en
+#                     las clases donde la serie gana, el modulo no se mete).
+#                     "espejo": el peldano mas cercano al rating del jugador,
+#                     que sube y baja con sus muertes y sus bajas. La serie
+#                     nunca se pierde: es el peldano 0, anclado en 1500, y el
+#                     suelo cuando no hay medidas.
+#        Por defecto: "mejor"
+#
+#    AdaptiveAI.Real.Espejo.Dispersion
+#        Descripcion: Escalones arriba o abajo del centro de la escalera, al
+#                     azar POR BOT (no por combate: un bot que cambia de nivel
+#                     entre peleas se lee como que la IA falla). Da variedad:
+#                     unos rivales por encima del jugador y otros por debajo.
+#                     0 = todos con el mismo peldano.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Real.Espejo.Horas
+#        Descripcion: Cada cuantas horas se resortea el desvio de un bot.
+#        Por defecto: 6
+#
+#    AdaptiveAI.Arena.Generaciones
+#        Descripcion: % de partidas automaticas en las que la candidata se
+#                     enfrenta a una generacion anterior (una version que fue
+#                     validada, al azar) en vez de a playerbots de serie. Para
+#                     que no se estanque contra un unico rival y tenga variedad.
+#        Por defecto: 15
+#
+#    AdaptiveAI.Generaciones.Guardar
+#        Descripcion: Cuantas generaciones se guardan (las mas recientes).
+#        Por defecto: 12
+#
+#    AdaptiveAI.Generalizar
+#        Descripcion: Ademas de la fila contra cada clase enemiga, se aprende
+#                     una fila "contra cualquiera" (clase enemiga 0). Lo que
+#                     aun no se ha probado contra un rival concreto parte de
+#                     ella en vez de de cero: cada clase aprende de sus nueve
+#                     parejas a la vez y la primera exploracion se divide por
+#                     diez. En ".adaptive explicar" esos valores salen con "~=".
+#        Por defecto: 1
+
+#
+#    AdaptiveAI.Calibrar.Tipos
+#        Descripcion: Tamanos que entran en el examen ("1c1", o "1c1,2c2").
+#                     Solo duelos por defecto: el aprobado va por clase y en un
+#                     5c5 el resultado no se puede atribuir a nadie. El equipo
+#                     se sigue midiendo con las partidas de contraste del
+#                     automatico, que salen en el informe.
+#        Por defecto: "1c1"
+#
+#    AdaptiveAI.Calibrar.MinutosMaximos
+#        Descripcion: Lo que dura un examen. Al cumplirse concluye con lo que
+#                     haya medido, asi que el ciclo es fijo aunque cambie la
+#                     capacidad de arenas: una hora entrenando, una midiendo.
+#                     0 = hasta completar Combates.
+#        Por defecto: 60
+#
+#    AdaptiveAI.Calibrar.Exclusiva
+#        Descripcion: Mientras dura el examen, el automatico no lanza
+#                     entrenamiento ni campos: todas las arenas miden. Con esto
+#                     una hora de examen deja 150-200 partidas por clase y lado
+#                     (compartiendo arenas eran 18), que es lo que hace fiable
+#                     la comparacion.
+#        Por defecto: 1
+
+AdaptiveAI.Calibrar.CadaMinutos = 60
+AdaptiveAI.Calibrar.Combates = 5000
+AdaptiveAI.Calibrar.Tipos = "1c1"
+AdaptiveAI.Calibrar.MinutosMaximos = 60
+AdaptiveAI.Calibrar.Exclusiva = 1
+AdaptiveAI.Calibrar.MargenMinimo = 0.60
+AdaptiveAI.Calibrar.DecisionesNuevasMinimas = 200
+AdaptiveAI.Calibrar.Reloj = 1
+AdaptiveAI.Calibrar.PorClase = 1
+AdaptiveAI.Calibrar.PartidasPorClase = 100
+AdaptiveAI.Calibrar.CortarAlJuzgar = 1
+AdaptiveAI.Calibrar.PartidasCorte = 0
+AdaptiveAI.Calibrar.MejoraPorClase = 5
+AdaptiveAI.Calibrar.CiclosMaximos = 6
+AdaptiveAI.Calibrar.PorPareja = 4
+AdaptiveAI.Calibrar.SaltarSaturadas = 5
+AdaptiveAI.Calibrar.RondaMaxExamenes = 6
+AdaptiveAI.Calibrar.VentanaCiclos = 2
+AdaptiveAI.Calibrar.MismoRival = 1
+AdaptiveAI.Calibrar.Z = 1.64
+AdaptiveAI.Calibrar.VaraSerie = 0
+AdaptiveAI.Arena.EscaleraCandidata = 5
+AdaptiveAI.Decision.VisitasMinimas = 5
+AdaptiveAI.Decision.RechazoAprende = 0
+AdaptiveAI.Arena.AprobadasEntrenan = 1
+AdaptiveAI.Arena.AprobadaConModelo = 50
+AdaptiveAI.Calibrar.TodasJuegan = 1
+AdaptiveAI.Acciones.Excluir = ""
+AdaptiveAI.Arena.Generaciones = 15
+AdaptiveAI.Arena.Escalera = 15
+AdaptiveAI.Escalera.PartidasMinimas = 30
+AdaptiveAI.Escalera.Ventana = 200
+# Corte de medida en segundos Unix. No borra Q ni partidas. Al cambiar código,
+# catálogo o filas de Q, fijar el instante desde el que vuelve a ser comparable.
+# 0 conserva el historial; >0 recalcula sin heredar la foto guardada.
+AdaptiveAI.Escalera.DesdeUnix = 0
+AdaptiveAI.Real.Modo = "mejor"
+AdaptiveAI.Real.Espejo.Dispersion = 1
+AdaptiveAI.Real.Espejo.Horas = 6
+AdaptiveAI.Generaciones.Guardar = 12
+AdaptiveAI.Generalizar = 1
+
+#
+#    AdaptiveAI.Epsilon
+#        Descripcion: Exploracion al azar: probabilidad de probar una accion
+#                     cualquiera mientras se aprende. La exploracion que
+#                     importa es la dirigida (Exploracion.Bonus); esta es un
+#                     resto.
+#        Por defecto: 0.05
+#
+#    AdaptiveAI.Exploracion.Bonus
+#        Descripcion: Exploracion dirigida (optimismo). Mientras se aprende,
+#                     una accion nunca probada en un estado vale el mejor Q de
+#                     ese estado mas este bonus (asi se prueba todo al menos
+#                     una vez), y una poco probada suma bonus/sqrt(visitas).
+#                     Los empates se deshacen al azar. Sin esto, "none" (dejar
+#                     hacer a playerbots) se llevaba el 85-92 % de las
+#                     decisiones y el adaptativo jugaba como el de serie.
+#                     0 = solo epsilon.
+#        Por defecto: 3.0
+#
+#    AdaptiveAI.Alpha
+#        Descripcion: Paso de aprendizaje minimo del Q-learning.
+#        Por defecto: 0.10
+#
+#    AdaptiveAI.Alpha.Decreciente
+#        Descripcion: 1 = el paso es max(Alpha, 1/(visitas+1)): media muestral
+#                     al principio (la primera muestra se toma entera) y Alpha
+#                     como suelo para seguir adaptandose. 0 = Alpha siempre.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Gamma
+#        Descripcion: Descuento del Q-learning.
+#        Por defecto: 0.90
+#
+#    AdaptiveAI.Retorno.Peso
+#        Descripcion: Al acabar la partida, ademas del paso a paso, se reparte
+#                     el retorno descontado de la partida entera (Monte Carlo)
+#                     a todas sus decisiones, con paso Alpha x este peso. Lleva
+#                     la victoria o la derrota hasta las primeras decisiones sin
+#                     esperar a que el bootstrap las alcance. 0 = no.
+#        Por defecto: 0.5
+#
+#    AdaptiveAI.Interrupcion.SoloCasteando
+#        Descripcion: 1 = las interrupciones (contrahechizo, pummel) solo se
+#                     ofrecen al decisor si el enemigo esta casteando.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Kitear.Distancia / AdaptiveAI.Kitear.Ms
+#        Descripcion: Accion propia "kitear" de los lanzadores (mago): clavar
+#                     si esta pegado (Nova de Escarcha) y alejarse hasta esta
+#                     distancia, insistiendo durante esta ventana. Entre 10 y
+#                     35 yardas; entre 1000 y 8000 ms.
+#        Por defecto: 20 / 3000
+#
+#    AdaptiveAI.Decision.IntervaloMs
+#        Descripcion: Como muy tarde, una decision cada tantos ms aunque el
+#                     estado no cambie.
+#        Por defecto: 1500
+#
+#    AdaptiveAI.Decision.MinimoMs
+#        Descripcion: Como muy pronto, una decision cada tantos ms.
+#        Por defecto: 400
+#
+#    AdaptiveAI.Decision.TickMs
+#        Descripcion: Cada cuanto se recalcula el estado de un bot en combate.
+#        Por defecto: 200
+#
+#    AdaptiveAI.Decision.RespetarCasteo
+#        Descripcion: Mientras el propio bot lanza un hechizo con tiempo de
+#                     casteo, el modulo no decide (la decision se pospone y la
+#                     anterior sigue cobrando). Una orden de hechizo del modulo
+#                     se salta la espera de playerbots y el core interrumpe el
+#                     casteo en curso: brujo, chaman elemental y mago perdian el
+#                     final de sus hechizos (05/09/2026). Unica excepcion: si
+#                     el rival esta casteando y la clase tiene interrupcion, se
+#                     decide solo entre dejar hacer e interrumpir.
+#                     0 = decidir siempre, como hasta el 05/09/2026.
+#        Por defecto: 1
+#
+#    AdaptiveAI.Decision.RespetarForma
+#        Descripcion: No ofrecer un hechizo que la forma actual del bot no
+#                     permite (playerbots decia que si y el core lo rechazaba
+#                     al lanzar), y quitar del catalogo del druida feral el
+#                     dano de forma de lanzador (Colera, Fuego estelar, Fuego
+#                     lunar...): se le ofrecia cuando salia de forma a curarse
+#                     y el modulo llenaba ese hueco casteando en vez de volver
+#                     al gato. Las curas y los controles se quedan.
+#        Por defecto: 1
+
+AdaptiveAI.Epsilon = 0.05
+AdaptiveAI.Exploracion.Bonus = 3.0
+AdaptiveAI.Alpha = 0.10
+AdaptiveAI.Alpha.Decreciente = 1
+AdaptiveAI.Gamma = 0.90
+AdaptiveAI.Retorno.Peso = 0.5
+AdaptiveAI.Interrupcion.SoloCasteando = 1
+AdaptiveAI.Kitear.Distancia = 20
+AdaptiveAI.Kitear.Ms = 3000
+AdaptiveAI.Decision.IntervaloMs = 1500
+AdaptiveAI.Decision.MinimoMs = 400
+AdaptiveAI.Decision.TickMs = 200
+AdaptiveAI.Decision.RespetarCasteo = 1
+AdaptiveAI.Decision.RespetarForma = 1
+
+#
+#    AdaptiveAI.Dificultad.PorDefecto
+#        Descripcion: Dificultad de los bots nuevos (1 Novato, 2 Facil,
+#                     3 Normal, 4 Dificil, 5 Experto, 6 Elite). Se aplica en
+#                     los combates reales, nunca en la arena de entrenamiento.
+#        Por defecto: 3
+#
+#    AdaptiveAI.Dificultad.1 ... AdaptiveAI.Dificultad.6
+#        Descripcion: "no reaccionar,segunda mejor": probabilidad de no
+#                     reaccionar en un punto de decision y de escoger la
+#                     segunda mejor accion. Errores coherentes, no
+#                     estadisticas recortadas. Vacio = los valores de abajo.
+#        Por defecto: 1 "0.50,0.40"  2 "0.35,0.30"  3 "0.20,0.20"
+#                     4 "0.10,0.10"  5 "0.03,0.03"  6 "0,0"
+#
+#    AdaptiveAI.Brackets
+#        Descripcion: Umbrales de rating de Principiante, Intermedio,
+#                     Avanzado, Experto y Elite (por debajo, Novato). Los bots
+#                     empiezan en 1500 (Elo, K = 32).
+#        Por defecto: "1000,2000,3000,4000,5000"
+#
+#    AdaptiveAI.Personalidad.Peso
+#        Descripcion: Cuanto sesgan los rasgos de personalidad del bot
+#                     (agresividad, riesgo, defensa, movilidad) la eleccion.
+#                     0 = no sesgan.
+#        Por defecto: 0.5
+
+AdaptiveAI.Dificultad.PorDefecto = 3
+AdaptiveAI.Dificultad.1 = ""
+AdaptiveAI.Dificultad.2 = ""
+AdaptiveAI.Dificultad.3 = ""
+AdaptiveAI.Dificultad.4 = ""
+AdaptiveAI.Dificultad.5 = ""
+AdaptiveAI.Dificultad.6 = ""
+AdaptiveAI.Brackets = "1000,2000,3000,4000,5000"
+AdaptiveAI.Personalidad.Peso = 0.5
+
+#
+#    AdaptiveAI.Recompensa.*
+#        Descripcion: Pesos de cada evento. Dano: por una vida entera de dano
+#                     hecho (positivo) o recibido (negativo). Los demas, por
+#                     evento. ControlHecho y ControlSufrido son simetricos (+3 /
+#                     -3) desde el 04/09/2026: con -2, cada intercambio de
+#                     control entre los dos bots creaba +1 de la nada, y los
+#                     controles crecen con la duracion (0,6 por lado en partidas
+#                     de menos de 30 s, 4,0 en las de 90 s o mas).
+#                     Tiempo se resta por SEGUNDO para no alargar.
+#                     Distancia: por SEGUNDO, los lanzadores (mago, brujo,
+#                     sacerdote, cazador) la cobran si estan a mas de 8 yardas
+#                     y la pagan si estan pegados; los cuerpo a cuerpo al reves.
+#                     KillEquipo y MuerteAliado: para los companeros (2c2 o
+#                     mas, campos). Objetivo y ObjetivoEquipo: por cada bandera,
+#                     base o torre que suma la puntuacion del campo, al que la
+#                     hizo y a sus companeros.
+#        Por defecto: los de abajo
+#
+#    AdaptiveAI.Recompensa.TopeSucesos
+#        Descripcion: Tope del premio de SUCESOS acumulado en un combate: Dano,
+#                     ControlHecho/Sufrido, SnareHecho/Sufrido, las dos
+#                     Interrupciones, DefensivaDesperdiciada, AccionFallida y el
+#                     goteo de Tiempo y Distancia, todos juntos. Fuera del tope
+#                     quedan los TERMINALES (Kill, Muerte, Victoria, Derrota, y
+#                     en equipo KillEquipo y MuerteAliado) y Objetivo /
+#                     ObjetivoEquipo, que son la puntuacion del campo de batalla
+#                     y no el "como".
+#
+#                     Por que hace falta: todos los sucesos crecen con lo que
+#                     dura el combate y ninguno estaba acotado, mientras que
+#                     ganar o perder vale ±50 fijos y una arena dura hasta
+#                     Arena.DuracionMaxSegundos (600). Asi que en las partidas
+#                     largas mandaban los sucesos y no el resultado. Medido el
+#                     04/09/2026 (995 derrotas): el que pierde cobraba −62,2 de
+#                     media en partidas de menos de 30 s y −18,6 en las de mas
+#                     de 150 s, y antes de topar el goteo hubo 12 derrotas que
+#                     cobraron en POSITIVO. Eso ensena a alargar las partidas
+#                     perdidas, y se realimenta solo.
+#
+#                     Se topa el ACUMULADO, no cada cobro, asi que un bot que va
+#                     sumando puede seguir restando y al reves: lo que no puede
+#                     es que el "como" acabe pesando mas que el resultado.
+#                     0 = sin tope (como antes del 04/09/2026).
+#        Por defecto: 40
+
+AdaptiveAI.Recompensa.Dano = 10
+AdaptiveAI.Recompensa.InterrupcionOk = 5
+AdaptiveAI.Recompensa.InterrupcionMal = -2
+AdaptiveAI.Recompensa.ControlHecho = 3
+AdaptiveAI.Recompensa.ControlSufrido = -3
+AdaptiveAI.Recompensa.SnareHecho = 1
+AdaptiveAI.Recompensa.SnareSufrido = -1
+AdaptiveAI.Recompensa.Kill = 30
+AdaptiveAI.Recompensa.Muerte = -30
+AdaptiveAI.Recompensa.Victoria = 20
+AdaptiveAI.Recompensa.Derrota = -20
+AdaptiveAI.Recompensa.DefensivaDesperdiciada = -1
+AdaptiveAI.Recompensa.AccionFallida = -0.2
+AdaptiveAI.Recompensa.Tiempo = -0.05
+AdaptiveAI.Recompensa.Distancia = 0.3
+AdaptiveAI.Recompensa.TopeSucesos = 40
+AdaptiveAI.Recompensa.KillEquipo = 10
+AdaptiveAI.Recompensa.MuerteAliado = -10
+AdaptiveAI.Recompensa.Objetivo = 15
+AdaptiveAI.Recompensa.ObjetivoEquipo = 5
+
+#
+#    AdaptiveAI.Log.Partidas
+#        Descripcion: Guardar cada partida en adaptive_match (resultado,
+#                     decisiones, recompensas, interrupciones, controles, dano).
+#        Por defecto: 1
+#
+#    AdaptiveAI.Log.Decisiones
+#        Descripcion: Guardar cada decision en adaptive_experience. Crece
+#                     rapido (miles de filas por hora con 20 arenas): solo
+#                     para analizar.
+#        Por defecto: 0
+
+#
+#    AdaptiveAI.Log.Auras
+#        Descripcion: Diagnostico. Escribe en el log cada control o snare que
+#                     se COBRA, con el hechizo y sobre quien cae (jugador o no).
+#                     Sirve para cazar cobros que no caen sobre el rival.
+#                     Ruidoso: solo unos minutos y se apaga con reload config.
+#        Por defecto: 0
+
+AdaptiveAI.Log.Partidas = 1
+AdaptiveAI.Log.Decisiones = 0
+# Auditoría selectiva por GUID. Se fija al iniciar cada cerebro; 0 apagado.
+# Solo Server.log, máximo 4000 eventos por sesión; no cambia decisiones ni Q.
+AdaptiveAI.Log.AuditarBot = 0
+# Sesiones activas de candidata 1c1, por clase y proceso. Vacío desactiva.
+# Tras recogerlas, apagar antes del siguiente reinicio (la cuota vive en memoria).
+AdaptiveAI.Log.AuditarClases = ""
+AdaptiveAI.Log.AuditarSesiones = 3
+AdaptiveAI.Log.Auras = 0
+
+#
+#    AdaptiveAI.Log.PartidasDias
+#        Descripcion: Borrar las partidas (y sus decisiones) de mas de tantos
+#                     dias, al arrancar y una vez al dia. Tambien se borran las
+#                     tablas Q de versiones que ya no son ni la validada ni la
+#                     candidata. Lo aprendido no se toca. 0 = no borrar nunca.
+#        Por defecto: 30
+
+AdaptiveAI.Log.PartidasDias = 30
+
+#
+#    AdaptiveAI.Exportar.Fichero
+#        Descripcion: Fichero de ".adaptive exportar" e "importar" (relativo
+#                     al directorio del worldserver). Modelos, tabla Q y
+#                     perfiles; nunca partidas.
+#        Por defecto: "adaptive_entrenado.sql"
+
+AdaptiveAI.Exportar.Fichero = "adaptive_entrenado.sql"
+
+#
+#    AdaptiveAI.Trazas.GM
+#        Descripcion: Mandar las trazas del entrenamiento (partida lanzada,
+#                     bots llegados, puertas abiertas, resultado, calibracion)
+#                     como mensajes de sistema a los GM conectados con .gm on.
+#                     Se apaga y enciende en caliente con ".adaptive trazas".
+#        Por defecto: 1
+
+AdaptiveAI.Trazas.GM = 1
+
+#
+#    AdaptiveAI.Brujo.MascotaPvP
+#        Descripcion: Mascota que el modulo garantiza al brujo cuando pelea en
+#                     PvP: "felhunter" (manafago), "succubus", "felguard",
+#                     "voidwalker" o "imp". playerbots la elige por rama de
+#                     talentos (aflicion manafago, demonologia abisario,
+#                     destruccion diablillo); aqui se fija una y, mientras dura
+#                     el combate, se le apagan al bot las cinco estrategias de
+#                     mascota: sin ellas no hay disparador "no pet" ni
+#                     "wrong pet", que era lo que le hacia reinvocar su demonio
+#                     varias veces por segundo. Al terminar se le devuelven.
+#        Por defecto: "felhunter"
+
+AdaptiveAI.Brujo.MascotaPvP = "felhunter"

@@ -1,0 +1,124 @@
+Licencia: la del proyecto que modifica, que no la declara en el código fijado; sólo se publica esta diferencia (ver THIRD-PARTY-NOTICES.txt).
+
+SP07: la sede ofrece a Ling, el banquero de materiales, como mejora del mayordomo.
+Problema: la sede ya vende instructores de profesion, fragua, yunque, correo,
+subastador y banco, pero no un sitio donde guardar los materiales de oficio;
+Ling (mod-reagent-bank) solo estaba en las capitales.
+Solucion: entrada nueva del mayordomo (precio GuildHouseReagentBank, 100 oro
+como el banco; -1 la oculta), fila en guild_house_spawns y textos 415/416. Sin
+mod-reagent-bank activo (plantilla 290011 con su script npc_reagent_banker) la
+mejora no se ofrece, tambien si el modulo se desactivo despues de instalarlo. El NPC se
+registra en mod_guildhouse_owned_spawn como los demas y se retira al vender o
+disolver la sede; el contenido del banco es de cada personaje y se conserva.
+Se aplica despues de 01-integracion-sp02.patch.
+Base: azerothcore/mod-guildhouse 0b3cc14e947a859f8a7751a10676107d6316275b.
+
+diff --git a/conf/mod_guildhouse.conf.dist b/conf/mod_guildhouse.conf.dist
+index 314eca0..7a3b9b8 100644
+--- a/conf/mod_guildhouse.conf.dist
++++ b/conf/mod_guildhouse.conf.dist
+@@ -100,4 +100,13 @@ GuildHouseBuyRank = 4
+ # GR_MEMBER       = 3
+ # GR_INITIATE     = 4
+ #
+-GuildHouseSellRank = 0
+\ No newline at end of file
++GuildHouseSellRank = 0
++
++# GuildHouseReagentBank
++#
++# SP07: cost of the reagent banker (Ling, from mod-reagent-bank) in the guild
++# house. His storage belongs to each character, not to the guild, and survives
++# the sale of the house. -1 = the butler does not offer him.
++# default = 1000000 (100g, the same as the bank)
++#
++GuildHouseReagentBank = 1000000
+diff --git a/data/sql/db-world/2026_10_01_00_guildhouse_reagent_bank.sql b/data/sql/db-world/2026_10_01_00_guildhouse_reagent_bank.sql
+new file mode 100644
+index 0000000..2799e92
+--- /dev/null
++++ b/data/sql/db-world/2026_10_01_00_guildhouse_reagent_bank.sql
+@@ -0,0 +1,9 @@
++-- SP07: Ling (mod-reagent-bank, entry 290011) como mejora de la sede.
++-- Idempotente. La plantilla del NPC la trae mod-reagent-bank; sin ese modulo el
++-- mayordomo no ofrece la mejora y esta fila queda sin uso.
++REPLACE INTO `guild_house_spawns` (`id`, `entry`, `posX`, `posY`, `posZ`, `orientation`, `comment`) VALUES
++  (56, 290011, 16228.0, 16283.0, 13.1761, 2.98877, 'Reagent Banker');
++
++REPLACE INTO `mod_guildhouse_locale` (`Id`, `Locale`, `Text`) VALUES
++(415, 'enUS', 'Spawn Reagent Banker'),
++(416, 'enUS', 'Spawn Reagent Banker?');
+diff --git a/src/guildhouse.h b/src/guildhouse.h
+index 3563f5c..6f18411 100644
+--- a/src/guildhouse.h
++++ b/src/guildhouse.h
+@@ -173,7 +173,11 @@ enum GuildHouseLocaleString : uint32
+ 
+     // Guild house buy menu
+     GUILDHOUSE_TEXT_GOSSIP_GM_ISLAND             = 413,
+-    GUILDHOUSE_TEXT_CONFIRM_BUY_GM_ISLAND        = 414
++    GUILDHOUSE_TEXT_CONFIRM_BUY_GM_ISLAND        = 414,
++
++    // SP07: reagent banker (mod-reagent-bank) offered by the butler
++    GUILDHOUSE_TEXT_GOSSIP_SPAWN_REAGENT_BANK    = 415,
++    GUILDHOUSE_TEXT_CONFIRM_SPAWN_REAGENT_BANK   = 416
+ };
+ 
+ class Player;
+diff --git a/src/mod_guildhouse_butler.cpp b/src/mod_guildhouse_butler.cpp
+index 5878200..a1fa387 100644
+--- a/src/mod_guildhouse_butler.cpp
++++ b/src/mod_guildhouse_butler.cpp
+@@ -15,7 +15,22 @@
+ #include "CreatureAI.h"
+ #include "guildhouse.h"
+ 
+-int GuildHouseInnKeeper, GuildHouseBank, GuildHouseMailBox, GuildHouseAuctioneer, GuildHouseTrainer, GuildHouseVendor, GuildHouseObject, GuildHousePortal, GuildHouseSpirit, GuildHouseProf, GuildHouseBuyRank;
++int GuildHouseInnKeeper, GuildHouseBank, GuildHouseMailBox, GuildHouseAuctioneer, GuildHouseTrainer, GuildHouseVendor, GuildHouseObject, GuildHousePortal, GuildHouseSpirit, GuildHouseProf, GuildHouseReagentBank, GuildHouseBuyRank;
++
++// SP07: Ling, the reagent banker of mod-reagent-bank. That module ships the NPC
++// and its script; here he is only placed in the house if the module is active.
++constexpr uint32 GUILDHOUSE_REAGENT_BANKER = 290011;
++
++// Disabling mod-reagent-bank only clears the script name of the template and removes
++// the spawns (cleanup_disabled_module_db), so the template alone does not prove the
++// module is active: require its script too.
++static bool GuildHouseReagentBankOffered()
++{
++    if (GuildHouseReagentBank < 0)
++        return false;
++    CreatureTemplate const* banker = sObjectMgr->GetCreatureTemplate(GUILDHOUSE_REAGENT_BANKER);
++    return banker && sObjectMgr->GetScriptName(banker->ScriptID) == "npc_reagent_banker";
++}
+ 
+ class GuildHouseSpawner : public CreatureScript
+ {
+@@ -65,6 +80,8 @@ public:
+         AddGossipItemFor(player, GOSSIP_ICON_TALK, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_GOSSIP_SPAWN_VENDOR_MENU, player), GOSSIP_SENDER_MAIN, 3);
+         AddGossipItemFor(player, GOSSIP_ICON_TALK, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_GOSSIP_SPAWN_PORTAL_MENU, player), GOSSIP_SENDER_MAIN, 4);
+         AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_GOSSIP_SPAWN_BANK, player), GOSSIP_SENDER_MAIN, 30605, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_CONFIRM_SPAWN_BANK, player), GuildHouseBank, false);
++        if (GuildHouseReagentBankOffered())
++            AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_GOSSIP_SPAWN_REAGENT_BANK, player), GOSSIP_SENDER_MAIN, GUILDHOUSE_REAGENT_BANKER, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_CONFIRM_SPAWN_REAGENT_BANK, player), GuildHouseReagentBank, false);
+         AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_GOSSIP_SPAWN_AUCTIONEER, player), GOSSIP_SENDER_MAIN, 6, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_CONFIRM_SPAWN_AUCTIONEER, player), GuildHouseAuctioneer, false);
+         AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_GOSSIP_SPAWN_NEUTRAL_AUCTIONEER, player), GOSSIP_SENDER_MAIN, 9858, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_CONFIRM_SPAWN_NEUTRAL_AUCTIONEER, player), GuildHouseAuctioneer, false);
+         AddGossipItemFor(player, GOSSIP_ICON_TRAINER, GetGuildHouseLocaleText(GUILDHOUSE_TEXT_GOSSIP_SPAWN_PRIMARY_PROF, player), GOSSIP_SENDER_MAIN, 7);
+@@ -194,6 +211,11 @@ public:
+         case 30605: // Banker
+             SpawnNPC(action, player, GuildHouseBank);
+             break;
++        case GUILDHOUSE_REAGENT_BANKER: // SP07: banquero de materiales
++            if (!GuildHouseReagentBankOffered())
++                return false;
++            SpawnNPC(action, player, GuildHouseReagentBank);
++            break;
+         case GetCreatureEntry(2): // Innkeeper
+             SpawnNPC(action, player, GuildHouseInnKeeper);
+             break;
+@@ -427,6 +449,7 @@ public:
+         GuildHousePortal = sConfigMgr->GetOption<int32>("GuildHousePortal", 500000);
+         GuildHouseProf = sConfigMgr->GetOption<int32>("GuildHouseProf", 500000);
+         GuildHouseSpirit = sConfigMgr->GetOption<int32>("GuildHouseSpirit", 100000);
++        GuildHouseReagentBank = sConfigMgr->GetOption<int32>("GuildHouseReagentBank", 1000000);
+         GuildHouseBuyRank = sConfigMgr->GetOption<int32>("GuildHouseBuyRank", 4);
+     }
+ };

@@ -1,0 +1,120 @@
+Licencia: GPL-2.0-or-later, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Distribucion de bots centrada en el jugador real de mayor nivel.
+
+Problema
+--------
+En un servidor de una persona, el reparto porcentual fijo conserva demasiados
+bots en nivel 80 y el reparto dinamico ponderado sigue consumiendo la poblacion
+finita en brackets donde no juega nadie. WorldBots no puede traer bots libres
+del bracket activo si la reserva global esta asignada a otros niveles.
+
+Solucion
+--------
+Anadir HighestPlayerOnly al reparto dinamico. Cuando hay humanos conectados,
+ambas facciones reciben el 100 % en el bracket del humano de mayor nivel. Sin
+humanos se conserva el reparto dinamico uniforme, para no inventar un bracket.
+
+Actualizado 11/09/2026
+-----------------------
+mod-playerbots (commit 1fea462f, 2026-09-04) anadio IsDisabledBracket() para
+que un bracket con pct=0 nunca reciba peso, pero solo lo aplico en las ramas
+SYNCED y de reparto separado, no en HighestPlayerOnly (anadida por este mismo
+parche): si algun dia se desactiva un bracket con pct=0 y el jugador de mayor
+nivel cae justo ahi, se le forzaria el 100% a un bracket que el admin marco
+como apagado. Bajo riesgo hoy (config.sh nunca pone pct=0), pero se corrige
+reusando el mismo helper que ya trae el modulo en el mismo fichero.
+
+Escrito contra
+--------------
+mod-playerbots @ b949b50bfcdd4fab937781bac2d7765e39330e4b (2026-09-04)
+Actualizado contra mod-playerbots @ b6696bdbd3740e575598d167d69f39f68cc0b907 (2026-09-11)
+
+diff --git a/conf/playerbots.conf.dist b/conf/playerbots.conf.dist
+--- a/conf/playerbots.conf.dist
++++ b/conf/playerbots.conf.dist
+@@ -902,6 +902,15 @@ AiPlayerbot.LevelBrackets.NumRanges = 9
+ # Default: 0 (disabled)
+ AiPlayerbot.LevelBrackets.Dynamic.UseDynamicDistribution = 0
+
++# When enabled together with dynamic distribution, ignore the proportional census and put 100%
++# of both factions in the level bracket of the highest-level real player currently online. When
++# no real player is online, distribution remains even. Intended for single-player servers where
++# bots in unrelated level brackets only consume the finite online population.
++#
++# Default: 0 (disabled)
++
++AiPlayerbot.LevelBrackets.Dynamic.HighestPlayerOnly = 0
++
+ # Controls how much extra weight is given to brackets (level ranges) that contain real (non-bot)
+ # players, when dynamic distribution is enabled. The higher this value, the more bots move to the
+ # same level brackets where real players are found, but the effect is gentle, not extreme. A value
+diff --git a/src/PlayerbotAIConfig.h b/src/PlayerbotAIConfig.h
+--- a/src/PlayerbotAIConfig.h
++++ b/src/PlayerbotAIConfig.h
+@@ -495,6 +495,7 @@ public:
+     std::vector<LevelBracketConfig> levelBracketsAlliance;
+     std::vector<LevelBracketConfig> levelBracketsHorde;
+     bool levelBracketsDynamicDistribution;
++    bool levelBracketsHighestPlayerOnly;
+     float levelBracketsRealPlayerWeight;
+     bool levelBracketsSyncFactions;
+
+diff --git a/src/PlayerbotAIConfig.cpp b/src/PlayerbotAIConfig.cpp
+--- a/src/PlayerbotAIConfig.cpp
++++ b/src/PlayerbotAIConfig.cpp
+@@ -809,6 +809,8 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
+         sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.CheckFlaggedFrequency", 15);
+     levelBracketsDynamicDistribution =
+         sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Dynamic.UseDynamicDistribution", false);
++    levelBracketsHighestPlayerOnly =
++        sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Dynamic.HighestPlayerOnly", false);
+     levelBracketsRealPlayerWeight =
+         sConfigMgr->GetOption<float>("AiPlayerbot.LevelBrackets.Dynamic.RealPlayerWeight", 1.0f);
+     levelBracketsSyncFactions = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Dynamic.SyncFactions", false);
+diff --git a/src/Bot/RandomBotLevelMgr.cpp b/src/Bot/RandomBotLevelMgr.cpp
+--- a/src/Bot/RandomBotLevelMgr.cpp
++++ b/src/Bot/RandomBotLevelMgr.cpp
+@@ -564,6 +564,7 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
+         std::vector<int> hordeRealCounts(_numRanges, 0);
+         uint32 totalAllianceReal = 0;
+         uint32 totalHordeReal = 0;
++        uint8 highestRealPlayerLevel = 0;
+
+         for (auto const& itr : allPlayers)
+         {
+@@ -572,6 +573,8 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
+                 continue;
+             if (GET_PLAYERBOT_AI(player))
+                 continue; // Only count real players.
++            if (player->GetLevel() > highestRealPlayerLevel)
++                highestRealPlayerLevel = player->GetLevel();
+             int rangeIndex = GetOrFlagPlayerBracket(player);
+             if (rangeIndex < 0)
+                 continue;
+@@ -591,8 +594,23 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
+         std::vector<float> allianceWeights(_numRanges, 0.0f);
+         std::vector<float> hordeWeights(_numRanges, 0.0f);
+
+-        // SYNCED MODE: real player weighting is combined for both factions, applied to both bracket tables.
+-        if (sPlayerbotAIConfig.levelBracketsSyncFactions)
++        // SP mode: both factions follow only the bracket of the highest real player online.
++        // With no human online, fall through to the normal dynamic calculation, which is even.
++        if (sPlayerbotAIConfig.levelBracketsHighestPlayerOnly && highestRealPlayerLevel)
++        {
++            int allianceRange = GetLevelRangeIndex(highestRealPlayerLevel, TEAM_ALLIANCE);
++            int hordeRange = GetLevelRangeIndex(highestRealPlayerLevel, TEAM_HORDE);
++            if (allianceRange >= 0 && !IsDisabledBracket(sPlayerbotAIConfig.levelBracketsAlliance, allianceRange))
++                allianceWeights[allianceRange] = 1.0f;
++            if (hordeRange >= 0 && !IsDisabledBracket(sPlayerbotAIConfig.levelBracketsHorde, hordeRange))
++                hordeWeights[hordeRange] = 1.0f;
++
++            LOG_DEBUG("playerbots",
++                "[RandomBotLevelMgr] Highest-player-only distribution: real player level {}, Alliance range {}, Horde range {}.",
++                highestRealPlayerLevel, allianceRange + 1, hordeRange + 1);
++        }
++        // SYNCED MODE: real player weighting is combined for both factions, applied to both bracket tables.
++        else if (sPlayerbotAIConfig.levelBracketsSyncFactions)
+         {
+             uint32 totalCombinedReal = totalAllianceReal + totalHordeReal;
+             for (uint8 i = 0; i < _numRanges; ++i)

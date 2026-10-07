@@ -1,0 +1,15 @@
+# Quien revisa cada cambio. Con la protección de rama activada («Require review from Code
+# Owners»), nada de lo reservado entra sin su aprobación. Todo se revisa a mano, uno a uno.
+*                              @MattJCR
+/.github/                      @MattJCR
+/tests/                        @MattJCR
+/tools/cliente-sintetico/      @MattJCR
+/install.sh                    @MattJCR
+/lib/                          @MattJCR
+/scripts/                      @MattJCR
+/LICENSE                       @MattJCR
+/LICENSES/                     @MattJCR
+/REUSE.toml                    @MattJCR
+/mirrors/MANIFEST.tsv          @MattJCR
+/versions.lock                 @MattJCR
+/addons.lock                   @MattJCR

@@ -1,0 +1,143 @@
+Licencia: GPL-2.0-or-later, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+No hay ninguna combinacion de configuracion que haga que, en un grupo con
+jugadores humanos, los bots esperen el voto de esos humanos antes de tirar
+por un objeto: los bots compiten desde el primer instante.
+
+Problema
+--------
+AiPlayerbot.LootNeedRollLevel y AiPlayerbot.LootGreedRollLevel solo
+transforman una necesidad/codicia ya calculada por la IA en pasar, codicia o
+necesidad (0/1/2 y 0/1 respectivamente); no dicen nada de CUANDO se emite el
+voto. LootRollAction::Execute() recorre las tiradas pendientes desde el
+trigger "very often" y llama de inmediato a Group::CountRollVote() para cada
+bot con voto NOT_EMITED_YET, sin mirar antes el voto de los jugadores
+humanos participantes en esa misma tirada. El core fijado
+(06234df3d5ab26c93f4f1f06f3edb828b73ecd3c) ya expone en cada Roll el mapa
+playerVote (guid -> PASS/NEED/GREED/DISENCHANT/NOT_EMITED_YET) y mantiene la
+tirada abierta hasta que todos votan o vencen los 60 segundos, pero nada en
+mod-playerbots consulta ese mapa antes de decidir. Botin maestro tampoco
+sirve como alternativa: cambia el sistema de reparto entero y no expresa la
+regla "los bots solo heredan lo que todos los humanos rechazan".
+
+Solucion
+--------
+Antes de calcular la valoracion del objeto, y solo cuando el metodo de
+reparto del grupo es GROUP_LOOT o NEED_BEFORE_GREED (Botin de grupo /
+Necesidad antes que codicia; Botin maestro y Todos por igual se dejan
+exactamente como estaban, el codigo ya fuerza el pase del bot en esos dos),
+LootRollAction::Execute() separa los participantes humanos de los bots en
+roll->playerVote (un jugador es humano si ObjectAccessor::FindConnectedPlayer
+lo encuentra conectado y GET_PLAYERBOT_AI() no devuelve IA):
+
+- si hay al menos un humano participante y alguno sigue en NOT_EMITED_YET,
+  el bot no emite todavia su voto para ese objeto (continue: el siguiente
+  paso del trigger periodico lo volvera a comprobar);
+- si algun humano ya voto NEED, GREED o DISENCHANT, el bot vota PASS
+  directamente, sin pasar por la valoracion normal del objeto;
+- si no queda ningun humano pendiente y ninguno reclamo el objeto (incluye
+  el caso sin humanos en la tirada), se cae al comportamiento actual sin
+  tocar nada: la IA valora el objeto y vota necesidad, codicia o pase como
+  siempre.
+
+Una expiracion de los 60 segundos no equivale a un pase afirmativo (el core
+resuelve tratando a quien no voto como pase, sin dar a la IA un estado
+intermedio): esta mejora prioriza los pases explicitos/automaticos de los
+humanos y no intenta que los bots hereden tras un timeout, eso exigiria
+ampliar el core.
+
+Activacion
+----------
+El comportamiento nuevo queda detras de AiPlayerbot.LootRollAfterRealPlayersPass
+(nuevo, por defecto 0/desactivado en el .conf.dist del modulo). Con el parche
+sin activar, LootRollAction::Execute() se comporta exactamente igual que
+antes de este parche.
+
+Escrito contra
+--------------
+mod-playerbots @ b6696bdbd3740e575598d167d69f39f68cc0b907, con
+01-highest-player-bracket.patch, 02-stage-live-cap.patch y
+03-stage-cap-autopopulation.patch ya aplicados.
+
+diff --git a/conf/playerbots.conf.dist b/conf/playerbots.conf.dist
+--- a/conf/playerbots.conf.dist
++++ b/conf/playerbots.conf.dist
+@@ -324,6 +324,14 @@ AiPlayerbot.LootRollRecipe = 0
+ # Default: 0 (disabled)
+ AiPlayerbot.LootRollDisenchant = 0
+
++# In a group with real players, make bots hold their loot roll vote on an item until every real
++# player who is rolling on it has passed (explicitly, by auto-pass, or by rolling Need/Greed/
++# Disenchant themselves, which makes the bots PASS on that item instead of competing). Bots in a
++# group made up only of bots are unaffected. Does not apply to Master Loot or Free-for-All, where
++# bots already always pass.
++# Default: 0 (disabled - bots roll immediately, same as real players)
++AiPlayerbot.LootRollAfterRealPlayersPass = 0
++
+ # A list of GameObject GUIDs that bots will not interact with.
+ # List of default GUIDs:
+ # QuestItems:
+diff --git a/src/Ai/Base/Actions/LootRollAction.cpp b/src/Ai/Base/Actions/LootRollAction.cpp
+--- a/src/Ai/Base/Actions/LootRollAction.cpp
++++ b/src/Ai/Base/Actions/LootRollAction.cpp
+@@ -29,6 +29,38 @@ bool LootRollAction::Execute(Event /*event*/)
+
+         ObjectGuid guid = roll->itemGUID;
+         uint32 itemId = roll->itemid;
++
++        if (sPlayerbotAIConfig.lootRollAfterRealPlayersPass &&
++            group->GetLootMethod() != MASTER_LOOT && group->GetLootMethod() != FREE_FOR_ALL)
++        {
++            bool anyRealPlayer = false;
++            bool realPlayerPending = false;
++            bool realPlayerClaimed = false;
++            for (Roll::PlayerVote::const_iterator voteEntry = roll->playerVote.begin();
++                 voteEntry != roll->playerVote.end(); ++voteEntry)
++            {
++                Player* participant = ObjectAccessor::FindConnectedPlayer(voteEntry->first);
++                if (!participant || GET_PLAYERBOT_AI(participant))
++                    continue;
++
++                anyRealPlayer = true;
++                if (voteEntry->second == NOT_EMITED_YET)
++                    realPlayerPending = true;
++                else if (voteEntry->second == NEED || voteEntry->second == GREED || voteEntry->second == DISENCHANT)
++                    realPlayerClaimed = true;
++            }
++
++            if (anyRealPlayer && realPlayerPending)
++                continue; // wait for every real player to vote before the bot decides
++
++            if (anyRealPlayer && realPlayerClaimed)
++            {
++                group->CountRollVote(bot->GetGUID(), guid, PASS);
++                voted = true;
++                continue; // a real player already claimed it, bots never compete for it
++            }
++        }
++
+         int32 randomProperty = 0;
+         if (roll->itemRandomPropId)
+             randomProperty = roll->itemRandomPropId;
+diff --git a/src/PlayerbotAIConfig.cpp b/src/PlayerbotAIConfig.cpp
+--- a/src/PlayerbotAIConfig.cpp
++++ b/src/PlayerbotAIConfig.cpp
+@@ -708,6 +708,7 @@ bool PlayerbotAIConfig::Initialize()
+     lootRollRecipe = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollRecipe", false);
+     lootRollDisenchant = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollDisenchant", false);
+     lootGreedRollLevel = sConfigMgr->GetOption<bool>("AiPlayerbot.LootGreedRollLevel", false);
++    lootRollAfterRealPlayersPass = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollAfterRealPlayersPass", false);
+     autoPickReward = sConfigMgr->GetOption<std::string>("AiPlayerbot.AutoPickReward", "yes");
+     autoEquipUpgradeLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoEquipUpgradeLoot", true);
+     equipUpgradeThreshold = sConfigMgr->GetOption<float>("AiPlayerbot.EquipUpgradeThreshold", 1.1f);
+diff --git a/src/PlayerbotAIConfig.h b/src/PlayerbotAIConfig.h
+--- a/src/PlayerbotAIConfig.h
++++ b/src/PlayerbotAIConfig.h
+@@ -375,6 +375,7 @@ public:
+     bool lootGreedRollLevel;
+     bool lootRollRecipe;
+     bool lootRollDisenchant;
++    bool lootRollAfterRealPlayersPass;
+     std::string autoPickReward;
+     bool autoEquipUpgradeLoot;
+     float equipUpgradeThreshold;

@@ -1,0 +1,8 @@
+# Seguimiento de addons de cliente (WoW Lua) de terceros, vendorizados en
+# cliente/Interface/AddOns/<Nombre>/. Mismo formato que versions.lock:
+# nombre<TAB>rama<TAB>commit<TAB>fecha<TAB>url
+# Comprobar con: bash tools/revisar-actualizaciones-addons.sh
+# Traducciones propias y cómo reaplicarlas tras una actualización: patches-cliente/
+PlayerBotManager	master	0a31d203f6669d500dd2db6df73557e3cb1854e2	2026-09-27	https://github.com/Lichborne-AC/PlayerbotManager.git
+QuestRadar	master	f7ce763e48d1c7db1afcd3611f13cd729c9c1b88	2026-09-12	https://github.com/warblups/mod-quest-radar.git
+GuildLevels	main	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	2026-05-01	https://github.com/Old-Man-Warcraft/mod-guild-levels.git

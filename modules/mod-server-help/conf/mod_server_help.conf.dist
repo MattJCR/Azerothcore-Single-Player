@@ -1,0 +1,167 @@
+[worldserver]
+
+###################################################################################################
+# MOD-SERVER-HELP
+#
+#   La pestana "Solicitud de ayuda" > "Ayuda basica" del cliente como base de
+#   conocimiento del servidor: todos los comandos que la cuenta conectada
+#   puede usar (del core y de cualquier modulo), con su ayuda, su nivel de
+#   permiso y su categoria, mas los articulos y fichas de las tablas
+#   server_help_* de acore_world.
+#
+#   El filtro de permisos lo hace el core con la sesion real del jugador
+#   (los mismos comprobantes que al ejecutar el comando): lo que no puede
+#   usar no sale del servidor. El cliente necesita el addon ServerHelp
+#   (carpeta cliente/ del instalador), que habla con el comando ".ayuda" por
+#   el canal de addon del propio core (prefijo "AzerothCore").
+#
+#   Comandos: .ayuda | .ayuda buscar <texto> | .ayuda comando <ruta> |
+#             .ayuda articulo <id> | .ayuda indice | .ayuda recargar (admin)
+#
+###################################################################################################
+
+#
+#    ServerHelp.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+ServerHelp.Enable = 1
+
+#
+#    ServerHelp.LineBytes
+#        Descripcion: Bytes maximos por linea enviada al addon. El core limita
+#                     cada mensaje de addon a 255 bytes y la cabecera del
+#                     protocolo ocupa 17; por encima de 238 se recorta. El minimo
+#                     es 230: por debajo, las lineas de indice (C/E) se partirian
+#                     sin marcador de continuacion y el addon no podria parsearlas.
+#        Por defecto: 230
+
+ServerHelp.LineBytes = 230
+
+#
+#    ServerHelp.MaxSearchResults
+#        Descripcion: Resultados maximos de ".ayuda buscar".
+#        Por defecto: 60
+
+ServerHelp.MaxSearchResults = 60
+
+#
+#    ServerHelp.CacheSeconds
+#        Descripcion: Segundos que se conserva la instantanea (comandos y
+#                     articulos visibles) de cada cuenta antes de recalcularla.
+#                     Se recalcula antes si cambia el nivel de la cuenta o se
+#                     recargan los datos.
+#        Por defecto: 300
+
+ServerHelp.CacheSeconds = 300
+
+#
+#    ServerHelp.IndexCooldownSeconds
+#        Descripcion: Segundos minimos entre dos peticiones de indice completo
+#                     de la misma cuenta desde el addon (el indice de un
+#                     administrador son ~200 mensajes).
+#        Por defecto: 2
+
+ServerHelp.IndexCooldownSeconds = 2
+
+#
+#    ServerHelp.MaxDepth
+#        Descripcion: Profundidad maxima del arbol de comandos que se recorre.
+#        Por defecto: 8
+
+ServerHelp.MaxDepth = 8
+
+#
+#    ServerHelp.DefaultCategory.*
+#        Descripcion: Categoria (id de server_help_category) donde cae un
+#                     comando sin ficha y sin regla de prefijo, segun su nivel.
+#        Por defecto: 2 (Comandos de jugador), 14 (Moderacion),
+#                     13 (Game Master), 15 (Administracion)
+
+ServerHelp.DefaultCategory.Player = 2
+ServerHelp.DefaultCategory.Moderator = 14
+ServerHelp.DefaultCategory.GameMaster = 13
+ServerHelp.DefaultCategory.Administrator = 15
+
+#
+#    ServerHelp.DefaultCategory.Console
+#        Descripcion: Categoria para los comandos ejecutados desde la consola
+#                     (SEC_CONSOLE). Con 0 caen en la de Administracion.
+#        Por defecto: 0
+
+ServerHelp.DefaultCategory.Console = 0
+
+#
+#    ServerHelp.SnapshotMaxAge
+#        Descripcion: Segundos que se guarda una instantanea del indice sin que
+#                     nadie la use antes de descartarla. Minimo 60.
+#        Por defecto: 3600
+
+ServerHelp.SnapshotMaxAge = 3600
+
+#
+#    ServerHelp.SearchQueryMaxBytes / ServerHelp.CommandQueryMaxBytes
+#        Descripcion: Recorte de la entrada de ".ayuda buscar <texto>" y de
+#                     ".ayuda comando <ruta>" (bytes). Minimo 8.
+#        Por defecto: 64 / 128
+
+ServerHelp.SearchQueryMaxBytes = 64
+ServerHelp.CommandQueryMaxBytes = 128
+
+#
+#    ServerHelp.IndexCutBytes.Key / .Title / .Category
+#        Descripcion: Longitud maxima (bytes) de cada campo del indice que se
+#                     manda al addon. Minimo 16.
+#        Por defecto: 90 / 100 / 80
+
+ServerHelp.IndexCutBytes.Key = 90
+ServerHelp.IndexCutBytes.Title = 100
+ServerHelp.IndexCutBytes.Category = 80
+
+#
+#    ServerHelp.AddonPrefix
+#        Descripcion: Prefijo del canal de addon del nucleo (Chat.cpp lo tiene
+#                     fijo en "AzerothCore"). NO cambia el canal: solo ajusta la
+#                     aritmetica del tope de bytes por linea (255 - prefijo -
+#                     "\tm0000"). Cambialo solo si parcheas el core.
+#        Por defecto: "AzerothCore"
+
+ServerHelp.AddonPrefix = "AzerothCore"
+
+#
+#    ServerHelp.RateWindowSeconds / ServerHelp.RateMaxPerWindow
+#        Descripcion: Limite por cuenta de subcomandos de .ayuda (indice,
+#                     buscar, comando, articulo): no mas de RateMaxPerWindow
+#                     peticiones cada RateWindowSeconds segundos. Frena las
+#                     reconstrucciones de indice y las busquedas en rafaga desde
+#                     el addon. Con RateMaxPerWindow 0 no hay limite.
+#        Por defecto: 20 / 20
+
+ServerHelp.RateWindowSeconds = 20
+ServerHelp.RateMaxPerWindow = 20
+
+#
+#    ServerHelp.Export
+#        Descripcion: Permite que ".ayuda export" (administrador) vuelque los
+#                     comandos descubiertos del arbol que NO tienen ficha propia
+#                     como filas auto=1 en server_help_command, para que el panel
+#                     web vea el arbol completo y no solo las fichas curadas. Las
+#                     fichas curadas (auto=0) no se tocan. Ejecutalo tras anadir
+#                     modulos.
+#        Por defecto: 1 - (activado)
+#                     0 - (".ayuda export" responde que esta desactivado)
+
+ServerHelp.Export = 1
+
+#
+#    ServerHelp.LogRequests
+#        Descripcion: Escribir en Server.log cada peticion del addon
+#                     (quien, que, nivel). Para diagnosticar.
+#        Por defecto: 0 - (desactivado)
+#                     1 - (activado)
+
+ServerHelp.LogRequests = 0
+
+#
+###################################################################################################

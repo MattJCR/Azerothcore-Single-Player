@@ -1,0 +1,121 @@
+[worldserver]
+
+###################################################################################################
+# MOD-UPDATE-NOTICE
+#
+#   Aviso de actualizaciones al conectarse. Si algun repositorio remoto (el
+#   core o un modulo de terceros) tiene commits nuevos sobre la version fijada
+#   en versions.lock, las cuentas con nivel de GM reciben un mensaje del
+#   sistema al entrar, con el detalle por repositorio.
+#
+#   El modulo no consulta GitHub: lee un fichero de texto que escribe la
+#   herramienta tools/revisar-actualizaciones.sh (y la tarea semanal). Si el
+#   fichero no existe o esta vacio, no hay nada que decir.
+#
+#   Comando: .actualizaciones  (vuelve a mostrar el aviso; nivel GM)
+#
+###################################################################################################
+
+#
+#    UpdateNotice.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+UpdateNotice.Enable = 1
+
+#
+#    UpdateNotice.File
+#        Descripcion: Fichero con el informe. Ruta relativa al directorio
+#                     desde el que arranca el worldserver (env/dist/bin) o
+#                     absoluta.
+#        Por defecto: "updates-pending.txt"
+
+UpdateNotice.File = "updates-pending.txt"
+
+#
+#    UpdateNotice.VersionsLockFile
+#        Descripcion: Ruta de versions.lock (relativa al directorio del
+#                     worldserver o absoluta; el instalador la deja apuntando
+#                     a la ruta absoluta del versions.lock REAL, no a una
+#                     copia). Si su fecha es posterior a la del informe, el
+#                     aviso advierte de que el informe puede estar desfasado
+#                     (un --freeze o una edicion a mano despues de la ultima
+#                     revision). Vacio desactiva la comprobacion.
+#        Por defecto: "versions.lock"
+
+UpdateNotice.VersionsLockFile = "versions.lock"
+
+#
+#    UpdateNotice.Severity
+#        Descripcion: Ordenar y colorear las lineas del informe por un prefijo
+#                     opcional entre corchetes: [seguridad] (rojo), [incompat]
+#                     (naranja), [funcional] (amarillo), [informativo] (gris).
+#                     Sin prefijo se trata como funcional.
+#                     tools/revisar-actualizaciones.sh marca el core y los repos
+#                     con parche propio como [incompatibilidad].
+#        Por defecto: 1 - (activado)
+#                     0 - (todas las lineas igual, en orden de fichero)
+
+UpdateNotice.Severity = 1
+
+#
+#    UpdateNotice.MinSecurity
+#        Descripcion: Nivel de cuenta minimo para recibir el aviso Y para usar
+#                     ".actualizaciones" (misma politica en los dos sitios).
+#                     0 - cualquiera, 1 - moderador, 2 - GM, 3 - administrador
+#        Por defecto: 2
+
+UpdateNotice.MinSecurity = 2
+
+#
+#    UpdateNotice.DelaySeconds
+#        Descripcion: Segundos tras entrar al mundo antes de mostrar el aviso,
+#                     para que no se pierda entre los mensajes de bienvenida.
+#        Por defecto: 8
+
+UpdateNotice.DelaySeconds = 8
+
+#
+#    UpdateNotice.MaxLines
+#        Descripcion: Lineas del fichero que se muestran como maximo.
+#        Por defecto: 15
+
+UpdateNotice.MaxLines = 15
+
+#
+#    UpdateNotice.MaxDaysStale
+#        Descripcion: Si el fichero del informe tiene mas de estos dias, el aviso
+#                     incluye una nota de que la revision semanal
+#                     (tools/revisar-actualizaciones.sh) puede haber fallado.
+#                     Con 0 no se avisa de la antiguedad.
+#        Por defecto: 10
+
+UpdateNotice.MaxDaysStale = 10
+
+#
+#    UpdateNotice.OncePerSession
+#        Descripcion: No repetir el aviso si la misma cuenta hace relog durante
+#                     el mismo arranque del servidor. El comando siempre lo
+#                     vuelve a mostrar.
+#        Por defecto: 0 - (se muestra en cada login)
+
+UpdateNotice.OncePerSession = 0
+
+#
+#    UpdateNotice.CommandOnly
+#        Descripcion: Sin aviso automatico al entrar; solo ".actualizaciones".
+#        Por defecto: 0 - (aviso al entrar)
+
+UpdateNotice.CommandOnly = 0
+
+#
+#    UpdateNotice.SayIfNoneOnLogin
+#        Descripcion: Decir tambien "todo al dia" en el aviso de login cuando no
+#                     hay novedades (por defecto solo lo dice el comando).
+#        Por defecto: 0
+
+UpdateNotice.SayIfNoneOnLogin = 0
+
+#
+###################################################################################################

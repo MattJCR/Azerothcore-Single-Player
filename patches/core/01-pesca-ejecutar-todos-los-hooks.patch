@@ -1,0 +1,20 @@
+Licencia: GPL-2.0-or-later, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Problema: Individual Progression puede vetar la subida de habilidad al pescar
+basura. El retorno anticipado impide que Profession Experience conceda XP.
+Solución: ejecutar todos los hooks de pesca, acumulando sus vetos. Se conserva
+el veto a subir habilidad, sin perder los efectos independientes de cada hook.
+Base: core mod-playerbots 7f12e89ee5f467a50e62eba1d525eac7dc953d03.
+
+diff --git a/src/server/game/Scripting/ScriptDefines/PlayerScript.cpp b/src/server/game/Scripting/ScriptDefines/PlayerScript.cpp
+--- a/src/server/game/Scripting/ScriptDefines/PlayerScript.cpp
++++ b/src/server/game/Scripting/ScriptDefines/PlayerScript.cpp
+@@ -618,1 +618,7 @@
+-    CALL_ENABLED_BOOLEAN_HOOKS(PlayerScript, PLAYERHOOK_ON_UPDATE_FISHING_SKILL, !script->OnPlayerUpdateFishingSkill(player, skill, zone_skill, chance, roll));
++    // All observers must run even when one vetoes the skill increase.
++    // Profession XP is independent of that increase (including fishing junk).
++    bool allowSkillGain = true;
++    CALL_ENABLED_HOOKS(PlayerScript, PLAYERHOOK_ON_UPDATE_FISHING_SKILL,
++        if (!script->OnPlayerUpdateFishingSkill(player, skill, zone_skill, chance, roll))
++            allowSkillGain = false);
++    return allowSkillGain;

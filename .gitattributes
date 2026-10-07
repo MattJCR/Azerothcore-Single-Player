@@ -1,0 +1,46 @@
+# Los scripts de instalacion se ejecutan en Linux: siempre LF, aunque se
+# editen o se empaqueten (zip/scp) desde Windows. Sin esto, core.autocrlf=true
+# deja CRLF en el arbol de trabajo y bash falla en la VM con errores del tipo
+# "command not found" o comparaciones entre "true" y "true" que no casan.
+*.sh   text eol=lf
+*.sql  text eol=lf
+*.md   text eol=lf
+*.MPQ  binary
+*.zip  binary
+*.rar  binary
+*.patch text eol=lf
+# Excepcion: este parche lleva  al final de las lineas CRLF del fichero que toca
+# (PlayerbotsWintergrasp.cpp mezcla CRLF y LF); sin esto git los quitaria al comitear.
+patches/mod-playerbots-wintergrasp/02-compat-core-nuevo-sin-playerbotscript.patch -text
+*.py   text eol=lf
+*.tsv  text eol=lf
+*.yml  text eol=lf
+versions.lock text eol=lf
+addons.lock text eol=lf
+
+# Los modulos propios de modules/ se copian tal cual a la VM y los compila
+# clang alli: mismo motivo, LF siempre.
+*.cpp  text eol=lf
+*.h    text eol=lf
+*.dist text eol=lf
+*.conf text eol=lf
+# Plantillas de unidades systemd (sed las escribe tal cual en /etc/systemd/
+# system/): un \r colado por un checkout en Windows rompe el parseo de
+# systemd en directivas concretas, con fallos difíciles de ver a ojo.
+*.service text eol=lf
+*.ps1  text
+*.toc  text
+*.lua  text
+
+# El panel web (web-panel/) se despliega a Linux con git archive + rsync: sin
+# esto, un archive hecho en Windows con core.autocrlf=true mete CRLF en los
+# .js/.css/.html/.json que van a /opt/azerothcore-panel/.
+*.js   text eol=lf
+*.mjs  text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+.env.example text eol=lf
+
+# Los parches de addon llevan CRLF dentro de las lineas de contexto: git no debe normalizarlos.
+patches-cliente/**/*.patch -text

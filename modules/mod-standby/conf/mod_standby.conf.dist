@@ -1,0 +1,76 @@
+[worldserver]
+
+###################################################################################################
+# MOD-STANDBY
+#
+#   Apaga el worldserver cuando no hay jugadores humanos, para que la VM no
+#   gaste CPU ni RAM con los bots mientras nadie juega. El worldserver sale con
+#   codigo 0; la unidad systemd (Restart=on-failure) no lo revive, y systemd
+#   mantiene abierto el puerto 8085 (Network.UseSocketActivation = 1): la
+#   siguiente conexion de un cliente lo vuelve a arrancar.
+#
+#   Cuenta las sesiones con WorldSession::IsHeadless() == false, asi que tambien
+#   cuenta al humano que esta en la pantalla de seleccion de personaje.
+#
+#   Comando:  .standby [estado | ahora | mantener <min> | reanudar]
+#
+###################################################################################################
+
+#
+#    Standby.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado: el worldserver nunca se apaga solo)
+
+Standby.Enable = 1
+
+#
+#    Standby.IdleMinutes
+#        Descripcion: Minutos sin ninguna sesion humana antes de apagar el
+#                     worldserver. Con AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay
+#                     en 600 s (10 min), a los 15 min los bots ya han salido.
+#        Por defecto: 15
+
+Standby.IdleMinutes = 15
+
+#
+#    Standby.WarnSeconds
+#        Descripcion: Segundos de cuenta atras (con aviso a quien quede
+#                     conectado) antes de cerrar. 0 = cerrar de inmediato.
+#        Por defecto: 60
+
+Standby.WarnSeconds = 60
+
+#
+#    Standby.MinUptimeMinutes
+#        Descripcion: El modulo no apaga el servidor durante estos minutos tras
+#                     arrancar. Cubre el cuelgue conocido del primer arranque
+#                     con muchas cuentas de bots y da margen a que el jugador
+#                     que desperto el servidor termine de entrar.
+#        Por defecto: 10
+
+Standby.MinUptimeMinutes = 10
+
+#
+#    Standby.CheckSeconds
+#        Descripcion: Cada cuantos segundos se cuenta la poblacion humana.
+#                     Mientras hay un apagado en curso la comprobacion pasa a
+#                     ser en cada tick, para poder cancelarlo a tiempo.
+#        Por defecto: 30
+
+Standby.CheckSeconds = 30
+
+#
+#    Standby.RequireSocketActivation
+#        Descripcion: Con 1, el modulo solo apaga el servidor si el proceso lo
+#                     lanzo systemd por activacion de socket (variable de
+#                     entorno LISTEN_FDS). En un arranque manual, o con el viejo
+#                     lanzador por screen, no hace nada: apagarlo ahi dejaria el
+#                     mundo caido sin nadie que lo despierte.
+#        Por defecto: 1 - (activado)
+#                     0 - (apaga siempre que se cumpla la inactividad)
+
+Standby.RequireSocketActivation = 1
+
+#
+###################################################################################################

@@ -1,0 +1,33 @@
+# Python y Node
+__pycache__/
+*.pyc
+node_modules/
+npm-debug.log*
+
+# Secretos y configuración local de cada instalación
+config.local.sh
+.config-*
+.env
+.env.*
+!.env.example
+
+# Estado, informes y perfiles locales
+.instalacion/
+tools/cliente-sintetico/entorno.local.json
+tools/cliente-sintetico/.estado/
+
+# Registros, copias, volcados y temporales
+*.log
+*.bak
+*.old
+*.swp
+*~
+backups/
+*.pdump
+
+# Editor y sistema operativo
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+desktop.ini

@@ -1,0 +1,15 @@
+# Configuración de gitleaks para la CI de GitHub (segunda barrera: el control previo
+# a la publicación es el escáner del exportador). Valores justificados uno a uno; no
+# hay excepciones globales para contraseñas, tokens ni claves privadas.
+title = "Azeroth SP"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Nombres de opciones de configuración del catálogo del panel (p. ej. una clave de worldserver.conf), no secretos"
+paths = ['''web-panel/src/serverConfigCatalog\.js''']
+
+[[allowlists]]
+description = "Plantilla con marcadores que el instalador sustituye por valores generados"
+paths = ['''web-panel/\.env\.example''']

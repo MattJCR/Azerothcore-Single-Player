@@ -1,0 +1,87 @@
+Licencia: AGPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Recompensas en CUALQUIER nivel, no solo en multiplos de 10.
+
+Problema
+--------
+mod_congratsonlevel.cpp llamaba a giveAward() dentro de un switch con los
+niveles 10, 20, 30, 40, 50, 60, 70 y 80 escritos a mano. Cualquier fila que
+insertaras en mod_congrats_on_level_items para el nivel 5, 15, 25, 35, 45, 55,
+65 o 75 se ignoraba SIEMPRE, sin aviso ninguno: ni el .conf ni la base de datos
+podian cambiarlo.
+
+Solucion
+--------
+El switch sobra: giveAward() ya consulta la tabla filtrando por el nivel exacto
+del jugador y devuelve 0 si no hay fila. Se sustituye por una comprobacion
+dirigida por la tabla. Como el premio puede ser solo objetos (sin dinero), no
+vale con mirar el dinero devuelto para saber si hubo premio: se anade un
+parametro de salida `rewarded` que giveAward() pone a true cuando la consulta
+devuelve alguna fila.
+
+Con esto las recompensas se pueden anclar a las fases de progresion de
+mod-individual-progression en vez de a multiplos de 10.
+
+Escrito contra
+--------------
+mod-congrats-on-level @ fed4752e0cd71db7faa4d6f9f4650f5377d2f31c (2025-02-28)
+
+Si el upstream toca este hook el parche dejara de aplicar y la fase 3 avisara.
+Para regenerarlo: aplicar el mismo cambio a mano sobre el codigo nuevo,
+  git -C ~/azerothcore/modules/mod-congrats-on-level diff > 01-reward-any-level.patch
+y luego devolver el modulo a su estado con `git checkout -- .`.
+
+--- a/src/mod_congratsonlevel.cpp
++++ b/src/mod_congratsonlevel.cpp
+@@ -78,7 +78,7 @@
+ 
+ COL col;
+ 
+-uint32 giveAward(Player* player)
++uint32 giveAward(Player* player, bool& rewarded)
+ {
+     QueryResult result = WorldDatabase.Query("SELECT * FROM `mod_congrats_on_level_items` WHERE `level`={} AND (`race`={} OR `race`=0) AND (`class`={} OR `class`=0)", player->GetLevel(), player->getRace(), player->getClass());
+ 
+@@ -86,6 +86,8 @@
+ 
+     if (result)
+     {
++        rewarded = true;
++
+         do
+         {
+             Field* fields = result->Fetch();
+@@ -147,28 +149,11 @@
+             uint32 money = 0;
+             bool isRewardLevel = false;
+ 
+-            switch (level)
+-            {
+-                case 10:
+-                case 20:
+-                case 30:
+-                case 40:
+-                case 50:
+-                case 60:
+-                case 70:
+-                case 80:
+-                {
+-                    if (oldLevel < level)
+-                    {
+-                        isRewardLevel = true;
+-                        money = giveAward(player);
+-                    }
+-                }
+-                break;
+-
+-                default:
+-                    break;
+-            }
++            // La tabla manda: si hay una fila para este nivel, hay premio.
++            // Antes esto era un switch con los niveles 10,20,...,80 escritos a
++            // mano, asi que cualquier fila en 5, 15, 25... se ignoraba siempre.
++            if (oldLevel < level)
++                money = giveAward(player, isRewardLevel);
+ 
+             // Send message on every level up (if enabled)
+             if (col.CongratsPerLevelEnable)

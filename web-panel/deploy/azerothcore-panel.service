@@ -1,0 +1,63 @@
+[Unit]
+Description=Panel web de AzerothCore
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+# worldserver.conf y los .conf de módulo son 640, dueño y grupo el usuario del
+# sistema de AzerothCore (sin permiso para "otros"): sin esto, el bind mount
+# de más abajo monta el fichero real pero el proceso no puede abrirlo (el
+# fallo se traga en silencio en serverConfigFiles.js y cae al valor por
+# defecto del catálogo, sin ningún error en el log).
+SupplementaryGroups=__AC_GROUP__
+WorkingDirectory=/opt/azerothcore-panel
+# Recursos que el panel genera desde el cliente del jugador (iconos, parches de
+# idioma, mapas): lo único donde escribe además de MySQL. No es StateDirectory=
+# porque con DynamicUser queda bajo /var/lib/private (0700, sólo root) y el doctor
+# del instalador no podría leer su estado. install.sh crea la carpeta con el grupo del
+# usuario de AzerothCore (SupplementaryGroups= de arriba), setgid y legible por todos.
+ReadWritePaths=/var/lib/azerothcore-panel
+EnvironmentFile=/etc/azerothcore-panel.env
+ExecStart=/usr/bin/node /opt/azerothcore-panel/src/server.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+# También mantiene update-locks sin escritura para el DynamicUser del panel;
+# sólo el usuario de AzerothCore refresca versions.lock al ejecutar --freeze.
+ProtectHome=yes
+# Excepción puntual a ProtectHome=yes: sólo lectura, y sólo para que la
+# pantalla de configuración pueda mostrar el valor actual de un parámetro (no
+# sólo el de la plantilla). El proceso del panel jamás escribe aquí ni en
+# ningún otro sitio fuera de MySQL: eso lo hace apply-panel-config.sh, un
+# proceso aparte que no comparte este sandbox.
+# ReadOnlyPaths= no basta: sólo reordena el acceso ya existente y no atraviesa
+# ProtectHome=yes. BindReadOnlyPaths= sí hace el bind mount, pero con destino
+# dentro de /home falla en silencio con DynamicUser=yes+ProtectHome=yes: el
+# reemplazo vacío de /home es de sólo lectura y systemd no puede crear ahí los
+# directorios intermedios del punto de montaje (verificado con systemd-run:
+# el mount nunca aparece en /proc/<pid>/mountinfo). El destino tiene que
+# existir ya en disco antes de arrancar el sandbox, así que se monta sobre un
+# directorio vacío bajo /opt/azerothcore-panel (creado por install.sh), fuera
+# de /home; WORLDSERVER_CONF_PATH y MODULE_CONF_DIRECTORY apuntan ahí.
+BindReadOnlyPaths=__ETC_DIR__:/opt/azerothcore-panel/conf-ro
+# Mismo motivo y misma limitación que el bind mount de arriba: Server.log
+# vive bajo /home, así que también necesita su propio punto de montaje fuera
+# de /home (ver install.sh, LOG_DIR). Sólo lo lee "Estado y rendimiento"
+# (systemMetrics.js) para contar avisos de tick lento: Server.log es 644
+# (mundo puede leer), así que no hace falta el SupplementaryGroups de arriba
+# para este fichero en concreto.
+BindReadOnlyPaths=__LOG_DIR__:/opt/azerothcore-panel/log-ro
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

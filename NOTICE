@@ -1,0 +1,34 @@
+Azerothcore-Single-Player
+Copyright (C) 2026 The Azerothcore-Single-Player contributors
+
+Este proyecto es software libre. El código propio (módulos propios, instalador,
+asistente, panel web, herramientas, pruebas y parches SQL propios) se distribuye
+bajo la GNU Affero General Public License, versión 3 o posterior
+(SPDX: AGPL-3.0-or-later). El texto completo está en LICENSE y en
+LICENSES/AGPL-3.0-or-later.txt; en LICENSES/ están también los textos de las demás
+licencias que aparecen en los parches y en el addon MultiBot.
+
+Cada fichero propio de código lleva su cabecera SPDX. El resto se cubre en
+REUSE.toml, que declara copyright y licencia por ruta (formato REUSE 3).
+
+Código de terceros
+------------------
+ * Lo que se redistribuye dentro de este repositorio, con su licencia y su
+   texto: el addon MultiBot (GPL-3.0, LICENSES/GPL-3.0-only.txt y
+   cliente/Interface/AddOns/MultiBot/LICENSE) y los parches (.patch), que
+   conservan la licencia del proyecto al que se aplican.
+ * Todo lo demás (el core de AzerothCore, los módulos de terceros, los addons
+   del catálogo, las dependencias npm) NO se incluye: el instalador lo descarga
+   de su origen en la versión fijada y comprueba su SHA-256. Cada uno mantiene
+   su propia licencia.
+ * La relación completa, con licencia declarada y fuente de cada componente,
+   está en THIRD-PARTY-NOTICES.txt.
+
+Compatibilidad: el worldserver enlaza el core (GPL-2.0-or-later) con módulos
+AGPL-3.0, GPL y MIT; el binario resultante queda de facto bajo AGPL-3.0, que es
+compatible con todos ellos.
+
+World of Warcraft, sus datos, iconos, mapas y archivos MPQ pertenecen a
+Blizzard Entertainment, Inc. Este proyecto no está afiliado a Blizzard ni los
+distribuye: el instalador los genera a partir del cliente del propio jugador.
+Garantía: ninguna; véanse las secciones 15 y 16 de la licencia.

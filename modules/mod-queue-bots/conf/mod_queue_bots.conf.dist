@@ -1,0 +1,376 @@
+[worldserver]
+
+###################################################################################################
+# MOD-QUEUE-BOTS
+#
+#   Cuando te pones en una cola, mete en ella los bots que le faltan, del tramo
+#   de nivel que corresponda:
+#
+#     - Refriega 1c1     (necesita mod-1v1-arena)
+#     - Campos de batalla: los dos bandos hasta el minimo de la plantilla
+#     - Arenas
+#     - Buscador de mazmorras: los roles que falten
+#     - Buscador de bandas: te forma el grupo con ".bot add"
+#
+#   Requiere mod-playerbots con bots conectados. Sustituye al auto-apuntado a
+#   ciegas del propio playerbots (AiPlayerbot.RandomBotAutoJoinBG), que reparte
+#   los bots entre 24 batallas a la vez y no llena ninguna: si usas este modulo,
+#   aquel debe estar apagado.
+#
+###################################################################################################
+
+#
+#    QueueBots.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.Enable = 1
+
+#
+#    QueueBots.Arena1v1 / QueueBots.Battlegrounds / QueueBots.Arenas
+#    QueueBots.Dungeons / QueueBots.RaidBrowser
+#        Descripcion: Que colas se rellenan. Cada una por separado, por si
+#                     alguna da problemas o prefieres jugarla con gente.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.Arena1v1 = 1
+QueueBots.Battlegrounds = 1
+QueueBots.Arenas = 1
+QueueBots.Dungeons = 1
+QueueBots.RaidBrowser = 1
+
+#
+#    QueueBots.Delay
+#        Descripcion: Segundos que se espera antes de meter bots, por si aparece
+#                     gente de verdad. Con 0 entran en cuanto te encolas.
+#        Por defecto: 0
+
+QueueBots.Delay = 0
+
+#
+#    QueueBots.ScanIntervalMs
+#        Descripcion: Milisegundos entre pasadas de rellenado (el ritmo al que se
+#                     revisa tu cola y se meten bots). Subelo si notas el barrido
+#                     de la lista de jugadores en los ticks; bajalo para que las
+#                     colas se llenen mas rapido. Minimo 250.
+#        Por defecto: 2000
+
+QueueBots.ScanIntervalMs = 2000
+
+#
+#    QueueBots.ClassVariety
+#        Descripcion: Evitar meter dos bots de la misma clase mientras haya
+#                     alternativas libres (un grupo con tres cazadores es peor
+#                     grupo). En poblacion baja puede convenir apagarlo para
+#                     llenar el grupo aunque se repitan clases.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.ClassVariety = 1
+
+#
+#    QueueBots.BattlegroundFillToFull
+#        Descripcion: Llenar los campos de batalla a plantilla COMPLETA en vez de
+#                     al minimo que necesita el nucleo para arrancar la partida.
+#        Por defecto: 0 - (al minimo)
+#                     1 - (plantilla completa)
+
+QueueBots.BattlegroundFillToFull = 0
+
+#
+#    QueueBots.Backfill
+#        Descripcion: Si un bot se cae de un campo de batalla o arena a mitad de
+#                     partida (muere y sale, abandona, se desconecta), volver a
+#                     encolar un repuesto del mismo tramo y bando. El nucleo lo
+#                     invita a la instancia en curso si tiene hueco. Solo campos
+#                     de batalla y arenas normales (el 1c1 se acaba si el bot
+#                     muere).
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.Backfill = 1
+
+#
+#    QueueBots.BackfillIntervalSecs
+#        Descripcion: Segundos entre pasadas de reposicion mientras estas en la
+#                     partida. Minimo 3.
+#        Por defecto: 20
+
+QueueBots.BackfillIntervalSecs = 20
+
+#
+#    QueueBots.BackfillGiveUpSecs
+#        Descripcion: Un repuesto que lleva este tiempo en cola sin llegar a
+#                     entrar (la partida esta llena o a punto de acabar) se saca
+#                     de la cola. Minimo 10.
+#        Por defecto: 45
+
+QueueBots.BackfillGiveUpSecs = 45
+
+#
+#    QueueBots.DungeonTanks / QueueBots.DungeonHealers / QueueBots.DungeonDamage
+#        Descripcion: Composicion del grupo de cinco del buscador de mazmorras.
+#                     Cuentas tu tambien: si vas de sanador, se busca uno menos.
+#        Por defecto: 1 / 1 / 3
+
+QueueBots.DungeonTanks = 1
+QueueBots.DungeonHealers = 1
+QueueBots.DungeonDamage = 3
+
+#
+#    QueueBots.Announce
+#        Descripcion: Avisa por chat de cuantos bots se han apuntado contigo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.Announce = 1
+
+#
+#    QueueBots.ForceAccept
+#        Descripcion: Si la IA del bot no acepta la invitacion a la partida, se
+#                     le manda el "entrar" por el. Sin esto, si playerbots
+#                     ignora la invitacion la partida no llega a empezar.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.ForceAccept = 1
+
+#
+#    QueueBots.ForceAcceptAfter
+#        Descripcion: Segundos que se le dan a la IA del bot para aceptar por su
+#                     cuenta antes de entrarle a la fuerza.
+#        Por defecto: 5
+
+QueueBots.ForceAcceptAfter = 5
+
+#
+#    QueueBots.MaxRaidBots
+#        Descripcion: Tope de bots que se meten en tu banda desde el buscador.
+#                     No puede pasar de AiPlayerbot.MaxAddedBots.
+#        Por defecto: 39 (una banda de 40 contigo dentro)
+
+QueueBots.MaxRaidBots = 39
+
+#
+#    QueueBots.RaidSize
+#        Descripcion: Tamano de banda que se forma desde el buscador de bandas.
+#                     Con 0 se deduce de tu ajuste de dificultad de banda (10 o
+#                     25). Hace falta porque el tablon de bandas de 3.3.5 NO
+#                     guarda a que banda te apuntaste: el nucleo mete la entrada
+#                     en su almacen y no registra la seleccion, asi que no hay
+#                     forma de saber si querias Naxxramas de 10 o de 25.
+#                     Ponlo a 40 si vas a jugar las bandas de 40 de vanilla.
+#        Por defecto: 0 - (deducirlo de la dificultad de banda)
+
+QueueBots.RaidSize = 0
+
+#
+#    QueueBots.RaidTanks / QueueBots.RaidHealers
+#        Descripcion: Cuantos tanques y sanadores se aseguran en la banda antes
+#                     de meter gente de dano. Con 0 se decide por el tamano:
+#                     10 -> 2 tanques y 3 sanadores
+#                     25 -> 3 tanques y 6 sanadores
+#                     40 -> 5 tanques y 12 sanadores (vanilla pedia mucho
+#                           mas sanador que WotLK)
+#                     Cuentas tu tambien: si vas de tanque, hace falta uno menos.
+#        Por defecto: 0 - (segun el tamano)
+
+QueueBots.RaidTanks = 0
+QueueBots.RaidHealers = 0
+
+#
+#    QueueBots.RaidLevelBelow
+#        Descripcion: Margen de niveles por debajo del tuyo admitido en una
+#                     banda del buscador, cuando no hay bastantes bots de tu
+#                     nivel EXACTO conectados ni en la reserva dormida.
+#                     mod-world-bots reparte la poblacion de bots entre muchos
+#                     niveles, y un nivel exacto poco poblado (M48) podia dejar
+#                     una banda en 0-2 companeros para siempre. Se sigue
+#                     prefiriendo tu nivel exacto; sólo se baja de ahi si no
+#                     hay bastantes. Nunca se mete un bot por ENCIMA de tu
+#                     nivel. Con 0, vuelve al comportamiento anterior (solo tu
+#                     nivel exacto).
+#        Por defecto: 5
+
+QueueBots.RaidLevelBelow = 5
+
+#
+#    QueueBots.RaidSummonDelay
+#        Descripcion: Segundos tras unirse a tu banda desde el buscador de
+#                     bandas hasta que el bot se teletransporta a tu lado (mas
+#                     0-3 s de azar, para que no lleguen en bloque). Hace falta
+#                     porque a veces no vienen solos: estan en otro continente
+#                     o su IA no arranca el "seguir". No se le trae si tu o el
+#                     estais en combate, ni si ya esta a menos de 40 yardas; si
+#                     esta muerto, se le revive antes. Con 0, nunca.
+#                     El mismo mecanismo trae tambien a los bots que se quedan
+#                     fuera al entrar a una mazmorra de cinco por el buscador
+#                     (el core no siempre los teletransporta a todos): se
+#                     intenta mientras el grupo no este completo dentro de la
+#                     instancia, y se deja de intentar en cuanto el modulo
+#                     sigue adelante sin ellos (para no traer a nadie despues
+#                     de haber activado ya mod-dungeon-clear).
+#        Por defecto: 8
+
+QueueBots.RaidSummonDelay = 8
+
+#
+#    QueueBots.RaidSummonGiveUpSecs
+#        Descripcion: Segundos que se intenta traer a un bot recien metido en la
+#                     banda (o rezagado en una mazmorra del buscador) antes de
+#                     dejarlo donde este (por si esta en otro continente y no
+#                     encuentra hueco).
+#        Por defecto: 60
+
+QueueBots.RaidSummonGiveUpSecs = 60
+
+#
+#    QueueBots.DungeonClearAuto
+#        Descripcion: Si mod-dungeon-clear esta instalado, activarlo solo (".dc
+#                     on" en tu nombre) cuando el grupo del buscador ya esta
+#                     dentro de la mazmorra: todos en el mismo mapa, un tanque
+#                     bot en el grupo y tu no eres el tanque. Se intenta hasta
+#                     tres veces, cada 15 s. Sin mod-dungeon-clear no hace nada.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.DungeonClearAuto = 1
+
+#
+#    QueueBots.DungeonClearDelay
+#        Descripcion: Segundos desde que entras en la mazmorra hasta el primer
+#                     intento de activar mod-dungeon-clear.
+#        Por defecto: 10
+
+QueueBots.DungeonClearDelay = 10
+
+#
+#    QueueBots.DungeonClearTries
+#        Descripcion: Intentos de mandar ".dc on" en tu nombre (cada 15 s) hasta
+#                     que mod-dungeon-clear tiene lista la mazmorra.
+#        Por defecto: 3
+
+QueueBots.DungeonClearTries = 3
+
+#
+#    QueueBots.DungeonClearReviveDelay
+#        Descripcion: mod-dungeon-clear se autodesactiva tras un wipe, una
+#                     muerte que nadie puede resucitar o un rez que se agota,
+#                     y pide ".dc on" manual para retomar. En cuanto el grupo
+#                     vuelve a estar entero con vida se reabre una tanda de
+#                     reintentos igual a la de la entrada (hasta
+#                     DungeonClearTries veces, cada 15 s); este es el margen
+#                     en segundos antes del primer reintento, para dar tiempo
+#                     a que el grupo se reagrupe. No distingue esto de un
+#                     ".dc off" manual justo en ese instante.
+#        Por defecto: 8
+
+QueueBots.DungeonClearReviveDelay = 8
+
+#
+#    QueueBots.WakeBots
+#        Descripcion: Si no hay bastantes bots despiertos del nivel que pide tu
+#                     cola, se encienden los que hagan falta de entre los que el
+#                     servidor tiene dormidos (hay ~1500 personajes de bot, pero
+#                     el modulo mantiene despiertos muchos menos y sube ese
+#                     numero muy despacio). Si el mundo ya esta en su tope, antes
+#                     manda a dormir a otros tantos que esten ociosos y fuera de
+#                     tu tramo -- nunca a uno que este en el grupo de alguien, en
+#                     una partida o en una mazmorra.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.WakeBots = 1
+
+#
+#    QueueBots.WakeMax
+#        Descripcion: Tope de bots que se despiertan de una vez. Se respeta un
+#                     margen de 15 segundos entre tandas, que es lo que tardan en
+#                     entrar al mundo.
+#        Por defecto: 40
+
+QueueBots.WakeMax = 40
+
+#
+#    QueueBots.WakeCooldownSecs
+#        Descripcion: Margen entre tandas de despertar bots, por (tramo, faccion):
+#                     es lo que tardan en entrar al mundo. Subelo si el despertar
+#                     de bots pesa en los ticks.
+#        Por defecto: 15
+
+QueueBots.WakeCooldownSecs = 15
+
+#
+#    QueueBots.GearMode
+#        Descripcion: Topar el equipo de los bots que entran en tu grupo (banda
+#                     del tablon, mazmorra del buscador, o cualquier grupo tuyo
+#                     al entrar en una instancia). Sin esto, un bot de nivel 60
+#                     entra en Nucleo de Magma con epicos de Naxxramas.
+#                     0 - no tocar el equipo de los bots
+#                     1 - media de tu equipo + GearMargin, sin pasar del tope
+#                         de tu fase de individual-progression
+#                     2 - solo el tope de la fase
+#        Por defecto: 1
+
+QueueBots.GearMode = 1
+
+#
+#    QueueBots.GearMargin
+#        Descripcion: Niveles de objeto por encima de tu media que se les
+#                     permite a los bots (modo 1).
+#        Por defecto: 6
+
+QueueBots.GearMargin = 6
+
+#
+#    QueueBots.GearTolerance
+#        Descripcion: Un bot solo se reequipa si su media se sale de
+#                     objetivo +- tolerancia. Reequipar cuesta decenas de ms.
+#        Por defecto: 8
+
+QueueBots.GearTolerance = 8
+
+#
+#    QueueBots.GearMinItemLevel
+#        Descripcion: Suelo del objetivo (modo 1), por si vas en verdes a nivel
+#                     80 y no quieres una banda en verdes. 0 = sin suelo. El
+#                     tope de fase manda siempre: si es mas bajo que este
+#                     suelo, gana el tope (nunca se equipa a los bots por
+#                     encima del contenido de tu fase de progresion).
+#        Por defecto: 0
+
+QueueBots.GearMinItemLevel = 0
+
+#
+#    QueueBots.TokenTurnIn
+#        Descripcion: Si mod-token-turnin esta instalado, mandar
+#                     ".tokenturnin redeem" en tu nombre tras cada jefe de
+#                     mazmorra o banda: los tokens de tier que se llevaron los
+#                     bots se cambian por su pieza. Sin ese modulo no hace nada.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QueueBots.TokenTurnIn = 1
+
+#
+#    QueueBots.TokenTurnInDelay
+#        Descripcion: Segundos entre la muerte del jefe y el canje, para que
+#                     terminen las tiradas de botin.
+#        Por defecto: 90
+
+QueueBots.TokenTurnInDelay = 90
+
+#
+#    BotPopulation.*  (coordinador compartido de logins de bot)
+#        Este modulo reserva cada GUID en el coordinador transversal antes de
+#        conectarlo, para no pasarse de AiPlayerbot.MaxRandomBots cuando varios
+#        modulos despiertan bots a la vez. El bloque de opciones documentado
+#        (PendingTimeoutSeconds / MaxPendingTotal / MaxPendingPerFaction /
+#        MaxPendingPerRange) vive en mod_world_bots.conf; si world-bots esta
+#        desactivado se usan los valores por defecto (90 / 40 / 24 / 12) y el
+#        tope global se toma siempre de AiPlayerbot.MaxRandomBots.
+
+#
+###################################################################################################

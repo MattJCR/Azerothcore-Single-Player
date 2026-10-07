@@ -1,0 +1,1174 @@
+{
+ "version": 1,
+ "descripcion": "Receta reproducible de cliente/Interface/AddOns: paquetes de NoM0Re por commit y SHA-256, repositorios de addons por addons.lock, parches propios en patches-cliente/ y los dos addons del proyecto. La construye web-panel/tools/build-addons.mjs; arbol.tsv fija el contenido esperado.",
+ "origen": {
+  "nombre": "NoM0Re/WoW-3.3.5a-Addons",
+  "url": "https://github.com/NoM0Re/WoW-3.3.5a-Addons",
+  "raw": "https://raw.githubusercontent.com/NoM0Re/WoW-3.3.5a-Addons",
+  "ruta": "src/Addons"
+ },
+ "paquetes": [
+  {
+   "archivo": "AckisRecipeList.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "82a32691e479d92d961c91181b158dcad72f6e47df2cf4caef87c6272a3adcf9",
+   "directorios": [
+    "AckisRecipeList"
+   ]
+  },
+  {
+   "archivo": "ACP.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "65955adafb3f0852a746b14a4771129dfc5727fc2b7ee77fdf7cb3b1dace3942",
+   "directorios": [
+    "ACP"
+   ]
+  },
+  {
+   "archivo": "ActionBarSaver.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "95850873126fd21bae9a23ca5a2058e7a01a8cc2636fe2bc6cf9b7d72b1c201c",
+   "directorios": [
+    "ActionBarSaver"
+   ]
+  },
+  {
+   "archivo": "addemote.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "d14be20eb5b85c1600ebd5a49ab851f15f76b46acdb5ca9c7b666c0253bf3055",
+   "directorios": [
+    "AddEmote"
+   ]
+  },
+  {
+   "archivo": "AddFriend.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "2708d972e678fa4d069926f419615d558f98d1f6db673b9d4cb758126f5cfce1",
+   "directorios": [
+    "AddFriend"
+   ]
+  },
+  {
+   "archivo": "AdiBags.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "623c59c3fb94d00a4855adcc9e9d193cc1546abe1710588c06ad4b67b11abf07",
+   "directorios": [
+    "AdiBags",
+    "AdiBags-ItemOverlayPlus",
+    "AdiBags_Bound"
+   ]
+  },
+  {
+   "archivo": "Afflicted.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "92b3063ae7a4f51d56cf0f53dc681e46fc4fc02b90d536e012d995c3e91c5924",
+   "directorios": [
+    "Afflicted"
+   ]
+  },
+  {
+   "archivo": "AllStats.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "bc1362f859a27bce3f743f139727fdde5c88f03e2ded4b95a29cb311858a84bd",
+   "directorios": [
+    "AllStats"
+   ]
+  },
+  {
+   "archivo": "Altoholic.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "76d29125db3e4bbd1e1473c57a85006c81e7e12ed380279b097e87ce3db4da58",
+   "directorios": [
+    "Altoholic",
+    "Altoholic_Achievements",
+    "DataStore",
+    "DataStore_Achievements",
+    "DataStore_Auctions",
+    "DataStore_Characters",
+    "DataStore_Containers",
+    "DataStore_Crafts",
+    "DataStore_Currencies",
+    "DataStore_Inventory",
+    "DataStore_Mails",
+    "DataStore_Pets",
+    "DataStore_Quests",
+    "DataStore_Reputations",
+    "DataStore_Skills",
+    "DataStore_Spells",
+    "DataStore_Stats",
+    "DataStore_Talents"
+   ]
+  },
+  {
+   "archivo": "AmILockedOut.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "8cf437cadc5ef85a43b6ed6ea0f25060f77a87a28a51301dab65875a2431fc04",
+   "directorios": [
+    "Ailo"
+   ]
+  },
+  {
+   "archivo": "Atlas.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "3ad7e658ec1a738bd95774acf2dce229b4f9a68d945d0ff62cc7ff7a983f5d65",
+   "directorios": [
+    "Atlas",
+    "Atlas_Battlegrounds",
+    "Atlas_DungeonLocs",
+    "Atlas_OutdoorRaids",
+    "Atlas_Transportation"
+   ]
+  },
+  {
+   "archivo": "AtlasLoot.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "d08a47900105a841ac5e01b5aa32d104ec0ed49576f42d3039de12aadc02c174",
+   "directorios": [
+    "AtlasLoot",
+    "AtlasLootFu",
+    "AtlasLoot_BurningCrusade",
+    "AtlasLoot_Crafting",
+    "AtlasLoot_OriginalWoW",
+    "AtlasLoot_WorldEvents",
+    "AtlasLoot_WrathoftheLichKing"
+   ]
+  },
+  {
+   "archivo": "Auctionator+.rar",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "fdaf2330833728515e9ee1f22901ea756b0f4a7662af26beae15a4902ebb6a61",
+   "directorios": [
+    "Auctionator",
+    "AuctionatorMiniFeatures"
+   ]
+  },
+  {
+   "archivo": "Auctionator_WatchList.rar",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "5d0da8ba2c366e91b2a004773e2cc98e3543b4285ed6905ac1a27f49f904aec0",
+   "directorios": [
+    "Auctionator_WatchList"
+   ]
+  },
+  {
+   "archivo": "autoflood.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "b98d854ef85ef95b1d8f8ae8a1b8ec1f59748753eec047396c288c87b839399d",
+   "directorios": [
+    "AutoFlood"
+   ]
+  },
+  {
+   "archivo": "AutoInvite.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "5ebbc77eda01021770e9f57d920b9959099b2741e8269e9012e5cb95b8f51cdb",
+   "directorios": [
+    "AutoInvite"
+   ]
+  },
+  {
+   "archivo": "autorepair.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "8110865c1f5fdbed034e86d1c0f137e102558cd26a65e1fa4b2cd084b718d300",
+   "directorios": [
+    "AutoRepair"
+   ]
+  },
+  {
+   "archivo": "Bartender4.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "b56901863fc7c540bd7308b28fc225dcabf849a276e766f2baa3fbcd2e05895f",
+   "directorios": [
+    "Bartender4"
+   ]
+  },
+  {
+   "archivo": "BindPad.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "922c1344421fb0228cc9fcd8191360945fd7b205b401682ab93148ce5cf9b311",
+   "directorios": [
+    "BindPad"
+   ]
+  },
+  {
+   "archivo": "BlizzMove.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "c1e4fd0b812648e5f7e24c097d6004bc842ce544d4616ccf961cf6e65460d000",
+   "directorios": [
+    "BlizzMove"
+   ]
+  },
+  {
+   "archivo": "BLT.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "b31adc002ccafb452c159364ac96c00586fe99f5fdbe8bbd101399e24d818b86",
+   "directorios": [
+    "BLT"
+   ]
+  },
+  {
+   "archivo": "BNetToast.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "b71cebe9877384d69cf09c37794892223a54ff3a8500aa00c838d03c51d70e3d",
+   "directorios": [
+    "BNetToast"
+   ]
+  },
+  {
+   "archivo": "BugSack.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "b99ce2cd0ccce8caab1c5fa8e5b511a1ba1fefb78488d56ca717372c0339959a",
+   "directorios": [
+    "!BugGrabber",
+    "BugSack"
+   ]
+  },
+  {
+   "archivo": "Carbonite.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "fdb5a979b0dc9b857937ce7db0f41b83998184d29d11479111d36a798d8cfd44",
+   "directorios": [
+    "Carbonite",
+    "CarboniteItems",
+    "CarboniteNodes",
+    "CarboniteTransfer"
+   ]
+  },
+  {
+   "archivo": "Cartographer.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "cad87f01751f3f3bb6614d30cc359c9befe20019bb3ecf52e210d806f9467f22",
+   "directorios": [
+    "Cartographer",
+    "Cartographer_Battlegrounds",
+    "Cartographer_Coordinates",
+    "Cartographer_Foglight",
+    "Cartographer_GroupColors",
+    "Cartographer_GuildPositions",
+    "Cartographer_InstanceLoot",
+    "Cartographer_InstanceMaps",
+    "Cartographer_InstanceNotes",
+    "Cartographer_LookNFeel",
+    "Cartographer_Notes",
+    "Cartographer_POI",
+    "Cartographer_Waypoints",
+    "Cartographer_ZoneInfo"
+   ]
+  },
+  {
+   "archivo": "ChatFilter.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "761175ca11cab497424a83c9d02c5146b0369b59b274f9c6f73afccc700554fa",
+   "directorios": [
+    "ChatFilter"
+   ]
+  },
+  {
+   "archivo": "Chatter.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "0b75927ce71750bb9cd504b82d0e8a0b30bdb246681f1f5731547573cb5dc6b9",
+   "directorios": [
+    "Chatter"
+   ]
+  },
+  {
+   "archivo": "Cheese.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "75bd489fc67f2d3f7e20d93801dc0c2d308886c65e046c9b5922bab785d2a317",
+   "directorios": [
+    "Cheese"
+   ]
+  },
+  {
+   "archivo": "ClassLoot.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "2dcaabb24329df0dd3b5bcdeefebf073b82ffefdbccf65b8b437ed534acad74e",
+   "directorios": [
+    "ClassLoot"
+   ]
+  },
+  {
+   "archivo": "CleanMinimap.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "bb7c4c949a61a1224ff26f5c9b1047b99fd5009e33959660c21c25a608bb24ac",
+   "directorios": [
+    "CleanMinimap"
+   ]
+  },
+  {
+   "archivo": "Clique.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "176ddcdb2bdb4a5e732dd14defb01fb5ba80880d07c4ede07738513ad631653c",
+   "directorios": [
+    "Clique"
+   ]
+  },
+  {
+   "archivo": "Collectinator.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "15944a8b7a2d95cb873c405baf9d59ab850456672fa2edea36249dbeb7fc240f",
+   "directorios": [
+    "Collectinator"
+   ]
+  },
+  {
+   "archivo": "ColorPickerAdvanced.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "3bc63a86e464b8373acb8b246b367089c7cce91bb172bb153f1fb60daf76fd28",
+   "directorios": [
+    "ColorPickerAdvanced"
+   ]
+  },
+  {
+   "archivo": "cooldowns.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "8940bb14eec51e1fe425bbb5236fa0da1c1252e859dbb0ca66d28bd9a221d8bb",
+   "directorios": [
+    "Cooldowns"
+   ]
+  },
+  {
+   "archivo": "Critline.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "d42480326380f0570c3831f574da85fb9dc53270f2d64d72782e968bce559298",
+   "directorios": [
+    "Critline"
+   ]
+  },
+  {
+   "archivo": "Cromulent.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "8a7669b5f4ecae07af333a3866229ad5af9207754084c3d0c6c330614c2ad3a0",
+   "directorios": [
+    "Cromulent"
+   ]
+  },
+  {
+   "archivo": "DBM.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "6323945fc46bffec71e262249d1556bdec23b1783891eaeabdd310056b95a74b",
+   "directorios": [
+    "DBM-AQ20",
+    "DBM-AQ40",
+    "DBM-Azeroth",
+    "DBM-BWL",
+    "DBM-BlackTemple",
+    "DBM-ChamberOfAspects",
+    "DBM-Coliseum",
+    "DBM-Core",
+    "DBM-DefaultSkin",
+    "DBM-EyeOfEternity",
+    "DBM-GUI",
+    "DBM-Gruul",
+    "DBM-Hyjal",
+    "DBM-Icecrown",
+    "DBM-Karazhan",
+    "DBM-MC",
+    "DBM-Magtheridon",
+    "DBM-Naxx",
+    "DBM-Onyxia",
+    "DBM-Outland",
+    "DBM-Party-BC",
+    "DBM-Party-Classic",
+    "DBM-Party-WotLK",
+    "DBM-PvP",
+    "DBM-Serpentshrine",
+    "DBM-SpellTimers",
+    "DBM-StatusBarTimers",
+    "DBM-Sunwell",
+    "DBM-TheEye",
+    "DBM-Ulduar",
+    "DBM-VPVEM",
+    "DBM-VoA",
+    "DBM-WorldEvents",
+    "DBM-ZG",
+    "DBM-ZulAman"
+   ]
+  },
+  {
+   "archivo": "Decursive.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "8dbd4a1fd28e62520de5acf477ae3435ce6294a95832e53969535d6364ef9d8a",
+   "directorios": [
+    "Decursive"
+   ]
+  },
+  {
+   "archivo": "Details.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "bf2f63c9956e27407088940a82fe710fd8392c79cc69e55d0e937f97d054bc7a",
+   "directorios": [
+    "Details",
+    "Details_3DModelsPaths",
+    "Details_ChartViewer",
+    "Details_DataStorage",
+    "Details_DeathGraphs",
+    "Details_EncounterDetails",
+    "Details_SunderCount",
+    "Details_TimeLine",
+    "Details_TinyThreat"
+   ]
+  },
+  {
+   "archivo": "DocsCorporeality_r3.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "4d7c3fb9fca5bf395819827a5742945242b24613b379fb06b538f3d7a191fef8",
+   "directorios": [
+    "DocsCorporeality"
+   ]
+  },
+  {
+   "archivo": "Dominos.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "b65110f77b0b618f007c8e73c3eb3302f2c313fd870cf5bb479b8dc1fdea5729",
+   "directorios": [
+    "Dominos",
+    "Dominos_Config"
+   ]
+  },
+  {
+   "archivo": "DrDamage.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "0b9723e6386249747c6e9b42427c3527a165c45f6d0ac468f39c23b7713c1dad",
+   "directorios": [
+    "DrDamage"
+   ]
+  },
+  {
+   "archivo": "DressMe.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "701e48a7b7f23941eee1dfc788c354c54502ba04a3922600a6f8700372190352",
+   "directorios": [
+    "DressMe"
+   ]
+  },
+  {
+   "archivo": "ElvUI.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "f8877898b9a510a79c2405e726fce1a66a273640bbf1226e2857121b132f3e60",
+   "directorios": [
+    "ElvUI",
+    "ElvUI_OptionsUI"
+   ]
+  },
+  {
+   "archivo": "EnsidiaFails.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "14941514cd15fe3cbe467eceab192d3a23b9f2eda54f87ba00fce07d72d5d681",
+   "directorios": [
+    "EnsidiaFails"
+   ]
+  },
+  {
+   "archivo": "EventHorizon.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "bfa544f756b8cd5793e9a561a15cb10fbb11a93af131e5592d09d25b5a9ee07b",
+   "directorios": [
+    "EventHorizon",
+    "EventHorizon_Deathknight",
+    "EventHorizon_Druid",
+    "EventHorizon_Hunter",
+    "EventHorizon_Mage",
+    "EventHorizon_Paladin",
+    "EventHorizon_Priest",
+    "EventHorizon_Rogue",
+    "EventHorizon_Shaman",
+    "EventHorizon_Warlock",
+    "EventHorizon_Warrior"
+   ]
+  },
+  {
+   "archivo": "EveryQuest.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "7e198c58ce17d08f78f6f7425ec22f82a5e87cb0f396cc7b6e28e75b182a378d",
+   "directorios": [
+    "EveryQuest",
+    "EveryQuest_Battlegrounds",
+    "EveryQuest_Classes",
+    "EveryQuest_Dungeons",
+    "EveryQuest_Eastern_Kingdoms",
+    "EveryQuest_Kalimdor",
+    "EveryQuest_Miscellaneous",
+    "EveryQuest_Northrend",
+    "EveryQuest_Outland",
+    "EveryQuest_Professions",
+    "EveryQuest_QuestGivers",
+    "EveryQuest_Raids",
+    "EveryQuest_World_Events",
+    "HandyNotes"
+   ]
+  },
+  {
+   "archivo": "ForteXorcist.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "cc69035e1439244de1de29f074f288de9e13ec26d13ef5b4e396a5d9c09a3acc",
+   "directorios": [
+    "Forte_Casting",
+    "Forte_Cooldown",
+    "Forte_Core",
+    "Forte_DeathKnight",
+    "Forte_Druid",
+    "Forte_Healthstone",
+    "Forte_Hunter",
+    "Forte_Mage",
+    "Forte_Paladin",
+    "Forte_Priest",
+    "Forte_Rogue",
+    "Forte_Shaman",
+    "Forte_Shard",
+    "Forte_Soulstone",
+    "Forte_Summon",
+    "Forte_Talent",
+    "Forte_Timer",
+    "Forte_Vehicle",
+    "Forte_Warlock",
+    "Forte_Warrior"
+   ]
+  },
+  {
+   "archivo": "FriendShare.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "f49c2923a3e92449cbdef3da24429616191637c5b944962c24e640511bd2956f",
+   "directorios": [
+    "FriendShare"
+   ]
+  },
+  {
+   "archivo": "Gatherer_Wowhead335.rar",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "c81ffad9eb4989f4843fbd149f19b4e61d4728d3f978ac6b5e2d25171b600260",
+   "directorios": [
+    "Gatherer",
+    "GathererDB_Wowhead",
+    "Gatherer_HUD"
+   ]
+  },
+  {
+   "archivo": "GearScore.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "6386edcece443f38e25ce59a4dd00af5965d746c883b731639e9a26de7c9439a",
+   "directorios": [
+    "BonusScanner",
+    "GearScore"
+   ]
+  },
+  {
+   "archivo": "GearScoreLite.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "cf1001a01404a1ffe3fa05961b43b704ec3333ea5fa1e75239c288ec1dc7bde5",
+   "directorios": [
+    "GearScoreLite"
+   ]
+  },
+  {
+   "archivo": "GladiusEx.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "79f646051fc25f1bbaf11cd56447eb3f3b4029a4a6af362c32af3c957699aec6",
+   "directorios": [
+    "GladiusEx"
+   ]
+  },
+  {
+   "archivo": "Grid2.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "de8ea41df12e44bf8bdd3ad84149ce611644f52a3aa2472b5a296e9ca91f5199",
+   "directorios": [
+    "Grid2",
+    "Grid2AoeHeals",
+    "Grid2Options"
+   ]
+  },
+  {
+   "archivo": "GTFO.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "338224aa6ed6948dbca1f58852ad42d2580bb9fc98a7ba0c949ed1c0c545cf63",
+   "directorios": [
+    "GTFO"
+   ]
+  },
+  {
+   "archivo": "HalionHelper.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "5ad171975ec136724afbebba18a8ee103dc6f050d8c777113281f14f99a27ca8",
+   "directorios": [
+    "HalionHelper"
+   ]
+  },
+  {
+   "archivo": "HealBot.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "0d5b04388f095358e612d3f68aa5834fb61e685ee1fa0d066b809babf7680102",
+   "directorios": [
+    "HealBot",
+    "TitanHealBot"
+   ]
+  },
+  {
+   "archivo": "IgnoreMore.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "d4ef7c6fb56f38ad16583ff3253e9180374f5dc53e7f1627bb4b0bb614e32130",
+   "directorios": [
+    "IgnoreMore"
+   ]
+  },
+  {
+   "archivo": "InspectEquip.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "af8887090f52ba68be01e597100e996602f19206a1548dd8d478276ebe62d5be",
+   "directorios": [
+    "InspectEquip"
+   ]
+  },
+  {
+   "archivo": "InterruptBar.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "a913cc9873c4fd718762441ce8c4863b82714753347b1d426e8d3c9da2482d08",
+   "directorios": [
+    "InterruptBar"
+   ]
+  },
+  {
+   "archivo": "KeyBindingsProfiler.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "c512fa477119c63dd35d0dade7c3e5945d6a609c9b0f32ec6170228ea3b7db92",
+   "directorios": [
+    "KeyBindingsProfiler"
+   ]
+  },
+  {
+   "archivo": "KRU.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "20d30331532aef68a4ea8ad6fce072e06efb4b38709883246692c39c0eeeb53f",
+   "directorios": [
+    "KRU"
+   ]
+  },
+  {
+   "archivo": "LoseControl.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "5681ccc106bec77932b9f07c19cf31d329dacef8f40e75ce4a44701bfdae18fa",
+   "directorios": [
+    "LoseControl"
+   ]
+  },
+  {
+   "archivo": "Ludwig.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "5b4fbe8b3287cd91b4b82b27b21d186e65a5bcf63ca074852209be866fb7ec2c",
+   "directorios": [
+    "Ludwig"
+   ]
+  },
+  {
+   "archivo": "MacroBank.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "6dfbe0df3896e0c2dbed3ddf52e625d3c6e05e9122e500b832d87bd9454ee7b1",
+   "directorios": [
+    "MacroBank"
+   ]
+  },
+  {
+   "archivo": "MageNuggets.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "8ccc6f33b80267a4d2c95edeed3148e7e8df65b248f7d004b1d40cf7a88038a4",
+   "directorios": [
+    "MageNuggets"
+   ]
+  },
+  {
+   "archivo": "Mapster.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "1e156122978f2d2dfbedad74efabd10ead289564025631c7c6ef7347105cbcbb",
+   "directorios": [
+    "Mapster"
+   ]
+  },
+  {
+   "archivo": "MarketWatcher+.rar",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "c46ea909dc0efa51751a1ed74b5407cc93f1a9f7e9b784f3662a1c0afbf5104c",
+   "directorios": [
+    "MarketWatcher"
+   ]
+  },
+  {
+   "archivo": "MerfinPlus.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "417d09c0f8aa4344a743b9f0618630ec971da9bae4969eda2f98ab9e4587a935",
+   "directorios": [
+    "MerfinPlus"
+   ]
+  },
+  {
+   "archivo": "MikScrollingBattleText.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "24575ff0056caf31a267caa8b6a667c12dc57eaec30d77439b51c1e557acf8a3",
+   "directorios": [
+    "MSBTOptions",
+    "MikScrollingBattleText"
+   ]
+  },
+  {
+   "archivo": "MogIt.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "bbeaa5e1d2f185b6e429767037f6026ee2f1926a17e17e028f3fe66492aa5ec6",
+   "directorios": [
+    "MogIt",
+    "MogIt_Accessories",
+    "MogIt_Cloth",
+    "MogIt_Leather",
+    "MogIt_Mail",
+    "MogIt_OneHanded",
+    "MogIt_Other",
+    "MogIt_Plate",
+    "MogIt_Ranged",
+    "MogIt_TwoHanded"
+   ]
+  },
+  {
+   "archivo": "Molinari.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "3c7013e21f3c2a38c8074ae7eb4b9f3aa8a58855a6666a3ce4befc5c8f8d4ec0",
+   "directorios": [
+    "Molinari"
+   ]
+  },
+  {
+   "archivo": "MoPItemTooltips.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "5109edfccb48fdff7bd8362efdc8a9ce1ece4e711b2c341fc50da367e0876e9f",
+   "directorios": [
+    "zzzMoPItemTooltips"
+   ]
+  },
+  {
+   "archivo": "NeedToKnow.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "b3e29bd8852eec6161e8d4ef487ba572c3a6f3b1fc64de467b45b4031927a556",
+   "directorios": [
+    "NeedToKnow"
+   ]
+  },
+  {
+   "archivo": "NotPlater-3.3.5.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "1e713e4a89260b162805abf56e73fc47342c73a4c6546b3dfed6c7c2894a673b",
+   "directorios": [
+    "NotPlater-3.3.5"
+   ]
+  },
+  {
+   "archivo": "Omen.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "a123f546197e4c07791c2a0c63f2992cf24280dba61a6c9375be5cfae62cf33e",
+   "directorios": [
+    "Omen"
+   ]
+  },
+  {
+   "archivo": "OPie.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "9fa282c42c04f7d2b0ea490beec29f298ed76e4644158956da723d3657095aef",
+   "directorios": [
+    "OPie"
+   ]
+  },
+  {
+   "archivo": "Outfitter.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "38eb9177eb3d2e71211948c428aae28e57f6071b3011f03b49fdead763242ac6",
+   "directorios": [
+    "Outfitter"
+   ]
+  },
+  {
+   "archivo": "Overachiever.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "74079453ad936a9084c3562a7b7f5ee1cd5ba3c03a6994375aeff58acb791eb7",
+   "directorios": [
+    "Overachiever",
+    "Overachiever_Tabs",
+    "Overachiever_Trade"
+   ]
+  },
+  {
+   "archivo": "PallyPower.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "d9c4f1fecff565678c6281942af63be161e1e75d786725bae0fb39bea39744a8",
+   "directorios": [
+    "PallyPower"
+   ]
+  },
+  {
+   "archivo": "PhoenixStyle.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "468b8849fc1657241f08ac855982494abd1d05c4f514f1153138c21f7ec71d74",
+   "directorios": [
+    "PhoenixStyle",
+    "PhoenixStyleMod_Coliseum",
+    "PhoenixStyleMod_Icecrown",
+    "PhoenixStyleMod_Ulduar"
+   ]
+  },
+  {
+   "archivo": "Plagued.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "2aa700133049376d9e0e1cd41395ea6259939954950b23c032d6361a042779b3",
+   "directorios": [
+    "Plagued"
+   ]
+  },
+  {
+   "archivo": "Plugins.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "10685c5357b755a5cb57543f93759486275fbccb411c03f926742966d9c7606f",
+   "directorios": [
+    "ElvUI_AddOnSkins",
+    "ElvUI_CustomTags",
+    "ElvUI_CustomTweaks",
+    "ElvUI_DTBars2",
+    "ElvUI_DataTextColors",
+    "ElvUI_Enhanced",
+    "ElvUI_EnhancedFriendsList",
+    "ElvUI_MicrobarEnhancement",
+    "ElvUI_ProjectZidras",
+    "ElvUI_SwingBar"
+   ]
+  },
+  {
+   "archivo": "pMinimap.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "5935c761f99b5e319cc6641332a1487d0d878c07a8a47af06e9759d865a2e0d2",
+   "directorios": [
+    "pMinimap"
+   ]
+  },
+  {
+   "archivo": "Postal.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "6900380d76024e74a461cc91a76b3d9a0892d52a3eb06b62c68fc463107a9589",
+   "directorios": [
+    "Postal"
+   ]
+  },
+  {
+   "archivo": "Quartz.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "c1fd6b53a31ee67e4510a527fd4ab034a616d25b129c1853c67c75d6c85117ef",
+   "directorios": [
+    "Quartz"
+   ]
+  },
+  {
+   "archivo": "QuestHelper.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "a07bb552f90cec32828ab67aa9fd9a4fc8771866f47f5ae33be58097c00b3664",
+   "directorios": [
+    "QuestHelper"
+   ]
+  },
+  {
+   "archivo": "RaidBrowser.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "414bf17fb323f418f2240ce4005dd1c6300b55bcd526d74d80e0d9528d97812d",
+   "directorios": [
+    "RaidBrowser"
+   ]
+  },
+  {
+   "archivo": "RaidBuffStatus.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "459939cac3762c6c326505a997966cd1f0526300e72dfcd8f3ce9c65f23ce2c2",
+   "directorios": [
+    "RaidBuffStatus"
+   ]
+  },
+  {
+   "archivo": "RaidComp.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "c68b9af8fbc58c3e3a7d8367ee830ffc42a2379073d2bf5819563afd96af06f2",
+   "directorios": [
+    "RaidComp"
+   ]
+  },
+  {
+   "archivo": "RaidRoll.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "51b27b19c2bf3c70ed58c579cc466460c2de2f6cdb4e029b119e392e040d7463",
+   "directorios": [
+    "RaidRoll",
+    "RaidRoll_EPGP",
+    "RaidRoll_LootTracker"
+   ]
+  },
+  {
+   "archivo": "RaidSlackCheck.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "486d4fae42794646897f2db57cb494bbcda72c44d628493e4e2d2afc3faf0156",
+   "directorios": [
+    "RaidSlackCheck"
+   ]
+  },
+  {
+   "archivo": "RatingBuster.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "a9b8af30c53abca9aa7dcbf999c493b1251fb95cf2d0b57c559fefb6b2498cb8",
+   "directorios": [
+    "RatingBuster"
+   ]
+  },
+  {
+   "archivo": "Redeemer.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "4a182f8705615cec4e95488ffb6f8168269e46317c63f6dc56e88581cc80d26a",
+   "directorios": [
+    "Redeemer"
+   ]
+  },
+  {
+   "archivo": "RSA.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "4fe69500867af2f464615ada03df158c148f39ea3f771876d681ed7fd4ce0621",
+   "directorios": [
+    "RSA"
+   ]
+  },
+  {
+   "archivo": "SavedInstances.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "f5553a1e6088f51d9e9e382890b3347b5a3fb9a902313f39e27da7dd662338b1",
+   "directorios": [
+    "SavedInstances"
+   ]
+  },
+  {
+   "archivo": "SexyCooldown.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "29a0b1101241b7a3c71f38b5b0530a9e52c05437cc56a9eef8aa4ea071f19291",
+   "directorios": [
+    "SexyCooldown"
+   ]
+  },
+  {
+   "archivo": "SexyMap.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "af1fd9a202a2f8928ff77e6418db807d2e58e98eef8790d240be0a63d87b6ff1",
+   "directorios": [
+    "SexyMap"
+   ]
+  },
+  {
+   "archivo": "ShadowedUnitFrames.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "93080608efcb4fc0150c9d540776cfe1363c45025a145628394a3e6a1789dcca",
+   "directorios": [
+    "ShadowedUF_Options",
+    "ShadowedUnitFrames"
+   ]
+  },
+  {
+   "archivo": "SharedMedia.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "956221c808ae423c494d958b4427124861c8e1b599ea5cd976d7bed44c77eaa1",
+   "directorios": [
+    "MerfinMedia",
+    "SharedMedia"
+   ]
+  },
+  {
+   "archivo": "Skada.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "268fd8f77e5635b0136f5fd250726a18c7f7db9ec5e3504c9fb0059de11e9109",
+   "directorios": [
+    "Skada",
+    "SkadaImprovement",
+    "SkadaStorage"
+   ]
+  },
+  {
+   "archivo": "SmartTrack.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "d57ecd8345e57be9d0cf808fc8bdf09d075751571c1aba09e7ba92050d0b7198",
+   "directorios": [
+    "SmartTrack"
+   ]
+  },
+  {
+   "archivo": "SnowfallKeyPress.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "0e0267bc1126a316d05354bcf765d438bd48fdc8c47b2a38fab4963f621dc7f2",
+   "directorios": [
+    "SnowfallKeyPress"
+   ]
+  },
+  {
+   "archivo": "SoundAlerter.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "184a0890680a918d76802ec6cc829b57eb2f4851eb89522629654225e4130de5",
+   "directorios": [
+    "SoundAlerter"
+   ]
+  },
+  {
+   "archivo": "SpellID.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "030bc75c123ad701012de250f457cbc98ffaaf8a983b659f49e0dede95fbee88",
+   "directorios": [
+    "SpellID"
+   ]
+  },
+  {
+   "archivo": "SpellReplay.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "b2b13c2ccf333e0b443fdd664b08244f7fe75d5fe2ae3b995aea2973d1bcb4f6",
+   "directorios": [
+    "SpellReplay"
+   ]
+  },
+  {
+   "archivo": "spy.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "75668704c4e636762f08103be1fbd141fed69f3cff32c67ea49d9e55045650ba",
+   "directorios": [
+    "Spy"
+   ]
+  },
+  {
+   "archivo": "Talented.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "eea028e2cf9d00cb9f946a9d98251ae26dbdcae5232329ddab840f0cd0c09fb8",
+   "directorios": [
+    "Talented"
+   ]
+  },
+  {
+   "archivo": "TellMeWhen.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "df740970734c3a8058664ef917c249a58ec5d93758f462e93a5149c2aa17eecc",
+   "directorios": [
+    "TellMeWhen"
+   ]
+  },
+  {
+   "archivo": "TidyPlates.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "3c4c4aa85ac3f859883c255db5b4165d63e96ec541b07e000fe15707f813a33f",
+   "directorios": [
+    "TidyPlates",
+    "TidyPlates_Graphite",
+    "TidyPlates_Grey",
+    "TidyPlates_Neon",
+    "TidyPlates_Quatre",
+    "TidyPlates_ThreatPlates"
+   ]
+  },
+  {
+   "archivo": "TipTac.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "697b3c9e1aa6f477b9b22f03edfef80c13de12f59514258563cd0299c989c913",
+   "directorios": [
+    "TipTac",
+    "TipTacItemRef",
+    "TipTacOptions",
+    "TipTacTalents"
+   ]
+  },
+  {
+   "archivo": "TradeSkillMaster+.rar",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "a8231c09ce3926b060ef6d5d5c3b0b25e2f70bc1c90d91f7186a8dd6361d9a46",
+   "directorios": [
+    "TradeSkillMaster",
+    "TradeSkillMaster_Accounting",
+    "TradeSkillMaster_AuctionDB",
+    "TradeSkillMaster_Auctioning",
+    "TradeSkillMaster_Crafting",
+    "TradeSkillMaster_Destroying",
+    "TradeSkillMaster_ItemTracker",
+    "TradeSkillMaster_Mailing",
+    "TradeSkillMaster_Shopping",
+    "TradeSkillMaster_Warehousing"
+   ]
+  },
+  {
+   "archivo": "TrufiGCD.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "a129940d01aa3657fb16d55e3f4c992436ab4978e056bc29e5e7495d9bba927c",
+   "directorios": [
+    "TrufiGCD"
+   ]
+  },
+  {
+   "archivo": "TurnIn-2.1.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "70b1ad3aa494acbe087a6e4d8936729945b90130898ec4820cb671980a8540d8",
+   "directorios": [
+    "TurnIn"
+   ]
+  },
+  {
+   "archivo": "VuhDo.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "7a28d72993eafadc1541af66a28e6ea8c7e3ae67caedb0015c986cf53e452413",
+   "directorios": [
+    "VuhDo",
+    "VuhDoOptions"
+   ]
+  },
+  {
+   "archivo": "WIM.zip",
+   "commit": "235b9e4cd5b429b94f4cb33ba9308d3c78f6bcad",
+   "sha256": "2ca62b8cb064a6bf988fb3dbbcaa6b51ba3889df28dc96dcd3ccbcd6f4543ff6",
+   "directorios": [
+    "WIM"
+   ]
+  },
+  {
+   "archivo": "xCT+.zip",
+   "commit": "20984f0c358b30c1989ceb7421f27058c6a12823",
+   "sha256": "49b233fd60386dbdf67cdb6ef3610836f15648e43b93dad46f3189a9e38d5310",
+   "directorios": [
+    "xCT+"
+   ]
+  }
+ ],
+ "repos": [
+  {
+   "nombre": "GuildLevels",
+   "desde": "client_addon/GuildLevels"
+  },
+  {
+   "nombre": "QuestRadar",
+   "desde": "client-addon/QuestRadar"
+  },
+  {
+   "nombre": "PlayerBotManager",
+   "desde": "",
+   "excluir": [
+    ".gitignore",
+    "Screenshots"
+   ]
+  }
+ ],
+ "parches": {
+  "ACP": [
+   "patches-cliente/ACP/01-proteger-addons-del-servidor-y-acentos.patch"
+  ],
+  "Chatter": [
+   "patches-cliente/Chatter/01-altnames-nota-nula.patch"
+  ],
+  "GuildLevels": [
+   "patches-cliente/GuildLevels/01-compatibilidad-3-3-5-y-minimapa.patch"
+  ],
+  "QuestRadar": [
+   "patches-cliente/QuestRadar/01-traduccion-y-astrolabe.patch"
+  ],
+  "PlayerBotManager": [
+   "patches-cliente/PlayerBotManager/es-localizacion-visible.patch"
+  ]
+ },
+ "propios": [
+  "MultiBot",
+  "ServerHelp"
+ ]
+}

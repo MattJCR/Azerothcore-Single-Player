@@ -1,0 +1,160 @@
+[worldserver]
+
+###################################################################################################
+# MOD-QUEST-MATES
+#
+#   Companeros de mision. Cuando aceptas una mision, dos o tres bots de tu
+#   zona, de tu faccion y de tu tramo de nivel la cogen tambien y se ponen con
+#   ella: se les ve cazar lo mismo que tu, recoger lo mismo y entregarla. Los
+#   mismos bots repiten contigo mientras sigan en la zona.
+#
+#   Quedan fuera las misiones de mazmorra, banda, escolta, JcJ, heroicas,
+#   diarias, repetibles y de evento.
+#
+#   Requiere mod-playerbots con bots aleatorios. Sin el, compila y no hace nada.
+#
+###################################################################################################
+
+#
+#    QuestMates.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QuestMates.Enable = 1
+
+#
+#    QuestMates.MinMates / QuestMates.MaxMates
+#        Descripcion: Cuantos bots cogen cada mision contigo, al azar entre los
+#                     dos. Solo los que puedan cogerla de verdad (nivel, raza,
+#                     clase, requisitos previos y hueco en el diario, segun el
+#                     nucleo).
+#        Por defecto: 2 / 3
+
+QuestMates.MinMates = 2
+QuestMates.MaxMates = 3
+
+#
+#    QuestMates.LevelBelow / QuestMates.LevelAbove
+#        Descripcion: Tramo de nivel de los bots candidatos, respecto al tuyo.
+#        Por defecto: 5 / 3
+
+QuestMates.LevelBelow = 5
+QuestMates.LevelAbove = 3
+
+#
+#    QuestMates.Chance
+#        Descripcion: Porcentaje de misiones aceptadas que arrastran companeros.
+#                     Con 100, todas las que valgan.
+#        Por defecto: 100
+
+QuestMates.Chance = 100
+
+#
+#    QuestMates.RememberMinutes
+#        Descripcion: Minutos que un bot sigue siendo "tu companero": mientras
+#                     siga en la zona y libre, es el primero al que se le dan
+#                     tus siguientes misiones.
+#        Por defecto: 30
+
+QuestMates.RememberMinutes = 30
+
+#
+#    QuestMates.Announce
+#        Descripcion: Avisar por chat de quien coge la mision contigo.
+#        Por defecto: 0 - (desactivado)
+#                     1 - (activado)
+
+QuestMates.Announce = 0
+
+#
+#    QuestMates.RpgStrategyPush
+#        Descripcion: Al dar la mision al bot, forzarle la estrategia "new rpg"
+#                     de playerbots (idempotente si ya la tiene) para que vaya a
+#                     por los objetivos en vez de seguir viajando/cazando. Sin
+#                     esto, la mision puede quedarse en el diario sin efecto y el
+#                     bot retiene la reserva hasta RememberMinutes.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+QuestMates.RpgStrategyPush = 1
+
+#
+#    QuestMates.MaxMatesTracked
+#        Descripcion: Tope de bots que un jugador retiene como companeros a la
+#                     vez (entre varias misiones). Minimo 1.
+#        Por defecto: 6
+
+QuestMates.MaxMatesTracked = 6
+
+#
+#    QuestMates.CleanupIntervalMs
+#        Descripcion: Milisegundos entre barridos de limpieza (soltar reservas
+#                     de bots que se fueron o cuya mision termino). Minimo 500.
+#        Por defecto: 3000
+
+QuestMates.CleanupIntervalMs = 3000
+
+#
+#    QuestMates.Debug
+#        Descripcion: Elevar a INFO los mensajes de diagnostico del modulo (por
+#                     defecto en DEBUG). El resumen de "X cogen la mision" es
+#                     siempre INFO.
+#        Por defecto: 0
+
+QuestMates.Debug = 0
+
+#
+#    QuestMates.FollowAbandon
+#        Descripcion: Si el jugador ABANDONA una mision, sus companeros sueltan
+#                     tambien la copia que les inyecto el modulo (y la quitan de
+#                     su diario). Nunca toca una mision que el bot tuviera por
+#                     otra causa.
+#        Por defecto: 1 - (activado)
+
+QuestMates.FollowAbandon = 1
+
+#
+#    QuestMates.PreferHomeGuild
+#        Descripcion: Al elegir companeros nuevos, los bots de tu hermandad de
+#                     casa (mod-home-guild) van primero: los mismos companeros
+#                     semana tras semana, como en las colas y en ".grupo".
+#        Por defecto: 1 - (activado)
+
+QuestMates.PreferHomeGuild = 1
+
+#
+#    QuestMates.JointTurnIn
+#        Descripcion: Cuando el jugador entrega una mision y un companero la
+#                     tiene completa (objetivos hechos), se le reenfoca la IA
+#                     para que vaya a entregarla al PNJ y se avisa una vez.
+#        Por defecto: 1 - (activado)
+
+QuestMates.JointTurnIn = 1
+
+#
+#    QuestMates.StuckMinutes / QuestMates.AbandonStuck
+#        Descripcion: Si una mision que ESTE modulo inyecto en un bot lleva mas
+#                     de StuckMinutes sin pasar de INCOMPLETE (el bot no avanza),
+#                     se suelta la reserva. Con AbandonStuck = 1 ademas se le
+#                     quita del diario para que no ocupe hueco eternamente. Solo
+#                     afecta a misiones inyectadas por el modulo, nunca a las que
+#                     el bot ya tuviera por otra causa.
+#        Por defecto: 0 (desactivado) / 0
+
+QuestMates.StuckMinutes = 0
+QuestMates.AbandonStuck = 0
+
+#
+#    QuestMates.TransitionGraceSeconds
+#        Descripcion: Segundos que se esperan a un jugador o a un companero que
+#                     esta en una pantalla de carga (portal, cambio de
+#                     continente) antes de soltar el vinculo. Durante la espera
+#                     no se toca a nadie; un logout real o una sesion nueva lo
+#                     sueltan en el acto.
+#        Por defecto: 60
+
+QuestMates.TransitionGraceSeconds = 60
+
+#
+###################################################################################################

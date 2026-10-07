@@ -1,0 +1,140 @@
+AVISOS DE TERCEROS — Azerothcore-Single-Player
+================================================
+
+Este fichero relaciona el software de terceros que el proyecto usa, la licencia
+que cada uno declara y de dónde sale. Las versiones exactas (commit y SHA-256)
+están en versions.lock, mirrors/MANIFEST.tsv, addons.lock y web-panel/addons/.
+
+El código propio del proyecto es AGPL-3.0-or-later (ver NOTICE y LICENSE).
+Lo que sigue conserva su propia licencia y sus avisos de copyright; ninguna
+parte de este fichero los modifica ni los sustituye.
+
+Cómo llega cada cosa a su equipo
+--------------------------------
+ [R] Redistribuido dentro de este repositorio, con su texto de licencia.
+ [D] No se redistribuye: el instalador lo descarga del origen indicado, en el
+     commit fijado, y comprueba su SHA-256 antes de usarlo.
+ [G] Se genera en su equipo a partir de ficheros que usted ya posee.
+
+1. Core y módulos de AzerothCore (descargados al compilar) [D]
+--------------------------------------------------------------
+Licencia = la que declara el proyecto en su LICENSE (L), en las cabeceras de
+sus ficheros (C) o en su README (R). «ninguna declarada» significa que el
+commit fijado no trae fichero de licencia ni la menciona; su uso sin
+redistribuir es el que hace el instalador, y su snapshot NO se publica como
+asset (sólo se obtiene del repositorio original).
+
+core (rama de mod-playerbots)    GPL-2.0-or-later (L, C)
+    https://github.com/mod-playerbots/azerothcore-wotlk
+mod-playerbots                   GPL-2.0-or-later (L, C)
+    https://github.com/mod-playerbots/mod-playerbots
+mod-playerbots-wintergrasp       GPL-2.0 (L)
+    https://github.com/vrzgames/mod-playerbots-wintergrasp
+mod-1v1-arena                    GPL-3.0 (L)
+    https://github.com/azerothcore/mod-1v1-arena
+mod-aoe-loot                     AGPL-3.0 (L)
+    https://github.com/azerothcore/mod-aoe-loot
+mod-arac                         AGPL-3.0 (L)
+    https://github.com/heyitsbench/mod-arac
+mod-congrats-on-level            AGPL-3.0 (L)
+    https://github.com/azerothcore/mod-congrats-on-level
+mod-dungeon-clear                AGPL-3.0-or-later (L); Copyright (C) 2026+ Jared Wright and contributors
+    https://github.com/jrad7/mod-dungeon-clear
+mod-dungeon-master               AGPL-3.0 (L)
+    https://github.com/InstanceForge/mod-dungeon-master
+mod-profession-experience        AGPL-3.0 (L)
+    https://github.com/Tereneckla/mod-profession-experience
+mod-quest-loot-party             AGPL-3.0 (L)
+    https://github.com/pangolp/mod-quest-loot-party
+mod-transmog                     AGPL-3.0 (L)
+    https://github.com/azerothcore/mod-transmog
+mod-challenge-modes              MIT (L); Copyright (c) 2021 AzerothCore
+    https://github.com/ZhengPeiRu21/mod-challenge-modes
+mod-individual-progression       MIT (L); Copyright (c) 2021 AzerothCore
+    https://github.com/ZhengPeiRu21/mod-individual-progression
+mod-instanced-worldbosses        MIT (L); Copyright (c) 2021 AzerothCore
+    https://github.com/azerothcore/mod-instanced-worldbosses
+mod-racial-trait-swap            MIT (L); Copyright (c) 2022 AzerothCore
+    https://github.com/azerothcore/mod-racial-trait-swap
+mod-reagent-bank                 MIT (L); Copyright (c) 2021 AzerothCore
+    https://github.com/ZhengPeiRu21/mod-reagent-bank
+mod-token-turnin                 MIT (L); Copyright (c) 2023 AzerothCore
+    https://github.com/Zerathane/mod-token-turnin
+mod-war-effort                   MIT (L); Copyright (c) 2021 AzerothCore
+    https://github.com/azerothcore/mod-war-effort
+mod-guild-levels                 GPL-2.0-or-later (R: «GPL v2+, same as AzerothCore»); sin fichero de licencia
+    https://github.com/Old-Man-Warcraft/mod-guild-levels
+mod-world-buff-bots              AGPL-3.0 (R: encabezado de licencia); sin fichero de licencia
+    https://github.com/Rockhopper1776/mod-world-buff-bots
+mod-ah-bot-plus                  GPL (C: cabeceras MaNGOS/Trinity/Nathan Handley); sin fichero de licencia
+    https://github.com/NathanHandley/mod-ah-bot-plus
+mod-autobalance                  la del core de AzerothCore (C: cabeceras); sin fichero de licencia
+    https://github.com/azerothcore/mod-autobalance
+mod-guildhouse                   ninguna declarada
+    https://github.com/azerothcore/mod-guildhouse
+mod-instance-reset               ninguna declarada
+    https://github.com/azerothcore/mod-instance-reset
+mod-random-enchants              ninguna declarada
+    https://github.com/azerothcore/mod-random-enchants
+
+Los parches de patches/ (.patch) modifican esos proyectos; cada uno lleva en
+su cabecera la licencia del proyecto que modifica y se redistribuye sólo como
+diferencia, nunca el código completo del proyecto.
+
+El core incluye librerías propias en deps/ (SFMT, argon2, bzip2, etc.) con sus
+licencias; se compilan con el core y no se redistribuyen aquí.
+
+2. Addons del cliente
+---------------------
+Redistribuidos en este repositorio [R]:
+ * MultiBot — GPL-3.0 (cliente/Interface/AddOns/MultiBot/LICENSE;
+   LICENSES/GPL-3.0-only.txt). Fuente: https://github.com/Macx-Lio/MultiBot.
+   Los ficheros conservan sus avisos de autoría (el .toc cita a Nico Löbbert).
+   Incluye las modificaciones propias del proyecto (traducción y ajustes).
+ * ServerHelp — propio del proyecto, AGPL-3.0-or-later.
+
+Descargados en la instalación [D] (fuente y hash en web-panel/addons/fuentes.json
+y addons.lock; parches propios en patches-cliente/, que conservan la licencia
+del addon):
+ * PlayerBotManager — GPL-3.0 — https://github.com/Lichborne-AC/PlayerbotManager
+ * QuestRadar — AGPL-3.0 — https://github.com/warblups/mod-quest-radar
+   (incluye Astrolabe/DongleStub, LGPL, con su texto dentro del addon)
+ * GuildLevels — GPL-2.0-or-later — https://github.com/Old-Man-Warcraft/mod-guild-levels
+ * ACP, Chatter y el resto del catálogo de NoM0Re (paquetes preparados para
+   3.3.5a) — cada addon declara la suya en su .toc o en su carpeta; el
+   instalador la deja intacta junto al addon. El catálogo está en
+   https://github.com/NoM0Re/WoW-3.3.5a-Addons (commit fijado en web-panel/addons/catalog.json).
+ * Bartender4, Decursive, Mapster y una librería de Gatherer declaran «All
+   rights reserved». Este proyecto NO los redistribuye ni los incluye en
+   ningún paquete propio: se descargan del origen del autor al instalar.
+
+3. Dependencias del panel web (npm) [D]
+---------------------------------------
+Se instalan con `npm ci` según web-panel/package-lock.json, que fija versión y
+hash de cada paquete y su licencia. En producción (dependencias directas y
+transitivas): MIT (147), ISC (14), Apache-2.0 (11), BlueOak-1.0.0 (4),
+BSD-3-Clause (2), (MIT OR GPL-3.0-or-later) (jszip; se usa bajo MIT) y
+(MIT AND Zlib) (pako). Las de desarrollo (jsdom y sus dependencias) no se
+instalan en el servidor.
+
+4. Datos del juego
+------------------
+ * Mapas, vmaps y mmaps (Data.zip): archivos generados por la comunidad a
+   partir del cliente; el instalador descarga la versión fijada v20.0 y
+   comprueba su SHA-256 (https://github.com/wowgaming/client-data) [D].
+ * Cliente 3.3.5a, MPQ, DBC, iconos e imágenes de mapa: © Blizzard
+   Entertainment, Inc. No se distribuyen. Los parches de cliente
+   (patch-<idioma>-4.MPQ), los iconos del panel y los mapas se generan o
+   descargan a partir del cliente del propio jugador, con comprobación de
+   hash [G]. Los mapas con arte de Blizzard se obtienen de Warcraft Wiki
+   (https://warcraft.wiki.gg) [D].
+
+5. Herramientas externas usadas por la integración continua
+-----------------------------------------------------------
+ * gitleaks (MIT), fijado por versión y SHA-256 en .github/workflows/ci.yml.
+ * Acciones de GitHub, fijadas al SHA de su commit.
+No forman parte de lo que se instala.
+
+Si es titular de alguno de estos componentes y cree que algo de este fichero
+es inexacto o que no debería estar aquí, indíquelo en el repositorio y se
+corregirá o se retirará.

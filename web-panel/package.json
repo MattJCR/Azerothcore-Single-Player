@@ -1,0 +1,28 @@
+{
+  "name": "azerothcore-web-panel",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "description": "Panel web seguro para AzerothCore 3.3.5a",
+  "engines": {
+    "node": ">=18.18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test",
+    "check": "node tools/check-sources.mjs",
+    "sync:addons": "node tools/sync-addons.mjs",
+    "sync:item-icons": "python tools/extract-item-icons.py"
+  },
+  "dependencies": {
+    "archiver": "7.0.1",
+    "express": "^5.1.0",
+    "jszip": "3.10.1",
+    "mysql2": "^3.14.5"
+  },
+  "devDependencies": {
+    "jsdom": "^28.1.0"
+  }
+}

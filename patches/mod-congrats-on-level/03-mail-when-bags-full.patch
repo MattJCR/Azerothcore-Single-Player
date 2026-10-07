@@ -1,0 +1,124 @@
+Licencia: AGPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Objetos por correo cuando no caben, y hechizos lanzados como disparados.
+
+Problema
+--------
+giveAward() daba los objetos con Player::AddItem(). Si no cabian en las
+bolsas, el core escribe "You don't have any space in your bags." y el objeto
+SE PIERDE: lo dice el README del propio modulo ("The player forfeits the
+rewards if their bags are full"). Con la tabla de recompensas del 02/09/2026,
+que da cuatro bolsas en un mismo nivel, eso iba a pasar tarde o temprano.
+
+Y los hechizos con learn=0 se lanzaban sin "triggered". Asi, un hechizo con
+coste de mana falla en una clase sin mana, y los de doble especializacion
+(63680 y 63624, que el entrenador lanza con triggered=true en
+PlayerGossip.cpp) no son hechizos que un jugador pueda lanzar por su cuenta.
+
+Solucion
+--------
+- giveItem(): si CanStoreNewItem() dice que cabe, AddItem() como antes; si
+  no, se crea el objeto, se guarda en la transaccion y se manda por correo con
+  MailDraft, igual que hace el comando `.send items`. Remitente: el propio
+  jugador, papeleria de GM. Asunto y cuerpo en espanol para esES/esMX, en
+  ingles para el resto. Si el itemId no existe en item_template se avisa en
+  el log en vez de fallar en silencio.
+- learn=0 -> CastSpell(player, spell, true).
+
+No anade claves de configuracion.
+
+Escrito contra
+--------------
+mod-congrats-on-level @ fed4752e0cd71db7faa4d6f9f4650f5377d2f31c (2025-02-28),
+con 01-reward-any-level.patch y 02-reward-message-toggle.patch ya aplicados.
+Se aplica DESPUES de esos dos. Escrito el 02/09/2026.
+
+Si el upstream toca giveAward() dejara de aplicar y la fase 3 avisara. Para
+regenerarlo: patches/README.md, "Cuando un parche deja de aplicar".
+
+--- a/src/mod_congratsonlevel.cpp
++++ b/src/mod_congratsonlevel.cpp
+@@ -65,6 +65,11 @@ config file for quick modifications.
+ 
+ #include "Configuration/Config.h"
+ #include "Chat.h"
++#include "DatabaseEnv.h"
++#include "Item.h"
++#include "Log.h"
++#include "Mail.h"
++#include "ObjectMgr.h"
+ #include "Player.h"
+ #include "ScriptMgr.h"
+ #include "WorldSessionMgr.h"
+@@ -80,6 +85,47 @@ struct COL
+ 
+ COL col;
+ 
++// Entrega un objeto del premio. Si cabe, a la bolsa; si no, por correo.
++// El modulo original lo daba con AddItem y, con la bolsa llena, se perdia
++// ("The player forfeits the rewards if their bags are full", dice su README).
++// Con varias bolsas por nivel eso pasaria tarde o temprano.
++static void giveItem(Player* player, uint32 itemId)
++{
++    if (!sObjectMgr->GetItemTemplate(itemId))
++    {
++        LOG_ERROR("module", "[congrats-on-level] el objeto {} de la tabla de recompensas (nivel {}) no existe en item_template", itemId, player->GetLevel());
++        return;
++    }
++
++    ItemPosCountVec dest;
++    if (player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, 1) == EQUIP_ERR_OK)
++    {
++        player->AddItem(itemId, 1);
++        return;
++    }
++
++    Item* item = Item::CreateItem(itemId, 1, player);
++    if (!item)
++        return;
++
++    LocaleConstant loc = player->GetSession()->GetSessionDbLocaleIndex();
++    bool es = (loc == LOCALE_esES || loc == LOCALE_esMX);
++    std::string subject = (es ? "Recompensa del nivel " : "Level ") + std::to_string(player->GetLevel()) + (es ? "" : " reward");
++    std::string body = es
++        ? "No cabia en tus bolsas al subir de nivel, asi que te lo mandamos por correo."
++        : "It did not fit in your bags when you leveled up, so here it is by mail.";
++
++    // Lo mismo que hace el comando .send items: guardar el objeto en la
++    // transaccion y mandarlo con el remitente del propio jugador.
++    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
++    item->SaveToDB(trans);
++    MailDraft(subject, body)
++        .AddItem(item)
++        .SendMailTo(trans, MailReceiver(player, player->GetGUID().GetCounter()),
++                    MailSender(MAIL_NORMAL, player->GetGUID().GetCounter(), MAIL_STATIONERY_GM));
++    CharacterDatabase.CommitTransaction(trans);
++}
++
+ uint32 giveAward(Player* player, bool& rewarded)
+ {
+     QueryResult result = WorldDatabase.Query("SELECT * FROM `mod_congrats_on_level_items` WHERE `level`={} AND (`race`={} OR `race`=0) AND (`class`={} OR `class`=0)", player->GetLevel(), player->getRace(), player->getClass());
+@@ -100,15 +146,20 @@ uint32 giveAward(Player* player, bool& rewarded)
+             }
+             if (fields[2].Get<uint32>() > 0)
+             {
++                // learn=0: lanzado como "disparado", igual que hace el
++                // entrenador con los hechizos de doble especializacion (63680
++                // y 63624, PlayerGossip.cpp). Sin disparar, un hechizo con
++                // coste de mana falla en una clase sin mana, y el de doble
++                // especializacion no es un hechizo que el jugador pueda lanzar.
+                 if (fields[3].Get<uint32>() == 0)
+-                    player->CastSpell(player, fields[2].Get<uint32>());
++                    player->CastSpell(player, fields[2].Get<uint32>(), true);
+                 else
+                     player->learnSpell(fields[2].Get<uint32>());
+             }
+             if (fields[4].Get<uint32>() > 0)
+-                player->AddItem(fields[4].Get<uint32>(), 1);
++                giveItem(player, fields[4].Get<uint32>());
+             if (fields[5].Get<uint32>())
+-                player->AddItem(fields[5].Get<uint32>(), 1);
++                giveItem(player, fields[5].Get<uint32>());
+         }
+         while (result->NextRow());
+ 

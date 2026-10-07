@@ -1,0 +1,57 @@
+Licencia: MIT, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Adaptar el hook OnPlayerResurrect a la firma actual del core.
+
+Problema
+--------
+El core cambio el tercer parametro de OnPlayerResurrect de `bool` a `bool&`:
+
+  virtual void OnPlayerResurrect(Player*, float restore_percent, bool& applySickness)
+
+mod-challenge-modes todavia lo declara con `bool`, asi que su metodo no
+sobreescribe nada y clang aborta la compilacion:
+
+  fatal error: non-virtual member function marked 'override' hides virtual
+  member function ... type mismatch at 3rd parameter ('bool &' vs 'bool')
+
+Sin este parche el modulo NO compila contra el fork de playerbots y tumba la
+fase 4 entera.
+
+Solucion
+--------
+Anadir el & en las dos declaraciones del hook (Hardcore e IronMan). No cambia
+el comportamiento: el parametro sigue sin usarse en ambos casos.
+
+Escrito contra
+--------------
+mod-challenge-modes @ 1930525 (master, "Merge pull request #54")
+core mod-playerbots/azerothcore-wotlk @ 62a991e7 (rama Playerbot)
+
+Se comprobo que el resto de hooks del modulo (OnPlayerGiveXP,
+OnPlayerLevelChanged, OnPlayerKilledByCreature, OnPlayerPVPKill,
+OnPlayerReleasedGhost, OnPlayerTalentsReset, OnPlayerLearnSpell) SI coinciden
+con las firmas de PlayerScript.h de este core.
+
+Si el upstream lo arregla, este parche dejara de aplicar y la fase 3 avisara:
+en ese caso basta con borrarlo.
+
+--- a/src/ChallengeModes.cpp
++++ b/src/ChallengeModes.cpp
+@@ -445,7 +445,7 @@
+         killed->UpdatePlayerSetting("mod-challenge-modes", HARDCORE_DEAD, 1);
+     }
+ 
+-    void OnPlayerResurrect(Player* player, float /*restore_percent*/, bool /*applySickness*/) override
++    void OnPlayerResurrect(Player* player, float /*restore_percent*/, bool& /*applySickness*/) override
+     {
+         if (!sChallengeModes->challengeEnabledForPlayer(SETTING_HARDCORE, player))
+         {
+@@ -626,7 +626,7 @@
+ public:
+     ChallengeMode_IronMan() : ChallengeMode("ChallengeMode_IronMan", SETTING_IRON_MAN) {}
+ 
+-    void OnPlayerResurrect(Player* player, float /*restore_percent*/, bool /*applySickness*/) override
++    void OnPlayerResurrect(Player* player, float /*restore_percent*/, bool& /*applySickness*/) override
+     {
+         if (!sChallengeModes->challengeEnabledForPlayer(SETTING_IRON_MAN, player))
+         {

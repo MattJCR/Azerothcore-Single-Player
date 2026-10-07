@@ -1,0 +1,5 @@
+origen	destino	tipo	nota
+Data/esES/patch-esES-4.MPQ	Data/esES/patch-esES-4.MPQ	mpq	Objetos propios del servidor (entry>=600000) + razas y clases ARAC (CharBaseInfo, CharStartOutfit, SkillRaceClassInfo). Lo genera tools/construir-parche-cliente-items.py
+Data/enUS/patch-enUS-4.MPQ	Data/enUS/patch-enUS-4.MPQ	mpq	Igual que patch-esES-4 pero para el cliente en ingles
+Interface/AddOns/ServerHelp	Interface/AddOns/ServerHelp	addon	La pestana "Solicitud de ayuda" > "Ayuda basica" con los comandos y articulos del servidor (necesita mod-server-help)
+Interface/AddOns/MultiBot	Interface/AddOns/MultiBot	addon	Panel de mando de los bots de playerbots (Nico Loebbert 2.0.0, sin la carpeta Screenshots)

@@ -1,0 +1,20 @@
+{
+  "patches": [
+    {
+      "id": "patch-eses-4",
+      "name": "patch-esES-4.MPQ",
+      "file": "patch-esES-4.MPQ",
+      "targetDir": "esES",
+      "description": "Objetos propios del servidor (icono y textos) y las combinaciones de raza y clase de ARAC. Para el cliente en español.",
+      "required": true
+    },
+    {
+      "id": "patch-enus-4",
+      "name": "patch-enUS-4.MPQ",
+      "file": "patch-enUS-4.MPQ",
+      "targetDir": "enUS",
+      "description": "Objetos propios del servidor (icono y textos) y las combinaciones de raza y clase de ARAC. Para el cliente en inglés.",
+      "required": true
+    }
+  ]
+}

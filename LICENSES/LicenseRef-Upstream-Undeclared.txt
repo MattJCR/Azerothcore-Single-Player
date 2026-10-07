@@ -1,0 +1,11 @@
+Upstream project without a declared license
+
+The upstream project this patch applies to does not declare a license in the
+commit pinned by this repository (no license file, and no license statement in
+its sources or documentation).
+
+This repository publishes only the minimal difference (the patch) needed to
+make that project work with the rest of the installer. All rights in the
+original code remain with its authors. No license over the upstream code is
+granted or implied by this repository. The modifications themselves are offered
+under AGPL-3.0-or-later where the upstream authors' rights allow it.

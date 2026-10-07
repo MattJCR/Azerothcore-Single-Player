@@ -1,0 +1,126 @@
+Licencia: MIT, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Traducir al espanol los textos del Santuario del Desafio y hacerlo visible al GM.
+
+Problema
+--------
+El commit fijado (1930525, "Merge pull request #54") arrastra una localizacion
+al CHINO metida a fuego en el codigo: las ocho opciones del menu del santuario,
+el mensaje de confirmacion y el aviso de "objeto perdido" del modo Semiextremo
+salen en chino, no hay tabla *_locale que valga.
+
+Ademas, gobject_challenge_modesAI::CanBeSeen() oculta el santuario a cualquier
+personaje de nivel > 1 (nivel > 55 para Caballero de la Muerte). Es el diseno
+del modulo -los retos solo se activan a nivel 1-, pero tambien se lo esconde a
+los GM, asi que no hay forma de revisar los 9 santuarios sin crearse un
+personaje nuevo por cada uno.
+
+Solucion
+--------
+1. Los diez literales chinos -> espanol (mismas cadenas, sin formato nuevo: el
+   unico con `%` sigue siendo la plantilla |Hitem| del aviso de objeto).
+2. CanBeSeen(): comprobar primero `sChallengeModes->enabled()`, dejar pasar
+   siempre a `player->IsGameMaster()`, y mantener el limite de nivel para el
+   resto. Un jugador normal ve exactamente lo de antes.
+
+El nombre del gameobject (254605, "Shrine of Challenge") NO se toca aqui: va por
+SQL en patches/locales-es/03-mod-challenge-modes-es.sql, junto con el texto de
+saludo (npc_text 12669), que el volcado del core no trae en esES.
+
+Escrito contra
+--------------
+mod-challenge-modes @ 1930525 (master, "Merge pull request #54")
+core mod-playerbots/azerothcore-wotlk @ 413bea61a85e (rama Playerbot)
+
+Si el upstream cambia estas lineas el parche dejara de aplicar; la fase 3 lo
+avisa y el modulo se queda con los textos en chino y el santuario oculto al GM.
+
+diff --git a/src/ChallengeModes.cpp b/src/ChallengeModes.cpp
+index 32e4b0e..c9405ba 100644
+--- a/src/ChallengeModes.cpp
++++ b/src/ChallengeModes.cpp
+@@ -486,7 +486,7 @@ public:
+                 if (pItem->GetTemplate() && !pItem->IsEquipped())
+                     continue;
+                 uint8 slot = pItem->GetSlot();
+-                ChatHandler(player->GetSession()).PSendSysMessage("|cffDA70D6%s |cffffffff|Hitem:%d:0:0:0:0:0:0:0:0|h[%s]|h|r", "你已失去你的", pItem->GetEntry(), pItem->GetTemplate()->Name1.c_str());
++                ChatHandler(player->GetSession()).PSendSysMessage("|cffDA70D6%s |cffffffff|Hitem:%d:0:0:0:0:0:0:0:0|h[%s]|h|r", "Has perdido:", pItem->GetEntry(), pItem->GetTemplate()->Name1.c_str());
+                 player->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
+             }
+         }
+@@ -785,11 +785,21 @@ public:
+ 
+         bool CanBeSeen(Player const* player) override
+         {
++            if (!sChallengeModes->enabled())
++            {
++                return false;
++            }
++            // Un GM siempre ve el santuario, para poder revisarlo sin tener que
++            // crear un personaje de nivel 1.
++            if (player->IsGameMaster())
++            {
++                return true;
++            }
+             if ((player->GetLevel() > 1 && player->getClass() != CLASS_DEATH_KNIGHT) || (player->GetLevel() > 55))
+             {
+                 return false;
+             }
+-            return sChallengeModes->enabled();
++            return true;
+         }
+     };
+ 
+@@ -797,35 +807,35 @@ public:
+     {
+         if (sChallengeModes->challengeEnabled(SETTING_HARDCORE) && !playerSettingEnabled(player, SETTING_HARDCORE) && !playerSettingEnabled(player, SETTING_SEMI_HARDCORE))
+         {
+-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "启用极限模式", 0, SETTING_HARDCORE);
++            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Activar Extremo (Hardcore): al morir te quedas en espíritu para siempre", 0, SETTING_HARDCORE);
+         }
+         if (sChallengeModes->challengeEnabled(SETTING_SEMI_HARDCORE) && !playerSettingEnabled(player, SETTING_HARDCORE) && !playerSettingEnabled(player, SETTING_SEMI_HARDCORE))
+         {
+-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "启用半极限模式", 0, SETTING_SEMI_HARDCORE);
++            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Activar Semiextremo: al morir pierdes el equipo puesto y el oro", 0, SETTING_SEMI_HARDCORE);
+         }
+         if (sChallengeModes->challengeEnabled(SETTING_SELF_CRAFTED) && !playerSettingEnabled(player, SETTING_SELF_CRAFTED) && !playerSettingEnabled(player, SETTING_IRON_MAN))
+         {
+-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "启用自制装备模式", 0, SETTING_SELF_CRAFTED);
++            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Activar Equipo artesanal: solo puedes llevar equipo fabricado por ti", 0, SETTING_SELF_CRAFTED);
+         }
+         if (sChallengeModes->challengeEnabled(SETTING_ITEM_QUALITY_LEVEL) && !playerSettingEnabled(player, SETTING_ITEM_QUALITY_LEVEL))
+         {
+-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "启用低品质装备模式", 0, SETTING_ITEM_QUALITY_LEVEL);
++            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Activar Calidad limitada: solo equipo de calidad normal o pobre", 0, SETTING_ITEM_QUALITY_LEVEL);
+         }
+         if (sChallengeModes->challengeEnabled(SETTING_SLOW_XP_GAIN) && !playerSettingEnabled(player, SETTING_SLOW_XP_GAIN) && !playerSettingEnabled(player, SETTING_VERY_SLOW_XP_GAIN))
+         {
+-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "启用慢速经验模式", 0, SETTING_SLOW_XP_GAIN);
++            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Activar Experiencia lenta (x0.5)", 0, SETTING_SLOW_XP_GAIN);
+         }
+         if (sChallengeModes->challengeEnabled(SETTING_VERY_SLOW_XP_GAIN) && !playerSettingEnabled(player, SETTING_SLOW_XP_GAIN) && !playerSettingEnabled(player, SETTING_VERY_SLOW_XP_GAIN))
+         {
+-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "启用极慢经验模式", 0, SETTING_VERY_SLOW_XP_GAIN);
++            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Activar Experiencia muy lenta (x0.25)", 0, SETTING_VERY_SLOW_XP_GAIN);
+         }
+         if (sChallengeModes->challengeEnabled(SETTING_QUEST_XP_ONLY) && !playerSettingEnabled(player, SETTING_QUEST_XP_ONLY))
+         {
+-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "启用任务经验专属模式", 0, SETTING_QUEST_XP_ONLY);
++            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Activar Solo experiencia por misiones", 0, SETTING_QUEST_XP_ONLY);
+         }
+         if (sChallengeModes->challengeEnabled(SETTING_IRON_MAN) && !playerSettingEnabled(player, SETTING_IRON_MAN) && !playerSettingEnabled(player, SETTING_SELF_CRAFTED))
+         {
+-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "启用铁人模式", 0, SETTING_IRON_MAN);
++            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Activar Iron Man: reglas completas del reto Iron Man", 0, SETTING_IRON_MAN);
+         }
+         SendGossipMenuFor(player, 12669, go->GetGUID());
+         return true;
+@@ -834,7 +844,7 @@ public:
+     bool OnGossipSelect(Player* player, GameObject* /*go*/, uint32 /*sender*/, uint32 action) override
+     {
+         player->UpdatePlayerSetting("mod-challenge-modes", action, 1);
+-        ChatHandler(player->GetSession()).PSendSysMessage("挑战模式已启用。");
++        ChatHandler(player->GetSession()).PSendSysMessage("¡Modo de desafío activado!");
+         CloseGossipMenuFor(player);
+         return true;
+     }

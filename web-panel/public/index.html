@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101816">
+  <title>Azeroth Single Player</title>
+  <link rel="stylesheet" href="/styles.css?v=1.18.0">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main id="login-view" class="login-shell">
+    <section class="login-card">
+      <div class="brand-mark" aria-hidden="true"><span>A</span></div>
+      <p class="eyebrow">REINO 3.3.5a</p>
+      <h1>Azeroth<span class="brand-subtitle">Single Player</span></h1>
+      <p class="lead">Consulta quién está recorriendo el mundo ahora mismo.</p>
+      <form id="login-form">
+        <label for="username">Cuenta</label>
+        <input id="username" name="username" autocomplete="username" maxlength="32" required autofocus>
+        <label for="password">Contraseña</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required>
+        <p id="login-error" class="form-error" role="alert"></p>
+        <button id="login-button" type="submit">Entrar al reino</button>
+      </form>
+      <p class="login-note">Usa las mismas credenciales que en el juego.</p>
+      <button id="show-register" class="link-button" type="button">¿No tienes cuenta? Regístrate con una invitación</button>
+    </section>
+  </main>
+
+  <main id="register-view" class="login-shell hidden">
+    <section class="login-card">
+      <div class="brand-mark" aria-hidden="true"><span>A</span></div>
+      <p class="eyebrow">REINO 3.3.5a</p>
+      <h1>Crear cuenta</h1>
+      <p class="lead">Necesitas una clave de invitación de un administrador.</p>
+      <form id="register-form">
+        <label for="register-invite">Clave de invitación</label>
+        <input id="register-invite" name="inviteCode" maxlength="64" required autofocus>
+        <label for="register-username">Cuenta</label>
+        <input id="register-username" name="username" autocomplete="username" maxlength="17" minlength="3" required>
+        <label for="register-password">Contraseña</label>
+        <input id="register-password" name="password" type="password" autocomplete="new-password" maxlength="16" minlength="8" required>
+        <p class="login-note">Entre 8 y 16 caracteres: es el límite del cliente 3.3.5a.</p>
+        <p id="register-error" class="form-error" role="alert"></p>
+        <button id="register-button" type="submit">Crear cuenta</button>
+      </form>
+      <button id="show-login" class="link-button" type="button">Ya tengo cuenta</button>
+    </section>
+  </main>
+
+  <div id="app-view" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-row">
+        <div class="brand-mark small" aria-hidden="true"><span>A</span></div>
+        <div><strong>Azeroth</strong><small>Panel del reino</small></div>
+      </div>
+      <nav aria-label="Secciones">
+        <p class="nav-section-label">Tu experiencia</p>
+        <button class="nav-item active" data-view="players"><span class="nav-symbol">◈</span>Jugadores</button>
+        <button class="nav-item" data-view="social-map"><span class="nav-symbol">⌖</span>Mapa</button>
+        <button class="nav-item" data-view="armory"><span class="nav-symbol">⛨</span>Armería</button>
+        <button class="nav-item" data-view="help"><span class="nav-symbol">?</span>Comandos</button>
+        <button class="nav-item" data-view="addons"><span class="nav-symbol">+</span>Addons</button>
+        <p id="gm-nav-label" class="nav-section-label hidden">Herramientas GM</p>
+        <button id="map-nav" class="nav-item hidden" data-view="map"><span class="nav-symbol">⌖</span>Mapa GM <span class="gm-pill">GM</span></button>
+        <button id="moderation-nav" class="nav-item hidden" data-view="moderation"><span class="nav-symbol">⚑</span>Moderación <span class="gm-pill">GM</span></button>
+        <button id="bot-ops-nav" class="nav-item hidden" data-view="bot-ops"><span class="nav-symbol">◈</span>Panel Bots <span class="gm-pill">GM</span></button>
+        <button id="server-config-nav" class="nav-item hidden" data-view="server-config"><span class="nav-symbol">⚒</span>Configuración <span class="gm-pill">GM3</span></button>
+        <button id="updates-nav" class="nav-item hidden" data-view="updates"><span class="nav-symbol">↻</span>Actualizaciones <span class="gm-pill">GM3</span></button>
+        <div class="nav-divider"></div>
+        <button class="nav-item" data-view="account"><span class="nav-symbol">⚙</span>Mi cuenta</button>
+        <button class="nav-item" data-view="metrics"><span class="nav-symbol">◔</span>Estado y rendimiento</button>
+      </nav>
+      <div class="account-card">
+        <div id="account-avatar" class="avatar">A</div>
+        <div class="account-copy"><strong id="account-name">—</strong><small id="account-rank">Jugador</small></div>
+        <button id="logout-button" class="icon-button" title="Cerrar sesión" aria-label="Cerrar sesión">↪</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <button id="menu-button" class="menu-button" aria-label="Abrir menú" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <div>
+          <p class="eyebrow">ESTADO DEL REINO</p>
+          <h2 id="page-title">Jugadores conectados</h2>
+        </div>
+        <div class="live-status" id="server-status" data-state="checking"><i></i><span>Comprobando</span></div>
+      </header>
+
+      <section id="players-view" class="view active-view">
+        <div class="stats-grid">
+          <article class="stat-card"><span>Conectados</span><strong id="online-count">—</strong><small>ahora mismo</small></article>
+          <article class="stat-card"><span>Nivel medio</span><strong id="average-level">—</strong><small>del reino</small></article>
+          <article class="stat-card"><span>Alianza / Horda</span><strong id="faction-count">—</strong><small>equilibrio online</small></article>
+          <article class="stat-card"><span>Jugadores / Bots</span><strong id="type-count">—</strong><small>humanos vs playerbots</small></article>
+        </div>
+
+        <div class="panel table-panel">
+          <div class="panel-heading">
+            <div><h3>Aventureros online</h3><p>Datos en directo del servidor · actualizado <span id="updated-time">—</span></p></div>
+            <div class="filters">
+              <label class="search"><span>⌕</span><input id="player-search" type="search" placeholder="Buscar jugador…" autocomplete="off"></label>
+              <select id="class-filter" aria-label="Filtrar por clase"><option value="">Todas las clases</option></select>
+              <select id="type-filter" aria-label="Filtrar por tipo">
+                <option value="">Jugadores y bots</option>
+                <option value="player">Sólo jugadores</option>
+                <option value="bot">Sólo bots</option>
+              </select>
+            </div>
+          </div>
+          <p class="table-scroll-hint">⇆ Desliza a los lados para ver el resto de columnas.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th aria-sort="none"><button type="button" class="th-sort" data-sort="name">Jugador <span aria-hidden="true">↕</span></button></th>
+                <th aria-sort="none"><button type="button" class="th-sort" data-sort="race">Raza <span aria-hidden="true">↕</span></button></th>
+                <th aria-sort="none"><button type="button" class="th-sort" data-sort="class">Clase <span aria-hidden="true">↕</span></button></th>
+                <th aria-sort="none"><button type="button" class="th-sort" data-sort="role">Rol <span aria-hidden="true">↕</span></button></th>
+                <th aria-sort="descending"><button type="button" class="th-sort" data-sort="level">Nivel <span aria-hidden="true">↕</span></button></th>
+                <th>Tipo</th>
+                <th id="players-actions-head" class="actions-col hidden">Acciones</th>
+              </tr></thead>
+              <tbody id="players-body"></tbody>
+            </table>
+            <div id="empty-state" class="empty-state hidden"><span>☾</span><h3>No hay aventureros</h3><p>No se encontraron jugadores con esos filtros.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="social-map-view" class="view hidden">
+        <div class="social-map-intro">
+          <div><h3>Dónde están los tuyos</h3><p>· El punto lleva el color de la clase; el aro, el de la relación.</p></div>
+        </div>
+
+        <div id="social-no-characters" class="empty-state hidden"><span>☾</span><h3>Aún no tienes personajes</h3><p>Crea un personaje en el juego para ver tu círculo social en el mapa.</p></div>
+
+        <div id="social-no-focus" class="empty-state hidden"><span>⌖</span><h3>Cargando tu círculo…</h3><p>Ninguno de tus personajes está conectado. Se muestran los miembros conectados de la hermandad y la lista de amigos del personaje elegido arriba.</p></div>
+
+        <div id="social-map-panel" class="panel map-panel hidden">
+          <div class="panel-heading map-heading">
+            <div><p id="social-map-caption">Cargando…</p></div>
+            <div class="map-heading-right">
+              <div id="social-picker-row" class="social-picker-row hidden">
+                <label for="social-character">Personaje</label>
+                <select id="social-character" aria-label="Personaje del que ver el círculo social"></select>
+              </div>
+              <div id="social-map-tabs" class="map-tabs"></div>
+            </div>
+          </div>
+          <p class="map-freshness-note" title="El servidor guarda la posición de cada personaje cada ~15 min y al cambiar de continente, entrar en una instancia o desconectarse.">No es en directo: guardado cada ~15&nbsp;min (o al cambiar de mapa/desconectarte).</p>
+          <div id="social-world-map" class="world-map" tabindex="0" aria-label="Mapa interactivo: usa la rueda o los botones para ampliar y arrastra para desplazarte">
+            <div id="social-map-stage" class="map-stage">
+              <img id="social-map-image" alt="Mapa del continente" draggable="false">
+            </div>
+            <div id="social-map-markers" class="map-markers"></div>
+            <div class="map-controls" aria-label="Controles del mapa">
+              <button id="social-zoom-in" type="button" title="Acercar" aria-label="Acercar">+</button>
+              <button id="social-zoom-out" type="button" title="Alejar" aria-label="Alejar">−</button>
+              <button id="social-zoom-reset" class="zoom-reset" type="button" title="Mostrar el mapa completo"><span id="social-zoom-level">100%</span><small>Encuadrar</small></button>
+            </div>
+            <p class="map-help">Rueda para ampliar · arrastra para mover · doble clic para acercar</p>
+            <div class="map-compass" aria-hidden="true"><b>N</b><i></i></div>
+          </div>
+          <div id="social-legend" class="social-legend"></div>
+          <div id="social-instance-players" class="instance-players hidden"></div>
+        </div>
+      </section>
+
+      <section id="map-view" class="view hidden">
+        <div class="gm-notice"><span>◆</span><div><strong>Vista de Maestro de Juego</strong><p>Las posiciones están protegidas y sólo se entregan a cuentas con rango GM vigente.</p></div></div>
+        <div id="map-context-banner" class="context-banner hidden">
+          <span id="map-context-text"></span>
+          <button id="map-context-clear" class="secondary-button" type="button">Ver mapa completo</button>
+        </div>
+        <div class="panel map-panel">
+          <div class="panel-heading map-heading">
+            <div><h3>Posiciones del reino</h3><p id="map-summary">Cargando posiciones…</p></div>
+            <div class="map-heading-right">
+              <label class="map-goto"><span>⌕</span><input id="map-goto-input" type="search" placeholder="Ir a personaje…" autocomplete="off">
+                <div id="map-goto-results" class="map-goto-results hidden"></div>
+              </label>
+              <div id="map-tabs" class="map-tabs"></div>
+            </div>
+          </div>
+          <p class="map-freshness-note" title="El servidor guarda la posición de cada personaje cada ~15 min y al cambiar de continente, entrar en una instancia o desconectarse.">No es en directo: guardado cada ~15&nbsp;min (o al cambiar de mapa/desconectarte).</p>
+          <div id="world-map" class="world-map" tabindex="0" aria-label="Mapa interactivo: usa la rueda o los botones para ampliar y arrastra para desplazarte">
+            <div id="map-stage" class="map-stage">
+              <img id="map-image" alt="Mapa del continente" draggable="false">
+            </div>
+            <div id="map-markers" class="map-markers"></div>
+            <div class="map-controls" aria-label="Controles del mapa">
+              <button id="zoom-in" type="button" title="Acercar" aria-label="Acercar">+</button>
+              <button id="zoom-out" type="button" title="Alejar" aria-label="Alejar">−</button>
+              <button id="zoom-reset" class="zoom-reset" type="button" title="Mostrar el mapa completo"><span id="zoom-level">100%</span><small>Encuadrar</small></button>
+            </div>
+            <p class="map-help">Rueda para ampliar · arrastra para mover · doble clic para acercar</p>
+            <div class="map-compass" aria-hidden="true"><b>N</b><i></i></div>
+          </div>
+          <div id="instance-players" class="instance-players hidden"></div>
+        </div>
+      </section>
+
+      <section id="armory-view" class="view hidden">
+        <div class="panel armory-search-panel">
+          <div class="panel-heading">
+            <div><h3>Armería</h3><p>Busca cualquier personaje, esté o no conectado.</p></div>
+            <div class="filters">
+              <label class="search"><span>⌕</span><input id="armory-search" type="search" placeholder="Nombre del personaje…" autocomplete="off" maxlength="12"></label>
+            </div>
+          </div>
+          <div id="armory-my-characters" class="armory-chips"></div>
+          <div id="armory-results" class="armory-results"></div>
+          <div id="armory-search-empty" class="empty-state hidden"><span>⌕</span><h3>Escribe un nombre</h3><p>Al menos dos letras del nombre del personaje.</p></div>
+        </div>
+
+        <div id="armory-detail" class="panel armory-detail hidden">
+          <button id="armory-back" class="secondary-button" type="button">← Volver a la búsqueda</button>
+          <div id="armory-header" class="armory-header"></div>
+          <div id="armory-gm-links" class="gm-links hidden"></div>
+          <div id="armory-tabs" class="map-tabs armory-tabs"></div>
+          <div id="armory-body" class="armory-body"></div>
+        </div>
+      </section>
+
+      <section id="help-view" class="view hidden">
+        <div class="panel help-panel">
+          <div class="panel-heading">
+            <div><h3>Comandos y ayuda del servidor</h3><p>Guía curada del core y sus módulos, filtrada por el nivel de tu cuenta. Dentro del juego, el addon ServerHelp completa el árbol en tiempo real.</p></div>
+            <label class="search"><span>⌕</span><input id="help-search" type="search" placeholder="Buscar comando o artículo…" autocomplete="off"></label>
+          </div>
+          <div class="help-layout">
+            <nav id="help-rail" class="help-rail" aria-label="Categorías"></nav>
+            <div>
+              <div id="help-list" class="help-list"></div>
+              <div id="help-empty" class="empty-state hidden"><span>⌕</span><h3>Sin resultados</h3><p>Prueba con otra palabra o categoría.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="server-config-view" class="view hidden">
+        <div class="gm-notice">
+          <span>◆</span>
+          <div>
+            <strong>Cada cambio reinicia el servidor por completo</strong>
+            <p>Se guarda en el fichero de configuración correspondiente y se reinicia el worldserver (aviso de 60&nbsp;s a los jugadores + guardado automático). No existe edición en caliente.</p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading">
+            <div><h3 id="server-config-category-title">Configuración del servidor</h3><p id="server-config-category-subtitle">Cargando categorías…</p></div>
+            <label class="search"><span>⌕</span><input id="server-config-search" type="search" placeholder="Buscar parámetro…" autocomplete="off"></label>
+          </div>
+          <div class="config-layout">
+            <nav id="server-config-rail" class="config-rail" aria-label="Categorías de configuración"></nav>
+            <div>
+              <div id="server-config-groups" class="config-groups"></div>
+              <div id="server-config-empty" class="empty-state hidden"><span>⌕</span><h3>Sin resultados</h3><p>Prueba con otra palabra.</p></div>
+            </div>
+          </div>
+        </div>
+        <div id="server-config-pending-bar" class="installer-notice stickybar hidden">
+          <div>
+            <strong id="server-config-pending-title">Sin cambios pendientes</strong>
+            <p id="server-config-pending-detail">Modifica un valor editable para habilitar el guardado y reinicio.</p>
+            <div id="server-config-pending-chips" class="pending-chips"></div>
+          </div>
+          <div class="installer-actions">
+            <button id="server-config-discard" class="secondary-button" type="button" disabled>Descartar cambios</button>
+            <button id="server-config-save" class="primary-button" type="button" disabled>Guardar y reiniciar servidor</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="updates-view" class="view hidden">
+        <div class="gm-notice">
+          <span>◆</span>
+          <div>
+            <strong>Comprobación de sólo lectura</strong>
+            <p>Compara los commits fijados en versions.lock y addons.lock con las ramas de GitHub. No descarga ni instala actualizaciones y no reinicia el servidor.</p>
+          </div>
+        </div>
+        <div class="panel updates-panel">
+          <div class="panel-heading updates-heading">
+            <div>
+              <h3>Estado de las versiones</h3>
+              <p id="updates-last-check">Todavía no se ha realizado ninguna comprobación.</p>
+            </div>
+            <button id="updates-check" class="primary-button" type="button">Comprobar ahora</button>
+          </div>
+          <p id="updates-feedback" class="updates-feedback hidden" role="status"></p>
+          <div id="updates-tabs" class="mod-tabs hidden" role="tablist" aria-label="Grupos de actualizaciones"></div>
+          <div id="updates-results">
+            <div class="empty-state updates-empty"><span>↻</span><h3>Listo para comprobar</h3><p>La consulta sólo se realiza cuando pulses el botón.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="addons-view" class="view hidden">
+        <div class="addons-intro">
+          <div>
+            <p class="eyebrow">CLIENTE 3.3.5a</p>
+            <h3>Addons y parches del reino</h3>
+            <p>Contenido alojado en nuestro servidor y preparado para el cliente 3.3.5a. Sigue los pasos 1-3: certificado y carpeta, parches del servidor y addons (obligatorios y opcionales). El panel detecta lo que ya tienes instalado y sólo copia lo nuevo o lo que ha cambiado.</p>
+          </div>
+          <div class="mirror-status"><strong id="addon-total">—</strong><span>paquetes locales</span><small id="mirror-version">Comprobando catálogo…</small></div>
+        </div>
+
+        <div class="step-panel">
+          <div class="step-heading"><span class="step-number">1</span><div><h3>Prepara tu cliente</h3><p>Instala el certificado una vez y elige la carpeta de Wow.exe. También te la pide "Instalar parches" si todavía no la has elegido.</p></div></div>
+        </div>
+        <div id="installer-notice" class="installer-notice">
+          <div><strong>Instalación directa segura</strong><p id="folder-status">Elige la carpeta que contiene Wow.exe. El navegador pedirá permiso antes de escribir en Interface/AddOns y Data.</p><p class="certificate-help">Primera vez: instala el certificado en <strong>Equipo local → Entidades de certificación raíz de confianza</strong>. No uses la ubicación automática.</p></div>
+          <div class="installer-actions">
+            <a class="secondary-button certificate-button" href="/azerothcore-panel-ca.crt" download="azerothcore-panel-ca.crt">Descargar certificado</a>
+            <button id="choose-wow-folder" class="secondary-button" type="button">Elegir carpeta de WoW</button>
+            <button id="rescan-installed" class="secondary-button" type="button" disabled title="Vuelve a comprobar qué addons y parches ya tienes instalados, por si los cambiaste fuera del panel">Comprobar instalados</button>
+          </div>
+        </div>
+
+        <section id="resources-panel" class="patch-panel resources-panel hidden" aria-labelledby="resources-title">
+          <div class="patch-heading">
+            <span class="patch-rune" aria-hidden="true">GEN</span>
+            <div><p class="eyebrow">Administrador · Recursos del servidor</p><h3 id="resources-title">Recursos generados desde tu cliente</h3><p>Iconos de la armería y parches de idioma salen de <strong>tu</strong> cliente de WoW: el navegador lee de sus MPQ sólo lo necesario y el servidor lo convierte. No hace falta instalar nada. Si ya están al día con tu cliente, no se repite.</p></div>
+          </div>
+          <div id="resource-list" class="patch-list"></div>
+          <div class="resource-actions">
+            <button id="prepare-resources" class="primary-button" type="button">Preparar recursos desde mi cliente</button>
+            <button id="regenerate-resources" class="secondary-button" type="button" title="Vuelve a generar todo aunque ya esté al día">Regenerar todo</button>
+            <button id="cancel-resources" class="secondary-button hidden" type="button">Cancelar</button>
+          </div>
+          <div id="resource-progress" class="install-progress hidden" role="status"><i></i><span>Preparando…</span></div>
+        </section>
+
+        <section class="patch-panel" aria-labelledby="patches-title">
+          <div class="patch-heading">
+            <span class="patch-rune" aria-hidden="true">MPQ</span>
+            <div><p class="eyebrow">Paso 2 · Contenido personalizado</p><h3 id="patches-title">Parches del servidor</h3><p>Se copian en la carpeta <strong>Data</strong> del cliente (los de idioma, en su subcarpeta <strong>esES</strong> / <strong>enUS</strong>) y se borra la <strong>caché</strong>. Pide la carpeta de Wow.exe si todavía no la has elegido y comprueba al final que ha quedado bien puesto (hash a hash).</p></div>
+          </div>
+          <div id="patch-list" class="patch-list"></div>
+          <button id="install-patches" class="primary-button" type="button" disabled>Instalar parches</button>
+        </section>
+
+        <div class="step-panel">
+          <div class="step-heading"><span class="step-number">3</span><div><h3>Elige tus addons opcionales</h3><p>Los marcados con ★ son obligatorios: vienen ya marcados y se instalan al pulsar "Instalar", junto con los opcionales que añadas aquí. Los ya instalados y al día no se vuelven a copiar (no se pierde su configuración).</p></div></div>
+        </div>
+        <div class="panel addon-toolbar">
+          <div class="addon-filters">
+            <label class="search"><span>⌕</span><input id="addon-search" type="search" placeholder="Buscar addon…" autocomplete="off"></label>
+            <select id="addon-category" aria-label="Filtrar addons por categoría"><option value="">Todas las categorías</option></select>
+            <select id="addon-class" aria-label="Filtrar addons recomendados por clase"><option value="">Todas las clases</option></select>
+          </div>
+          <div class="selection-actions">
+            <span><strong id="selected-count">2</strong> seleccionados</span>
+            <button id="select-visible-addons" class="secondary-button" type="button">Seleccionar visibles</button>
+            <button id="clear-addons" class="secondary-button" type="button">Sólo obligatorios</button>
+          </div>
+        </div>
+
+        <div id="addon-grid" class="addon-grid"></div>
+        <div id="addons-empty" class="empty-state hidden"><span>⌕</span><h3>Sin resultados</h3><p>Prueba con otro nombre o categoría.</p></div>
+
+        <div id="install-action-bar" class="installer-notice stickybar">
+          <div><strong>Instalar en tu cliente</strong><p>Se copia en Interface/AddOns con la carpeta ya elegida en el paso 1. Los que ya tengas al día se saltan.</p></div>
+          <div class="installer-actions">
+            <button id="install-addons" class="primary-button" type="button" disabled>Instalar / actualizar seleccionados</button>
+          </div>
+          <div id="install-progress" class="install-progress hidden"><i></i><span>Preparando…</span></div>
+        </div>
+      </section>
+
+      <section id="account-view" class="view hidden">
+        <div class="panel">
+          <div class="account-summary">
+            <div id="account-summary-avatar" class="avatar">—</div>
+            <div>
+              <h3 id="account-summary-name">—</h3>
+              <p>La misma cuenta con la que entras al juego</p>
+              <span id="account-summary-tag" class="tag"></span>
+            </div>
+          </div>
+        </div>
+        <div class="panel account-panel" style="margin-top:16px;">
+          <div class="panel-heading"><div><h3>Cambiar contraseña</h3><p>Cambia la contraseña con la que entras al juego y al panel.</p></div></div>
+          <form id="password-form">
+            <label for="current-password">Contraseña actual</label>
+            <input id="current-password" type="password" autocomplete="current-password" maxlength="128" required>
+            <label for="new-password">Contraseña nueva</label>
+            <input id="new-password" type="password" autocomplete="new-password" maxlength="16" minlength="8" required>
+            <p class="login-note">Entre 8 y 16 caracteres (límite del cliente 3.3.5a). Si tienes una sesión de juego abierta, sigue activa hasta que vuelvas a conectarte.</p>
+            <p id="password-error" class="form-error" role="alert"></p>
+            <p id="password-success" class="form-success" role="status"></p>
+            <button id="password-button" type="submit">Cambiar contraseña</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="metrics-view" class="view hidden">
+        <div class="gm-notice"><span>◔</span><div><strong>Estado y rendimiento</strong><p>Última comprobación automática de salud (instalación, actualización, compilación o reinicio) y una muestra en vivo del worldserver, bajo demanda.</p></div></div>
+        <div id="metrics-stale-note" class="gm-notice hidden"><span>⚠</span><div><strong>Puede que el muestreo automático se haya detenido</strong><p id="metrics-stale-detail">—</p></div></div>
+
+        <div id="metrics-loading" class="empty-state">
+          <span>—</span><h3>Cargando…</h3>
+          <p>Pidiendo el último estado.</p>
+        </div>
+
+        <div id="metrics-empty" class="empty-state hidden">
+          <span>—</span><h3>Todavía sin datos</h3>
+          <p>La comprobación se ejecuta sola tras instalar, actualizar, compilar o reiniciar el servidor.</p>
+        </div>
+
+        <div id="metrics-error" class="empty-state hidden">
+          <span>—</span><h3>No se pudo cargar</h3>
+          <p id="metrics-error-detail">Inténtalo de nuevo más tarde.</p>
+        </div>
+
+        <div id="metrics-body" class="hidden">
+          <div class="panel-heading" style="margin-bottom:14px;">
+            <div><h3>Última comprobación</h3><p id="metrics-period-summary">—</p></div>
+            <span id="metrics-status-badge" class="tag">—</span>
+          </div>
+
+          <div class="mod-tabs" role="tablist" aria-label="Secciones de estado y rendimiento">
+            <button id="metrics-tab-summary-button" class="active" type="button" role="tab" aria-selected="true" aria-controls="metrics-tab-summary" tabindex="0" data-metrics-tab="summary">Resumen</button>
+            <button id="metrics-tab-checks-button" type="button" role="tab" aria-selected="false" aria-controls="metrics-tab-checks" tabindex="-1" data-metrics-tab="checks">Comprobaciones</button>
+            <button id="metrics-tab-modules-button" type="button" role="tab" aria-selected="false" aria-controls="metrics-tab-modules" tabindex="-1" data-metrics-tab="modules">Módulos</button>
+            <button id="metrics-tab-history-button" type="button" role="tab" aria-selected="false" aria-controls="metrics-tab-history" tabindex="-1" data-metrics-tab="history">Historial</button>
+          </div>
+
+          <div id="metrics-tab-summary" class="mod-tab-panel" role="tabpanel" aria-labelledby="metrics-tab-summary-button">
+            <p class="login-note">Como mucho una muestra nueva cada 5 minutos, y sólo mientras esta vista está abierta. El servidor está en <b>modo en espera</b> cuando no hay nadie jugando: se apaga solo y una conexión lo despierta. Mientras está dormido, "CPU", "Memoria" y "Uptime del proceso" no tienen nada que medir — no es un fallo del panel.</p>
+            <div class="stats-grid">
+              <article class="stat-card" title="Si systemd tiene arrancado el proceso worldserver ahora mismo. 'Inactivo' incluye el modo en espera."><span>Worldserver</span><strong id="metrics-live-state">—</strong><small id="metrics-live-since"></small></article>
+              <article class="stat-card" title="Uso de CPU del proceso worldserver en el instante de la muestra. Vacío si el servidor está dormido o parado."><span>CPU</span><strong id="metrics-cpu">—</strong><small>pico del periodo: <span id="metrics-cpu-max">—</span></small></article>
+              <article class="stat-card" title="Memoria RAM (RSS) que usa el proceso ahora mismo, y el máximo que ha llegado a usar desde que arrancó."><span>Memoria</span><strong id="metrics-mem">—</strong><small>pico: <span id="metrics-mem-peak">—</span></small></article>
+              <article class="stat-card" title="Cuánto lleva corriendo el proceso actual del worldserver, y cuántas veces lo ha reiniciado systemd."><span>Uptime del proceso</span><strong id="metrics-uptime">—</strong><small id="metrics-restarts"></small></article>
+              <article class="stat-card" title="Avisos 'Tick lento' del core en el registro (Server.log) desde el arranque actual: señal de que el mapa iba con retraso."><span>Ticks lentos</span><strong id="metrics-slow-ticks">—</strong><small>desde el arranque actual</small></article>
+              <article class="stat-card" title="Cuentas de jugador humano conectadas ahora mismo, y el máximo de este periodo."><span>Jugadores</span><strong id="metrics-players">—</strong><small>pico del periodo: <span id="metrics-players-max">—</span></small></article>
+              <article class="stat-card" title="Playerbots conectados ahora mismo, y el máximo de este periodo."><span>Bots</span><strong id="metrics-bots">—</strong><small>pico del periodo: <span id="metrics-bots-max">—</span></small></article>
+            </div>
+          </div>
+
+          <div id="metrics-tab-checks" class="mod-tab-panel hidden" role="tabpanel" aria-labelledby="metrics-tab-checks-button">
+            <div class="panel">
+              <div class="panel-heading"><div><h3>Comprobaciones</h3><p>Resultado de cada comprobación en la última pasada de <code>doctor</code></p></div></div>
+              <div class="table-wrap"><table><thead><tr><th>Comprobación</th><th>Estado</th><th>Detalle</th></tr></thead><tbody id="metrics-checks-body"></tbody></table></div>
+            </div>
+          </div>
+
+          <div id="metrics-tab-modules" class="mod-tab-panel hidden" role="tabpanel" aria-labelledby="metrics-tab-modules-button">
+            <div class="panel">
+              <div class="panel-heading"><div><h3>Módulos instalados</h3><p>Propios y de terceros, con su commit y estado</p></div></div>
+              <div class="table-wrap"><table><thead><tr><th>Módulo</th><th>Tipo</th><th>Commit</th><th>Estado</th></tr></thead><tbody id="metrics-modules-body"></tbody></table></div>
+            </div>
+          </div>
+
+          <div id="metrics-tab-history" class="mod-tab-panel hidden" role="tabpanel" aria-labelledby="metrics-tab-history-button">
+            <div class="panel">
+              <div class="panel-heading"><div><h3>Historial reciente</h3><p>Últimas pasadas de <code>doctor</code>, la más nueva primero</p></div></div>
+              <div class="table-wrap table-wrap-scroll"><table><thead><tr><th>Fecha</th><th>Evento</th><th>Resultado</th><th>Duración</th></tr></thead><tbody id="metrics-history-body"></tbody></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="moderation-view" class="view hidden">
+        <div class="gm-notice"><span>◆</span><div><strong>Moderación</strong><p>Cada acción se envía al worldserver por consola GM y queda registrada.</p></div></div>
+
+        <div class="mod-tabs" role="tablist" aria-label="Secciones de moderación">
+          <button id="mod-tab-character-button" class="active" type="button" role="tab" aria-selected="true" aria-controls="mod-tab-character" tabindex="0" data-mod-tab="character">Buscar personaje</button>
+          <button id="mod-tab-general-button" type="button" role="tab" aria-selected="false" aria-controls="mod-tab-general" tabindex="-1" data-mod-tab="general">General del servidor</button>
+        </div>
+
+        <div id="mod-tab-character" class="mod-tab-panel" role="tabpanel" aria-labelledby="mod-tab-character-button">
+          <div class="panel mod-search-panel">
+            <div class="panel-heading">
+              <div><h3>Buscar personaje</h3><p>Encuentra a alguien por nombre de personaje</p></div>
+              <div class="char-search-row">
+                <label class="search"><span aria-hidden="true">⌕</span><input id="mod-char-search" type="search" placeholder="Nombre del personaje…" aria-label="Nombre del personaje" autocomplete="off" maxlength="12"></label>
+              </div>
+            </div>
+            <div id="mod-char-results" class="armory-results"></div>
+          </div>
+
+          <div id="mod-character-panel" class="panel mod-character-panel hidden">
+            <div id="mod-char-card"></div>
+
+            <div id="moderation-level1" class="action-groups hidden">
+              <details class="action-entry">
+                <summary><span class="action-level l1">Nivel 1</span><strong>Expulsar</strong><small>Desconecta al personaje ahora mismo</small></summary>
+                <div class="action-entry-body">
+                  <form id="kick-form" class="mod-form">
+                    <span class="mod-char-chip char-name-chip"></span>
+                    <input type="hidden" name="characterName" class="mod-char-field">
+                    <input name="reason" placeholder="Motivo (opcional)" maxlength="255">
+                    <button type="submit">Expulsar</button>
+                  </form>
+                </div>
+              </details>
+              <details class="action-entry">
+                <summary><span class="action-level l1">Nivel 1</span><strong>Silenciar</strong><small>Impide hablar durante un tiempo</small></summary>
+                <div class="action-entry-body">
+                  <form id="mute-form" class="mod-form">
+                    <span class="mod-char-chip char-name-chip"></span>
+                    <input type="hidden" name="characterName" class="mod-char-field">
+                    <select name="duration" required>
+                      <option value="30m">30 minutos</option>
+                      <option value="1h">1 hora</option>
+                      <option value="1d">1 día</option>
+                      <option value="7d">7 días</option>
+                    </select>
+                    <input name="reason" placeholder="Motivo" maxlength="255" required>
+                    <button type="submit">Silenciar</button>
+                  </form>
+                  <form id="unmute-form" class="mod-form" style="margin-top:8px;">
+                    <span class="mod-char-chip char-name-chip"></span>
+                    <input type="hidden" name="characterName" class="mod-char-field">
+                    <button type="submit">Quitar silencio</button>
+                  </form>
+                </div>
+              </details>
+            </div>
+
+            <div id="moderation-level2" class="action-groups hidden">
+              <details class="action-entry">
+                <summary><span class="action-level l2">Nivel 2</span><strong>Banear personaje</strong><small>Bloquea el acceso de este personaje</small></summary>
+                <div class="action-entry-body">
+                  <form id="ban-form" class="mod-form">
+                    <span class="mod-char-chip char-name-chip"></span>
+                    <input type="hidden" name="type" value="character">
+                    <input type="hidden" name="name" class="mod-char-field">
+                    <select name="duration" required>
+                      <option value="30m">30 minutos</option>
+                      <option value="1h">1 hora</option>
+                      <option value="1d">1 día</option>
+                      <option value="7d">7 días</option>
+                      <option value="30d">30 días</option>
+                      <option value="perm">Permanente</option>
+                    </select>
+                    <input name="reason" placeholder="Motivo" maxlength="255" required>
+                    <button type="submit">Banear</button>
+                  </form>
+                  <form id="unban-form" class="mod-form" style="margin-top:8px;">
+                    <span class="mod-char-chip char-name-chip"></span>
+                    <input type="hidden" name="type" value="character">
+                    <input type="hidden" name="name" class="mod-char-field">
+                    <button type="submit">Desbanear</button>
+                  </form>
+                </div>
+              </details>
+            </div>
+
+            <div id="moderation-level3" class="action-groups hidden">
+              <details class="action-entry">
+                <summary><span class="action-level l3">Nivel 3</span><strong>Objetos y oro</strong><small>Se entregan por correo del juego, no en mano</small></summary>
+                <div class="action-entry-body">
+                  <form id="send-money-form" class="mod-form">
+                    <span class="mod-char-chip char-name-chip"></span>
+                    <input type="hidden" name="characterName" class="mod-char-field">
+                    <input name="copper" type="number" min="1" max="100000000" placeholder="Cobre (10000 = 1 oro)" required>
+                    <input name="subject" placeholder="Asunto" maxlength="100" required>
+                    <input name="text" placeholder="Texto del correo" maxlength="500" required>
+                    <button type="submit">Enviar oro</button>
+                  </form>
+                  <div class="filters" style="margin-top:10px;"><label class="search"><span>⌕</span><input id="item-search" type="search" placeholder="Buscar objeto…" autocomplete="off"></label></div>
+                  <div id="item-results" class="item-results"></div>
+                  <form id="send-items-form" class="mod-form hidden">
+                    <input type="hidden" name="itemEntry">
+                    <div id="send-items-selected" class="send-items-selected"></div>
+                    <span class="mod-char-chip char-name-chip"></span>
+                    <input type="hidden" name="characterName" class="mod-char-field">
+                    <input name="count" type="number" min="1" max="1000" value="1" required>
+                    <input name="subject" placeholder="Asunto" maxlength="100" required>
+                    <input name="text" placeholder="Texto del correo" maxlength="500" required>
+                    <button type="submit">Enviar objeto</button>
+                  </form>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div id="mod-no-character" class="panel no-character-note">
+            <span class="no-character-icon" aria-hidden="true">⌕</span>
+            <div><strong>Selecciona un personaje</strong><p>Usa el buscador para ver las acciones de moderación disponibles.</p></div>
+          </div>
+        </div>
+
+        <div id="mod-tab-general" class="mod-tab-panel hidden" role="tabpanel" aria-labelledby="mod-tab-general-button">
+          <div id="moderation-level2-general" class="panel moderation-panel hidden">
+            <div class="panel-heading"><div><h3>Anuncios y cuentas</h3><p>Nivel de game master (2) o superior</p></div></div>
+            <div class="mod-forms">
+              <form id="announce-form" class="mod-form">
+                <input name="text" placeholder="Anuncio a todo el servidor" maxlength="500" required>
+                <button type="submit">Anunciar</button>
+              </form>
+              <form id="ban-account-form" class="mod-form">
+                <input type="hidden" name="type" value="account">
+                <input name="name" placeholder="Cuenta" maxlength="17" required>
+                <select name="duration" required>
+                  <option value="30m">30 minutos</option>
+                  <option value="1h">1 hora</option>
+                  <option value="1d">1 día</option>
+                  <option value="7d">7 días</option>
+                  <option value="30d">30 días</option>
+                  <option value="perm">Permanente</option>
+                </select>
+                <input name="reason" placeholder="Motivo" maxlength="255" required>
+                <button type="submit">Banear cuenta</button>
+              </form>
+              <form id="unban-account-form" class="mod-form">
+                <input type="hidden" name="type" value="account">
+                <input name="name" placeholder="Cuenta" maxlength="17" required>
+                <button type="submit">Desbanear cuenta</button>
+              </form>
+            </div>
+          </div>
+
+          <div id="moderation-sanctions" class="panel moderation-panel hidden">
+            <div class="panel-heading"><div><h3>Sanciones vigentes en el reino</h3><p id="sanctions-summary">Cargando…</p></div></div>
+            <div id="sanctions-list" class="sanctions-list"></div>
+          </div>
+
+          <div id="moderation-level3-admin" class="panel moderation-panel hidden">
+            <div class="panel-heading"><div><h3>Administración</h3><p>Invitaciones de un solo uso y cuentas nuevas.</p></div></div>
+            <form id="invite-form" class="mod-form">
+              <input name="note" placeholder="Nota (opcional, para recordar para quién es)" maxlength="255">
+              <button type="submit">Generar invitación</button>
+            </form>
+            <div id="invite-result" class="invite-result hidden"></div>
+            <div id="invite-list" class="invite-list"></div>
+            <form id="admin-account-form" class="mod-form">
+              <input name="username" placeholder="Cuenta nueva" maxlength="17" minlength="3" required>
+              <input name="password" placeholder="Contraseña" type="password" maxlength="16" minlength="8" required>
+              <button type="submit">Crear cuenta directamente</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section id="bot-ops-view" class="view hidden">
+        <div class="gm-notice"><span>◈</span><div><strong>Operaciones de bots</strong><p>Instantánea de acore_world, publicada por mod-bot-operations cada pocos segundos. Cualquier GM puede consultar; sólo un administrador (GM3) puede pedir una acción.</p></div></div>
+        <div id="bot-ops-stale" class="gm-notice hidden"><span>⚠</span><div><strong>Sin una instantánea reciente</strong><p>El worldserver puede estar en espera o mod-bot-operations desactivado. Esta pestaña no intenta despertarlo.</p></div></div>
+
+        <div class="mod-tabs" role="tablist" aria-label="Secciones de operaciones de bots">
+          <button id="bot-ops-tab-summary-button" class="active" type="button" role="tab" aria-selected="true" aria-controls="bot-ops-tab-summary" tabindex="0" data-bot-ops-tab="summary">Resumen</button>
+          <button id="bot-ops-tab-reservations-button" type="button" role="tab" aria-selected="false" aria-controls="bot-ops-tab-reservations" tabindex="-1" data-bot-ops-tab="reservations">Reservas</button>
+          <button id="bot-ops-tab-world-stage-button" type="button" role="tab" aria-selected="false" aria-controls="bot-ops-tab-world-stage" tabindex="-1" data-bot-ops-tab="world-stage">Mundo y etapa</button>
+          <button id="bot-ops-tab-queues-button" type="button" role="tab" aria-selected="false" aria-controls="bot-ops-tab-queues" tabindex="-1" data-bot-ops-tab="queues">Colas y grupos</button>
+          <button id="bot-ops-tab-actions-button" type="button" role="tab" aria-selected="false" aria-controls="bot-ops-tab-actions" tabindex="-1" data-bot-ops-tab="actions">Acciones</button>
+        </div>
+
+        <div id="bot-ops-tab-summary" class="mod-tab-panel" role="tabpanel" aria-labelledby="bot-ops-tab-summary-button">
+          <div class="stats-grid">
+            <article class="stat-card"><span>Bots online</span><strong id="bot-ops-online">—</strong><small>de <span id="bot-ops-cap">—</span> de cupo</small></article>
+            <article class="stat-card"><span>Reservas pendientes</span><strong id="bot-ops-pending">—</strong><small>logins en curso</small></article>
+            <article class="stat-card"><span>Etapa activa</span><strong id="bot-ops-stage">—</strong><small id="bot-ops-stage-by">—</small></article>
+            <article class="stat-card"><span>Instantánea</span><strong id="bot-ops-updated">—</strong><small>hace cuánto</small></article>
+          </div>
+          <div class="panel">
+            <div class="panel-heading"><div><h3>Alertas</h3><p>Eventos PvP de mundo atascados o sin resolver</p></div></div>
+            <div id="bot-ops-alerts" class="empty-state"><span>✓</span><h3>Sin alertas</h3><p>No hay eventos PvP de mundo pendientes de cerrar.</p></div>
+          </div>
+        </div>
+
+        <div id="bot-ops-tab-reservations" class="mod-tab-panel hidden" role="tabpanel" aria-labelledby="bot-ops-tab-reservations-button">
+          <div class="panel"><div class="panel-heading"><div><h3>Claims por módulo</h3><p>Bots ocupados ahora mismo, por módulo que los reservó (BotClaims)</p></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Módulo</th><th>Bots</th></tr></thead><tbody id="bot-ops-claims-body"></tbody></table></div>
+          </div>
+          <div class="panel"><div class="panel-heading"><div><h3>Logins pendientes por facción y tramo</h3><p>Reservas de BotPopulationCoordinator, aún no confirmadas online</p></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Alianza</th><th>Horda</th></tr></thead><tbody><tr><td id="bot-ops-pending-alliance">—</td><td id="bot-ops-pending-horde">—</td></tr></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>Tramo de nivel</th><th>Pendientes</th></tr></thead><tbody id="bot-ops-pending-range-body"></tbody></table></div>
+          </div>
+        </div>
+
+        <div id="bot-ops-tab-world-stage" class="mod-tab-panel hidden" role="tabpanel" aria-labelledby="bot-ops-tab-world-stage-button">
+          <div class="stats-grid">
+            <article class="stat-card"><span>Etapa</span><strong id="bot-ops-ws-stage">—</strong><small id="bot-ops-ws-by">—</small></article>
+            <article class="stat-card"><span>Tope de nivel</span><strong id="bot-ops-ws-cap">—</strong><small id="bot-ops-ws-maps">mapas</small></article>
+            <article class="stat-card"><span>Zonas pobladas</span><strong id="bot-ops-ws-zones">—</strong><small>esta pasada</small></article>
+            <article class="stat-card"><span>Recolocados / rehechos</span><strong id="bot-ops-ws-moved">—</strong><small>desde el arranque</small></article>
+          </div>
+          <div class="panel"><div class="panel-heading"><div><h3>Guerra de mundo</h3><p>Escaramuzas de Alianza contra Horda entre bots en puntos fijos del mundo (Trabalomas, Encrucijada, Lagoscuro…), para simular guerra de facciones sin jugadores.</p></div></div>
+            <p id="bot-ops-pvp-summary" class="panel-note" title="&quot;Puntos calientes&quot; es el total de puntos configurados (activos o no). Esta tabla lista sólo los que tienen una escaramuza en marcha ahora mismo; todos los puntos, estén o no activos, están más abajo.">—</p>
+            <div class="table-wrap"><table><thead><tr><th>#</th><th>Punto</th><th>Zona</th><th>Atacantes</th><th>Defensores</th><th>Empezó hace</th><th>Estado</th></tr></thead><tbody id="bot-ops-pvp-body"></tbody></table></div>
+            <div id="bot-ops-pvp-empty" class="empty-state hidden"><span>✓</span><h3>Sin eventos activos</h3><p>No hay ninguna escaramuza de guerra de mundo en curso.</p></div>
+            <p class="panel-note">Todos los puntos calientes configurados, activos o no:</p>
+            <div class="table-wrap table-wrap-scroll"><table><thead><tr><th>Punto</th><th>Bandos</th><th>Nivel</th><th>Estado</th></tr></thead><tbody id="bot-ops-hotspots-body"></tbody></table></div>
+          </div>
+        </div>
+
+        <div id="bot-ops-tab-queues" class="mod-tab-panel hidden" role="tabpanel" aria-labelledby="bot-ops-tab-queues-button">
+          <div class="panel"><div class="panel-heading"><div><h3>Colas</h3><p>Huecos totales pendientes de rellenar, por tipo de cola</p></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Humanos en cola</th><th>1c1</th><th>Campo de batalla</th><th>Arena</th><th>Mazmorra</th><th>Banda</th></tr></thead>
+              <tbody><tr>
+                <td id="bot-ops-q-waiting">—</td><td id="bot-ops-q-1v1">—</td><td id="bot-ops-q-bg">—</td>
+                <td id="bot-ops-q-arena">—</td><td id="bot-ops-q-dungeon">—</td><td id="bot-ops-q-raid">—</td>
+              </tr></tbody>
+            </table></div>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card"><span>Grupos / Bandas</span><strong id="bot-ops-groups">—</strong><small><span id="bot-ops-groups-bots">—</span> bots</small></article>
+            <article class="stat-card"><span>Hermandades de casa</span><strong id="bot-ops-guilds">—</strong><small><span id="bot-ops-guilds-bots">—</span> bots gestionados</small></article>
+            <article class="stat-card"><span>Compañeros de misión</span><strong id="bot-ops-mates">—</strong><small><span id="bot-ops-mates-pairs">—</span> parejas activas</small></article>
+          </div>
+        </div>
+
+        <div id="bot-ops-tab-actions" class="mod-tab-panel hidden" role="tabpanel" aria-labelledby="bot-ops-tab-actions-button">
+          <div id="bot-ops-actions-write" class="action-groups hidden">
+            <details class="action-entry">
+              <summary><span class="action-level l3">GM3</span><strong>Adelantar población y etapa</strong><small>mod-world-bots: mira la próxima pasada ya, sin saltarse sus límites</small></summary>
+              <div class="action-entry-body"><form class="bot-ops-action-form" data-action="world_bots_pass"><input name="reason" placeholder="Motivo (opcional)" maxlength="255"><button type="submit">Solicitar</button></form></div>
+            </details>
+            <details class="action-entry">
+              <summary><span class="action-level l3">GM3</span><strong>Adelantar relleno de colas</strong><small>mod-queue-bots: revisa todas las colas en curso ya</small></summary>
+              <div class="action-entry-body"><form class="bot-ops-action-form" data-action="queue_bots_pass"><input name="reason" placeholder="Motivo (opcional)" maxlength="255"><button type="submit">Solicitar</button></form></div>
+            </details>
+            <details class="action-entry">
+              <summary><span class="action-level l3">GM3</span><strong>Adelantar cuidado de grupos</strong><small>mod-party-here: revisa grupos y bandas ya</small></summary>
+              <div class="action-entry-body"><form class="bot-ops-action-form" data-action="party_here_pass"><input name="reason" placeholder="Motivo (opcional)" maxlength="255"><button type="submit">Solicitar</button></form></div>
+            </details>
+            <details class="action-entry">
+              <summary><span class="action-level l3">GM3</span><strong>Adelantar cuidado de hermandades</strong><small>mod-home-guild: revisa todas las hermandades de casa ya</small></summary>
+              <div class="action-entry-body"><form class="bot-ops-action-form" data-action="home_guild_pass"><input name="reason" placeholder="Motivo (opcional)" maxlength="255"><button type="submit">Solicitar</button></form></div>
+            </details>
+            <details class="action-entry">
+              <summary><span class="action-level l3">GM3</span><strong>Parar un evento PvP de mundo</strong><small>mod-world-bots: los bots vuelven a casa. Vacío = todos los eventos activos</small></summary>
+              <div class="action-entry-body"><form class="bot-ops-action-form" data-action="stop_world_pvp"><input name="param" placeholder="id del evento (vacío = todos)" maxlength="10" inputmode="numeric" pattern="[0-9]*"><input name="reason" placeholder="Motivo (opcional)" maxlength="255"><button type="submit">Solicitar</button></form></div>
+            </details>
+            <details class="action-entry">
+              <summary><span class="action-level l3">GM3</span><strong>Refrescar la instantánea</strong><small>mod-bot-operations: publica ya, sin esperar al próximo ciclo</small></summary>
+              <div class="action-entry-body"><form class="bot-ops-action-form" data-action="refresh_snapshot"><input name="reason" placeholder="Motivo (opcional)" maxlength="255"><button type="submit">Solicitar</button></form></div>
+            </details>
+          </div>
+          <div class="panel"><div class="panel-heading"><div><h3>Historial</h3><p>Últimas solicitudes, con su resultado</p></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Cuándo</th><th>Acción</th><th>Parámetro</th><th>Quién</th><th>Estado</th><th>Resultado</th></tr></thead><tbody id="bot-ops-history-body"></tbody></table></div>
+          </div>
+        </div>
+      </section>
+
+      <div id="players-row-menu" class="row-menu hidden"></div>
+      <div id="toast" class="toast" role="status"></div>
+    </main>
+  </div>
+
+  <script src="/vendor/jszip/jszip.min.js"></script>
+  <script type="module" src="/app.js?v=1.19.0"></script>
+</body>
+</html>

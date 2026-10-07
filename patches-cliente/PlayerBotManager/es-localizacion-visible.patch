@@ -1,0 +1,451 @@
+Licencia: GPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+diff --git a/a/PlayerBotManager/PBM/PBM_CharSheet.lua b/b/PlayerBotManager/PBM/PBM_CharSheet.lua
+index 9cc7c17..780dfc5 100644
+--- a/a/PlayerBotManager/PBM/PBM_CharSheet.lua
++++ b/b/PlayerBotManager/PBM/PBM_CharSheet.lua
+@@ -185,7 +185,7 @@ function PBM.CreateCharSheet(config)
+     specLabel:SetFont("Fonts\\FRIZQT__.TTF", 7)
+     specLabel:SetPoint("BOTTOM", specBtn, "TOP", 0, 2)
+     specLabel:SetTextColor(1, 0.82, 0)
+-    specLabel:SetText("Templates")
++    specLabel:SetText("Plantillas")
+ 
+     -- ── Talent spec dropdown ──────────────────────────────────────────────────
+     local talentsMenu = CreateFrame("Frame", nil, menu)
+@@ -310,7 +310,7 @@ function PBM.CreateCharSheet(config)
+     refreshLbl:SetTextColor(0.78, 0.61, 0.23, 1)
+     refreshLbl:SetAllPoints()
+     refreshLbl:SetJustifyH("CENTER")
+-    refreshLbl:SetText("Refresh")
++    refreshLbl:SetText("Actualizar")
+     refreshBtn:SetScript("OnClick", function()
+         if menu.clearStratDisplay then menu.clearStratDisplay() end
+         local botName = menu.botName or ""
+@@ -327,7 +327,7 @@ function PBM.CreateCharSheet(config)
+     local strategyLabel = menu:CreateFontString(nil, "OVERLAY")
+     strategyLabel:SetFont("Fonts\\FRIZQT__.TTF", 24, "OUTLINE")
+     strategyLabel:SetTextColor(0.78, 0.61, 0.23, 1)
+-    strategyLabel:SetText("Strategies")
++    strategyLabel:SetText("Estrategias")
+     strategyLabel:SetPoint("TOP", menu, "TOP", 0, -(HDR_H + 30))
+     strategyLabel:SetWidth(overlayW - 60)
+     strategyLabel:SetJustifyH("CENTER")
+@@ -702,7 +702,7 @@ function PBM.CreateCharSheet(config)
+     resetHdrLbl:SetTextColor(0.78, 0.61, 0.23, 1)
+     resetHdrLbl:SetAllPoints()
+     resetHdrLbl:SetJustifyH("CENTER")
+-    resetHdrLbl:SetText("Reset")
++    resetHdrLbl:SetText("Reiniciar")
+ 
+     menu:Hide()
+     return menu, catcher
+diff --git a/a/PlayerBotManager/PBM/PBM_ClassTabs.lua b/b/PlayerBotManager/PBM/PBM_ClassTabs.lua
+index a28aee7..b7ca1f5 100644
+--- a/a/PlayerBotManager/PBM/PBM_ClassTabs.lua
++++ b/b/PlayerBotManager/PBM/PBM_ClassTabs.lua
+@@ -1050,7 +1050,7 @@ function PBM.BuildIgnoredSpellTable()
+ 
+     local hdr = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+     hdr:SetPoint("TOP", f, "TOP", 0, -6)
+-    hdr:SetText("|cffd4af37Ignored Spell List|r")
++    hdr:SetText("|cffd4af37Lista de hechizos ignorados|r")
+ 
+     for i = 1, NUM_IGNORE_ROWS do
+         local fs = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+diff --git a/a/PlayerBotManager/PBM/PBM_Constants.lua b/b/PlayerBotManager/PBM/PBM_Constants.lua
+index 0ed51d5..656d296 100644
+--- a/a/PlayerBotManager/PBM/PBM_Constants.lua
++++ b/b/PlayerBotManager/PBM/PBM_Constants.lua
+@@ -53,21 +53,21 @@ PBM.GS_FORMULA = {
+ 
+ -- ── Needs ─────────────────────────────────────────────────────
+ PBM.NEEDS_SLOTS = {
+-    { key="head",    icon="Interface\\Icons\\INV_Helmet_03",              label="Head"      },
+-    { key="neck",    icon="Interface\\Icons\\INV_Jewelry_Necklace_07",    label="Neck"      },
+-    { key="shoulder",icon="Interface\\Icons\\INV_Shoulder_22",            label="Shoulders" },
+-    { key="back",    icon="Interface\\Icons\\INV_Misc_Cape_07",           label="Back"      },
+-    { key="chest",   icon="Interface\\Icons\\INV_Chest_Cloth_04",         label="Chest"     },
+-    { key="wrist",   icon="Interface\\Icons\\INV_Bracer_07",              label="Wrists"    },
+-    { key="hands",   icon="Interface\\Icons\\INV_Gauntlets_04",           label="Hands"     },
+-    { key="waist",   icon="Interface\\Icons\\INV_Belt_13",                label="Waist"     },
+-    { key="legs",    icon="Interface\\Icons\\INV_Pants_06",               label="Legs"      },
+-    { key="feet",    icon="Interface\\Icons\\INV_Boots_05",               label="Feet"      },
+-    { key="ring",    icon="Interface\\Icons\\INV_Jewelry_Ring_02",        label="Ring"      },
+-    { key="trinket", icon="Interface\\Icons\\INV_Misc_Rune_06",           label="Trinket"   },
+-    { key="mh",      icon="Interface\\Icons\\INV_Sword_27",               label="Main Hand" },
+-    { key="oh",      icon="Interface\\Icons\\INV_Shield_06",              label="Off Hand"  },
+-    { key="ranged",  icon="Interface\\Icons\\INV_Weapon_Bow_07",          label="Ranged"    },
++    { key="head",    icon="Interface\\Icons\\INV_Helmet_03",              label="Cabeza"    },
++    { key="neck",    icon="Interface\\Icons\\INV_Jewelry_Necklace_07",    label="Cuello"    },
++    { key="shoulder",icon="Interface\\Icons\\INV_Shoulder_22",            label="Hombros"   },
++    { key="back",    icon="Interface\\Icons\\INV_Misc_Cape_07",           label="Espalda"   },
++    { key="chest",   icon="Interface\\Icons\\INV_Chest_Cloth_04",         label="Pecho"     },
++    { key="wrist",   icon="Interface\\Icons\\INV_Bracer_07",              label="Muñecas"   },
++    { key="hands",   icon="Interface\\Icons\\INV_Gauntlets_04",           label="Manos"     },
++    { key="waist",   icon="Interface\\Icons\\INV_Belt_13",                label="Cintura"   },
++    { key="legs",    icon="Interface\\Icons\\INV_Pants_06",               label="Piernas"   },
++    { key="feet",    icon="Interface\\Icons\\INV_Boots_05",               label="Pies"      },
++    { key="ring",    icon="Interface\\Icons\\INV_Jewelry_Ring_02",        label="Anillo"    },
++    { key="trinket", icon="Interface\\Icons\\INV_Misc_Rune_06",           label="Abalorio"  },
++    { key="mh",      icon="Interface\\Icons\\INV_Sword_27",               label="Mano principal" },
++    { key="oh",      icon="Interface\\Icons\\INV_Shield_06",              label="Mano secundaria" },
++    { key="ranged",  icon="Interface\\Icons\\INV_Weapon_Bow_07",          label="A distancia"    },
+ }
+ PBM.NEEDS_ICON_SIZE = 18
+ PBM.MAX_NEEDS = 2
+@@ -75,20 +75,20 @@ PBM.MAX_NEEDS = 2
+ -- ── Profession Slots ────────────────────────────────────────────
+ PBM.PROF_SLOTS = {
+     -- Row 1 (crafting professions)
+-    { key="alchemy",        icon="Interface\\Icons\\Trade_Alchemy",                label="Alchemy"        },
+-    { key="blacksmithing",  icon="Interface\\Icons\\Trade_BlackSmithing",          label="Blacksmithing"  },
+-    { key="jewelcrafting",  icon="Interface\\Icons\\INV_Misc_Gem_01",              label="Jewelcrafting"  },
+-    { key="enchanting",     icon="Interface\\Icons\\Trade_Engraving",              label="Enchanting"     },
+-    { key="engineering",    icon="Interface\\Icons\\Trade_Engineering",            label="Engineering"    },
+-    { key="leatherworking", icon="Interface\\Icons\\Trade_LeatherWorking",         label="Leatherworking" },
+-    { key="tailoring",      icon="Interface\\Icons\\Trade_Tailoring",              label="Tailoring"      },
++    { key="alchemy",        icon="Interface\\Icons\\Trade_Alchemy",                label="Alquimia"       },
++    { key="blacksmithing",  icon="Interface\\Icons\\Trade_BlackSmithing",          label="Herrería"       },
++    { key="jewelcrafting",  icon="Interface\\Icons\\INV_Misc_Gem_01",              label="Joyería"        },
++    { key="enchanting",     icon="Interface\\Icons\\Trade_Engraving",              label="Encantamiento"  },
++    { key="engineering",    icon="Interface\\Icons\\Trade_Engineering",            label="Ingeniería"     },
++    { key="leatherworking", icon="Interface\\Icons\\Trade_LeatherWorking",         label="Peletería"      },
++    { key="tailoring",      icon="Interface\\Icons\\Trade_Tailoring",              label="Sastrería"      },
+     -- Row 2 (gathering / secondary professions)
+-    { key="inscription",    icon="Interface\\Icons\\INV_Inscription_Tradeskill01", label="Inscription"    },
+-    { key="herbalism",      icon="Interface\\Icons\\Trade_Herbalism",              label="Herbalism"      },
+-    { key="mining",         icon="Interface\\Icons\\Trade_Mining",                 label="Mining"         },
+-    { key="skinning",       icon="Interface\\Icons\\INV_Misc_Pelt_Wolf_01",        label="Skinning"       },
+-    { key="cooking",        icon="Interface\\Icons\\INV_Misc_Food_15",             label="Cooking"        },
+-    { key="fishing",        icon="Interface\\Icons\\Trade_Fishing",                label="Fishing"        },
++    { key="inscription",    icon="Interface\\Icons\\INV_Inscription_Tradeskill01", label="Inscripción"    },
++    { key="herbalism",      icon="Interface\\Icons\\Trade_Herbalism",              label="Herboristería"  },
++    { key="mining",         icon="Interface\\Icons\\Trade_Mining",                 label="Minería"        },
++    { key="skinning",       icon="Interface\\Icons\\INV_Misc_Pelt_Wolf_01",        label="Desuello"       },
++    { key="cooking",        icon="Interface\\Icons\\INV_Misc_Food_15",             label="Cocina"         },
++    { key="fishing",        icon="Interface\\Icons\\Trade_Fishing",                label="Pesca"          },
+ }
+ PBM.MAX_PROFS      = 2
+ PBM.MAX_CHAR_ROLES = 2
+@@ -240,11 +240,11 @@ PBM.QUALITY_COLORS = {
+ -- Sort
+ PBM.SORT_GOLD = "|cffd4af37"
+ PBM.SORT_OPTS = {
+-    {key="gs",   label="GS",   numeric=true},
+-    {key="ilvl", label="iLvL", numeric=true},
+-    {key="name", label="Name", numeric=false},
+-    {key="spec", label="Spec", numeric=false},
+-    {key="role", label="Role", numeric=false},
++    {key="gs",   label="GS",     numeric=true},
++    {key="ilvl", label="iLvL",   numeric=true},
++    {key="name", label="Nombre", numeric=false},
++    {key="spec", label="Espec.", numeric=false},
++    {key="role", label="Rol",    numeric=false},
+ }
+ 
+ -- Overview layout
+diff --git a/a/PlayerBotManager/PBM/PBM_GroupView.lua b/b/PlayerBotManager/PBM/PBM_GroupView.lua
+index 6aadbe5..187b8be 100644
+--- a/a/PlayerBotManager/PBM/PBM_GroupView.lua
++++ b/b/PlayerBotManager/PBM/PBM_GroupView.lua
+@@ -407,7 +407,7 @@ function PBM.BuildGroupView(parent, fl)
+     refreshBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+     local refreshLbl = refreshBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+     refreshLbl:SetAllPoints(refreshBtn); refreshLbl:SetJustifyH("CENTER"); refreshLbl:SetJustifyV("MIDDLE")
+-    refreshLbl:SetText("|cffd4af37Refresh|r")
++    refreshLbl:SetText("|cffd4af37Actualizar|r")
+     refreshBtn:SetScript("OnEnter", function()
+         GameTooltip:SetOwner(refreshBtn, "ANCHOR_TOP")
+         GameTooltip:AddLine("Refresh Group", 0.78, 0.61, 0.23)
+@@ -825,11 +825,11 @@ function PBM.UpdateGroupSummary()
+     end
+     if PBM.State.gvGroupIlvlLabel then
+         local v = GroupAvg("gs")
+-        PBM.State.gvGroupIlvlLabel:SetText("|cffC69B3AGroup iLvL:|r "..(v > 0 and "|cffff8000"..v.."|r" or "|cff555555--|r"))
++        PBM.State.gvGroupIlvlLabel:SetText("|cffC69B3AiLvL del grupo:|r "..(v > 0 and "|cffff8000"..v.."|r" or "|cff555555--|r"))
+     end
+     if PBM.State.gvGroupGsLabel then
+         local v = GroupAvg("realGs")
+-        PBM.State.gvGroupGsLabel:SetText("|cffC69B3AGroup GS:|r "..(v > 0 and "|cffff8000"..v.."|r" or "|cff555555--|r"))
++        PBM.State.gvGroupGsLabel:SetText("|cffC69B3AGS del grupo:|r "..(v > 0 and "|cffff8000"..v.."|r" or "|cff555555--|r"))
+     end
+ end
+ 
+diff --git a/a/PlayerBotManager/PBM/PBM_MultibotPanel.lua b/b/PlayerBotManager/PBM/PBM_MultibotPanel.lua
+index a6b29e4..4ca9739 100644
+--- a/a/PlayerBotManager/PBM/PBM_MultibotPanel.lua
++++ b/b/PlayerBotManager/PBM/PBM_MultibotPanel.lua
+@@ -101,18 +101,18 @@ local BUTTONS = {
+     -- ── submenu ─────────────────────────────────────────────
+     {
+         name = "Talent", icon = "Ability_Marksmanship", btype = "activate",
+-        tipTitle = "Open Talents",
++        tipTitle = "Abrir talentos",
+         cmd = function(bot) PBM.OpenTalentWindow(bot) end,
+     },
+     -- ── activate ────────────────────────────────────────────
+     {
+         name = "Inv.", icon = "INV_Misc_Bag_08", btype = "activate",
+-        tipTitle = "Open Inventory",
++        tipTitle = "Abrir inventario",
+         cmd = function(bot) PBM.OpenInventoryWindow(bot) end,
+     },
+     {
+         name = "Spells", icon = "INV_Misc_Book_09", btype = "activate",
+-        tipTitle = "Open Spellbook",
++        tipTitle = "Abrir libro de hechizos",
+         cmd = function(bot) PBM.OpenSpellbookWindow(bot) end,
+     },
+ }
+diff --git a/a/PlayerBotManager/PBM/PBM_Needs.lua b/b/PlayerBotManager/PBM/PBM_Needs.lua
+index f2c58a3..12d5830 100644
+--- a/a/PlayerBotManager/PBM/PBM_Needs.lua
++++ b/b/PlayerBotManager/PBM/PBM_Needs.lua
+@@ -16,10 +16,10 @@ PBM.State.profSelectSeq = 0
+ 
+ -- Role slots for the prof picker (T/H/D/A — stored in LichborneTrackerDB.charRoles)
+ local ROLE_PICKER_SLOTS = {
+-    { key="T", label="Tank",   icon="Interface\\Icons\\Ability_Warrior_DefensiveStance", color={r=0.20,g=0.60,b=1.00} },
+-    { key="H", label="Healer", icon="Interface\\Icons\\Spell_ChargePositive",             color={r=0.20,g=1.00,b=0.40} },
+-    { key="D", label="DPS",    icon="Interface\\Icons\\Ability_DualWield",                color={r=1.00,g=0.40,b=0.20} },
+-    { key="A", label="AoE",    icon="Interface\\Icons\\Spell_Shadow_RainOfFire",          color={r=0.58,g=0.51,b=0.79} },
++    { key="T", label="Tanque",  icon="Interface\\Icons\\Ability_Warrior_DefensiveStance", color={r=0.20,g=0.60,b=1.00} },
++    { key="H", label="Sanador", icon="Interface\\Icons\\Spell_ChargePositive",             color={r=0.20,g=1.00,b=0.40} },
++    { key="D", label="DPS",     icon="Interface\\Icons\\Ability_DualWield",                color={r=1.00,g=0.40,b=0.20} },
++    { key="A", label="AoE",     icon="Interface\\Icons\\Spell_Shadow_RainOfFire",          color={r=0.58,g=0.51,b=0.79} },
+ }
+ 
+ function PBM.GetNeeds(charName)
+diff --git a/a/PlayerBotManager/PBM/PBM_Overview.lua b/b/PlayerBotManager/PBM/PBM_Overview.lua
+index 3723ce7..89b52fe 100644
+--- a/a/PlayerBotManager/PBM/PBM_Overview.lua
++++ b/b/PlayerBotManager/PBM/PBM_Overview.lua
+@@ -31,7 +31,7 @@ PBM.RefreshOverviewRows = function()
+     local g = LichborneTrackerDB.allGroup or "A"
+     if LichborneAllPageLbl then
+         local pageNum = ({A="1",B="2",C="3"})[g] or g
+-        LichborneAllPageLbl:SetText("|cffd4af37Page "..pageNum.." v|r")
++        LichborneAllPageLbl:SetText("|cffd4af37Página "..pageNum.." v|r")
+     end
+ 
+     -- Overflow sync: rebuild all three groups from class tabs sequentially
+@@ -593,7 +593,7 @@ function PBM.BuildOverviewFrame(parent, fl)
+     local allTitle = allHdr:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     allTitle:SetPoint("TOPLEFT",allHdr,"TOPLEFT",0,0); allTitle:SetPoint("TOPRIGHT",allHdr,"TOPRIGHT",0,0)
+     allTitle:SetHeight(24); allTitle:SetJustifyH("CENTER"); allTitle:SetJustifyV("MIDDLE")
+-    allTitle:SetText("|cffd4af37Overview|r")
++    allTitle:SetText("|cffd4af37Resumen|r")
+ 
+     -- Sort / Clear buttons
+     local function MakeHdrBtn(lbl, br, bg2, bb, xOff, w)
+@@ -617,7 +617,7 @@ function PBM.BuildOverviewFrame(parent, fl)
+     overviewPageBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+     local allPageLbl = overviewPageBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+     allPageLbl:SetAllPoints(overviewPageBtn); allPageLbl:SetJustifyH("CENTER"); allPageLbl:SetJustifyV("MIDDLE")
+-    allPageLbl:SetText("|cffd4af37Page 1 v|r")
++    allPageLbl:SetText("|cffd4af37Página 1 v|r")
+     LichborneAllPageLbl  = allPageLbl
+     LichborneAllPagePrev = nil
+     LichborneAllPageNext = nil
+@@ -658,7 +658,7 @@ function PBM.BuildOverviewFrame(parent, fl)
+         local g = LichborneTrackerDB.allGroup or "A"
+         if LichborneAllPageLbl then
+             local pageNum = ({A="1",B="2",C="3"})[g] or g
+-            LichborneAllPageLbl:SetText("|cffd4af37Page "..pageNum.." v|r")
++            LichborneAllPageLbl:SetText("|cffd4af37Página "..pageNum.." v|r")
+         end
+         if LichborneAllPagePrev then LichborneAllPagePrev:SetAlpha(g ~= "A" and 1.0 or 0.35) end
+         if LichborneAllPageNext then LichborneAllPageNext:SetAlpha(g ~= "C" and 1.0 or 0.35) end
+@@ -912,7 +912,7 @@ function PBM.BuildOverviewFrame(parent, fl)
+     allCB:SetPoint("TOPLEFT",PBM.State.LichborneOverviewFrame,"TOPLEFT",0,cbY)
+     allCB:SetSize(ALL_NCOLS*ALL_COL_W,24); allCB:SetFrameLevel(fl+11)
+     local acbBg=allCB:CreateTexture(nil,"BACKGROUND"); acbBg:SetAllPoints(allCB); acbBg:SetTexture(0.05,0.07,0.13,1)
+-    local acT=allCB:CreateFontString(nil,"OVERLAY","GameFontNormalSmall"); acT:SetPoint("LEFT",allCB,"LEFT",4,0); acT:SetText("|cffC69B3ACount:|r"); acT:SetWidth(44)
++    local acT=allCB:CreateFontString(nil,"OVERLAY","GameFontNormalSmall"); acT:SetPoint("LEFT",allCB,"LEFT",4,0); acT:SetText("|cffC69B3ACantidad:|r"); acT:SetWidth(44)
+     PBM.State.LichborneAllCountLabels={}
+     local acW=(ALL_NCOLS*ALL_COL_W-50)/10
+     for ci,cls in ipairs(PBM.CLASS_TABS) do
+diff --git a/a/PlayerBotManager/PBM/PBM_Raid.lua b/b/PlayerBotManager/PBM/PBM_Raid.lua
+index 3b5efa6..fb13d5a 100644
+--- a/a/PlayerBotManager/PBM/PBM_Raid.lua
++++ b/b/PlayerBotManager/PBM/PBM_Raid.lua
+@@ -57,7 +57,7 @@ local function BuildRaidFilterRolePicker()
+     pf:Hide()
+     local ttl = pf:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+     ttl:SetPoint("TOPLEFT",pf,"TOPLEFT",6,-5)
+-    ttl:SetText("|cffC69B3ARole|r  |cff888888(max 2)|r")
++    ttl:SetText("|cffC69B3ARol|r  |cff888888(máx 2)|r")
+     pf.btns = {}
+     for si, slot in ipairs(FROLE_SLOTS) do
+         local col = si - 1
+@@ -534,14 +534,14 @@ function PBM.UpdateInviteButtons()
+         LichborneInviteRaidBtn:Show()
+         LichborneInviteRaidBtn:SetBackdropColor(0.30, 0.15, 0.01, 1)
+         if LichborneInviteRaidBtn.lbl then
+-            LichborneInviteRaidBtn.lbl:SetText("|cffd4af37Invite Raid|r")
++            LichborneInviteRaidBtn.lbl:SetText("|cffd4af37Invitar banda|r")
+         end
+     end
+     if _G["LichborneInviteGroupBtn"] then
+         local grpBtn = _G["LichborneInviteGroupBtn"]
+         grpBtn:Show()
+         grpBtn:SetBackdropColor(0.035, 0.14, 0.245, 1)
+-        if grpBtn.lbl then grpBtn.lbl:SetText("|cffd4af37Invite Group|r") end
++        if grpBtn.lbl then grpBtn.lbl:SetText("|cffd4af37Invitar grupo|r") end
+     end
+     -- Stop Invite overlay: covers both invite buttons when an invite is active
+     if _G["LichborneStopInviteBtn"] then
+@@ -630,7 +630,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     -- ── Tier label + dropdown ──────────────────────────────────
+     local tierLbl = tierBar:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     tierLbl:SetPoint("LEFT",tierBar,"LEFT",6,0)
+-    tierLbl:SetText("|cffC69B3ATier:|r")
++    tierLbl:SetText("|cffC69B3ANivel:|r")
+ 
+     local tierDD = MakeDD("LichborneRaidTierDrop", 300)
+     tierDD:SetPoint("LEFT",tierLbl,"RIGHT",6,0)
+@@ -677,7 +677,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     -- Raid label
+     local raidLbl = tierBar:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     raidLbl:SetPoint("LEFT",tierDD,"RIGHT",14,0)
+-    raidLbl:SetText("|cffC69B3ARaid:|r")
++    raidLbl:SetText("|cffC69B3ABanda:|r")
+     raidDD:SetPoint("LEFT",raidLbl,"RIGHT",6,0)
+ 
+     -- Tier dropdown menu
+@@ -768,7 +768,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     -- ── Group dropdown (A / B / C) ─────────────────────────
+     local groupLbl = tierBar:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     groupLbl:SetPoint("LEFT",raidDD,"RIGHT",14,0)
+-    groupLbl:SetText("|cffC69B3AGroup:|r")
++    groupLbl:SetText("|cffC69B3AGrupo:|r")
+ 
+     local groupDD = MakeDD("LichborneRaidGroupDrop", 70)
+     groupDD:SetPoint("LEFT",groupLbl,"RIGHT",6,0)
+@@ -822,7 +822,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     clearAllRaidsBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local clearAllRaidsLbl = clearAllRaidsBtn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+     clearAllRaidsLbl:SetAllPoints(clearAllRaidsBtn); clearAllRaidsLbl:SetJustifyH("CENTER"); clearAllRaidsLbl:SetJustifyV("MIDDLE")
+-    clearAllRaidsLbl:SetText("|cffd4af37Clear All|r")
++    clearAllRaidsLbl:SetText("|cffd4af37Vaciar todo|r")
+     clearAllRaidsBtn:SetScript("OnEnter", function()
+         GameTooltip:SetOwner(clearAllRaidsBtn, "ANCHOR_BOTTOM")
+         GameTooltip:AddLine("Clear All Raid Rosters", 1, 0.15, 0.15)
+@@ -861,7 +861,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     copyBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local copyLbl = copyBtn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+     copyLbl:SetAllPoints(copyBtn); copyLbl:SetJustifyH("CENTER"); copyLbl:SetJustifyV("MIDDLE")
+-    copyLbl:SetText("|cffd4af37Copy|r")
++    copyLbl:SetText("|cffd4af37Copiar|r")
+     copyBtn:SetScript("OnEnter", function()
+         GameTooltip:SetOwner(copyBtn,"ANCHOR_BOTTOM")
+         GameTooltip:AddLine("|cffd4af37Copy Roster|r",1,1,1)
+@@ -878,7 +878,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     pasteBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local pasteLbl = pasteBtn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+     pasteLbl:SetAllPoints(pasteBtn); pasteLbl:SetJustifyH("CENTER"); pasteLbl:SetJustifyV("MIDDLE")
+-    pasteLbl:SetText("|cffd4af37Paste|r")
++    pasteLbl:SetText("|cffd4af37Pegar|r")
+     pasteBtn:SetScript("OnEnter", function()
+         GameTooltip:SetOwner(pasteBtn,"ANCHOR_BOTTOM")
+         GameTooltip:AddLine("|cffd4af37Paste Roster|r",1,1,1)
+@@ -912,7 +912,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     pasteYes:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local pasteYesLbl = pasteYes:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     pasteYesLbl:SetAllPoints(pasteYes); pasteYesLbl:SetJustifyH("CENTER")
+-    pasteYesLbl:SetText("|cffd4af37Yes, Paste|r")
++    pasteYesLbl:SetText("|cffd4af37Sí, pegar|r")
+ 
+     local pasteNo = CreateFrame("Button",nil,pasteConfirm)
+     pasteNo:SetSize(120,22); pasteNo:SetPoint("BOTTOMRIGHT",pasteConfirm,"BOTTOMRIGHT",-16,10)
+@@ -921,7 +921,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     pasteNo:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local pasteNoLbl = pasteNo:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     pasteNoLbl:SetAllPoints(pasteNo); pasteNoLbl:SetJustifyH("CENTER")
+-    pasteNoLbl:SetText("|cffd4af37Cancel|r")
++    pasteNoLbl:SetText("|cffd4af37Cancelar|r")
+     pasteNo:SetScript("OnClick", function() pasteConfirm:Hide() end)
+ 
+     copyBtn:SetScript("OnClick", function()
+@@ -1003,7 +1003,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     clearBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local clearLbl = clearBtn:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+     clearLbl:SetAllPoints(clearBtn); clearLbl:SetJustifyH("CENTER"); clearLbl:SetJustifyV("MIDDLE")
+-    clearLbl:SetText("|cffd4af37Clear|r")
++    clearLbl:SetText("|cffd4af37Vaciar|r")
+     clearBtn:SetScript("OnEnter",function()
+         local raidName = LichborneTrackerDB and LichborneTrackerDB.raidName or "N/A (5-Man)"
+         GameTooltip:SetOwner(clearBtn,"ANCHOR_BOTTOM")
+@@ -1436,7 +1436,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     rcbBg:SetAllPoints(raidCountBar); rcbBg:SetTexture(0.05, 0.07, 0.13, 1)
+     local rcTitle = raidCountBar:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+     rcTitle:SetPoint("LEFT", raidCountBar, "LEFT", 4, 0)
+-    rcTitle:SetText("|cffC69B3ACount:|r"); rcTitle:SetWidth(44)
++    rcTitle:SetText("|cffC69B3ACantidad:|r"); rcTitle:SetWidth(44)
+     PBM.State.LichborneRaidCountLabels = {}
+     local rcW = (1086 - 50) / 10
+     local rcIdx = 0
+@@ -1477,7 +1477,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     inviteBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local inviteLbl = inviteBtn:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     inviteLbl:SetAllPoints(inviteBtn); inviteLbl:SetJustifyH("CENTER"); inviteLbl:SetJustifyV("MIDDLE")
+-    inviteLbl:SetText("|cffd4af37Invite Raid|r")
++    inviteLbl:SetText("|cffd4af37Invitar banda|r")
+     inviteBtn.lbl = inviteLbl
+     inviteBtn:SetScript("OnEnter",function()
+         local roster, size = PBM.GetCurrentRoster()
+@@ -1653,7 +1653,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     inviteGroupBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local inviteGroupLbl = inviteGroupBtn:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     inviteGroupLbl:SetAllPoints(inviteGroupBtn); inviteGroupLbl:SetJustifyH("CENTER"); inviteGroupLbl:SetJustifyV("MIDDLE")
+-    inviteGroupLbl:SetText("|cffd4af37Invite Group|r")
++    inviteGroupLbl:SetText("|cffd4af37Invitar grupo|r")
+     inviteGroupBtn.lbl = inviteGroupLbl
+     inviteGroupBtn:SetScript("OnEnter",function()
+         -- Always count from T0 5-Man roster
+@@ -1820,7 +1820,7 @@ function PBM.BuildRaidFrame(parent, fl)
+     stopInviteBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight","ADD")
+     local stopInviteLbl = stopInviteBtn:CreateFontString(nil,"OVERLAY","GameFontNormal")
+     stopInviteLbl:SetAllPoints(stopInviteBtn); stopInviteLbl:SetJustifyH("CENTER"); stopInviteLbl:SetJustifyV("MIDDLE")
+-    stopInviteLbl:SetText("|cffd4af37Stop Invite|r")
++    stopInviteLbl:SetText("|cffd4af37Detener invitación|r")
+     stopInviteBtn:SetScript("OnEnter",function()
+         GameTooltip:SetOwner(stopInviteBtn,"ANCHOR_TOP")
+         GameTooltip:AddLine("Stop Invite",1,1,1)
+diff --git a/a/PlayerBotManager/PBM/PBM_TopTabs.lua b/b/PlayerBotManager/PBM/PBM_TopTabs.lua
+index 82e7a58..30c55e8 100644
+--- a/a/PlayerBotManager/PBM/PBM_TopTabs.lua
++++ b/b/PlayerBotManager/PBM/PBM_TopTabs.lua
+@@ -26,10 +26,10 @@ local IP_R, IP_G, IP_B = 0.78, 0.61, 0.23   -- gold (matches LevelSync)
+ 
+ local BOTTOM_TABS = {
+     { id="Playerbots",           label="Playerbots",  r=GOLD_R, g=GOLD_G, b=GOLD_B },
+-    { id="IndividualProgression",label="Ind. Prog.",  r=GOLD_R, g=GOLD_G, b=GOLD_B },
++    { id="IndividualProgression",label="Prog. Ind.",  r=GOLD_R, g=GOLD_G, b=GOLD_B },
+     { id="LevelSync",            label="LevelSync",   r=GOLD_R, g=GOLD_G, b=GOLD_B },
+-    { id="Notes",                label="Notes",       r=GOLD_R, g=GOLD_G, b=GOLD_B },
+-    { id="Group",                label="Group",       r=GOLD_R, g=GOLD_G, b=GOLD_B },
++    { id="Notes",                label="Notas",       r=GOLD_R, g=GOLD_G, b=GOLD_B },
++    { id="Group",                label="Grupo",       r=GOLD_R, g=GOLD_G, b=GOLD_B },
+ }
+ 
+ -- ── Tab button layout (title bar row, right of Clear buttons) ─
+@@ -278,7 +278,7 @@ function PBM.BuildBottomTabs(parent, fl)
+ 
+     -- ── Individual Progression panel (full height, corrected width) ──
+     local ipPanel = MakeContentFrame("PBMTabPanel_IndividualProgression", parent, fl,
+-                                     "Individual Progression", true, GOLD_R, GOLD_G, GOLD_B)
++                                     "Progresión individual", true, GOLD_R, GOLD_G, GOLD_B)
+     PBM.State.bottomTabPanels["IndividualProgression"] = ipPanel
+     PBM.BuildIPProgressionPanel(ipPanel, ctx)
+ 
+@@ -288,7 +288,7 @@ function PBM.BuildBottomTabs(parent, fl)
+     PBM.BuildLevelSyncPanel(lsPanel, ctx)
+ 
+     -- ── Notes panel (gold header) ─────────────────────────────
+-    local notesPanel = MakeContentFrame("PBMTabPanel_Notes", parent, fl, "Notes", false, GOLD_R, GOLD_G, GOLD_B)
++    local notesPanel = MakeContentFrame("PBMTabPanel_Notes", parent, fl, "Notas", false, GOLD_R, GOLD_G, GOLD_B)
+     PBM.State.bottomTabPanels["Notes"] = notesPanel
+     PBM.BuildNotesPanel(notesPanel, ctx)
+ 
