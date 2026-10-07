@@ -1,0 +1,68 @@
+Licencia: GPL-2.0-or-later, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+La reserva propia de mod-playerbots (mantener min/max bots online) ignoraba
+por completo el tope de nivel de la etapa activa.
+
+Problema
+--------
+Con un jugador en etapa Vanilla (tope 60), seguian apareciendo bots por
+encima de 60 de forma continua, no solo los que ya estaban conectados antes
+del reinicio. Comprobado en la VM: el numero de bots por encima del tope
+volvia a subir minuto a minuto aunque StagePass (mod-world-bots) los
+corrigiera.
+
+RandomPlayerbotMgr::AddRandomBots() es el bucle propio de mod-playerbots que
+mantiene la poblacion de bots aleatorios cerca de su objetivo
+(AiPlayerbot.MinRandomBots/MaxRandomBots), totalmente aparte de
+mod-world-bots. Su lambda tryLoginBot elige que personaje desconectado
+despertar mirando solo cuenta/facción/clase (Death Knight deshabilitado);
+NUNCA mira el nivel guardado del personaje. Cualquiera de los ~1500
+personajes de bot puede entrar por aqui sin pasar StageCap(), y como no se
+re-aleatoriza al despertarlo, entra exactamente con el nivel que tuviera de
+su ultima sesion -incluido 70 u 80, de cuando la etapa no restringia nada.
+
+mod-world-bots corrige despues (StagePass), pero eso es caro: un
+PlayerbotFactory::Randomize completo o un teletransporte entre mapas, por
+cada bot que este camino trajo de mas. Con el bucle metiendo bots sin mirar
+el nivel de forma continua, la correccion nunca alcanza a la entrada.
+
+Solucion
+--------
+tryLoginBot descarta tambien un candidato cuyo nivel guardado
+(sCharacterCache->GetCharacterLevelByGuid, sin consulta a la BD) supere el
+randomBotMaxLevel vigente en ese instante -el mismo campo que mod-world-bots
+muta en caliente por etapa. Mas barato no despertarlo que despertarlo y
+tener que corregirlo.
+
+Nota: si la mayoria de los ~1500 personajes estuviera por encima del tope
+activo, esto podria dejar la poblacion por debajo de su objetivo (la fase 4
+de AddRandomBots ya avisa en el log sin más, "increasing RandomBotAccountCount",
+no revienta nada). No se ha visto ese caso en esta VM.
+
+Escrito contra
+--------------
+mod-playerbots @ b949b50bfcdd4fab937781bac2d7765e39330e4b (2026-09-04), con
+01-highest-player-bracket.patch y 02-stage-live-cap.patch ya aplicados.
+
+diff --git a/src/Bot/RandomPlayerbotMgr.cpp b/src/Bot/RandomPlayerbotMgr.cpp
+--- a/src/Bot/RandomPlayerbotMgr.cpp
++++ b/src/Bot/RandomPlayerbotMgr.cpp
+@@ -744,6 +744,18 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
+                 return false;
+             }
+
++            // Otro modulo puede haber bajado randomBotMaxLevel en caliente (p.ej.
++            // una etapa de progresion): este personaje ya existe con el nivel que
++            // tuviera guardado de su ultima sesion, y aqui no se le va a
++            // re-randomizar. Si se despierta por encima del tope, alguien tiene
++            // que corregirlo despues -caro, un teleport entre mapas o un
++            // PlayerbotFactory::Randomize completo-; mas barato no despertarlo.
++            if (sCharacterCache->GetCharacterLevelByGuid(ObjectGuid::Create<HighGuid::Player>(charInfo.guid))
++                    > sPlayerbotAIConfig.randomBotMaxLevel)
++            {
++                return false;
++            }
++
+             uint32 add_time = sPlayerbotAIConfig.enablePeriodicOnlineOffline
+                                 ? urand(sPlayerbotAIConfig.minRandomBotInWorldTime,
+                                         sPlayerbotAIConfig.maxRandomBotInWorldTime)

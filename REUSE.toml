@@ -1,0 +1,68 @@
+# Copyright y licencia por ruta (especificación REUSE 3). Los ficheros de código
+# propio llevan además su cabecera SPDX; esto cubre el resto (datos, JSON, TSV,
+# SQL, configuración, documentos). Resumen en NOTICE; terceros en
+# THIRD-PARTY-NOTICES.txt.
+version = 1
+SPDX-PackageName = "Azerothcore-Single-Player"
+
+# Todo lo propio del proyecto.
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Addon de terceros redistribuido en el repositorio. Conserva sus avisos de
+# autoría; las modificaciones del proyecto siguen su licencia.
+[[annotations]]
+path = "cliente/Interface/AddOns/MultiBot/**"
+precedence = "override"
+SPDX-FileCopyrightText = "MultiBot authors (Macx-Lio and contributors); modifications 2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "GPL-3.0-only"
+
+# Parches: conservan la licencia del proyecto al que se aplican. Los SQL de
+# patches/arac, locales-es, locales-es-playerbots y custom-items son propios
+# (los cubre la regla general).
+[[annotations]]
+path = ["patches/core/**.patch", "patches/mod-playerbots/**.patch"]
+precedence = "override"
+SPDX-FileCopyrightText = "The AzerothCore and mod-playerbots contributors; modifications 2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
+path = "patches/mod-playerbots-wintergrasp/**.patch"
+precedence = "override"
+SPDX-FileCopyrightText = "The mod-playerbots-wintergrasp contributors; modifications 2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "GPL-2.0-only"
+
+[[annotations]]
+path = ["patches/mod-aoe-loot/**.patch", "patches/mod-congrats-on-level/**.patch", "patches/mod-profession-experience/**.patch", "patches/mod-quest-loot-party/**.patch", "patches-cliente/QuestRadar/**.patch"]
+precedence = "override"
+SPDX-FileCopyrightText = "The respective module contributors; modifications 2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = ["patches/mod-challenge-modes/**.patch", "patches/mod-reagent-bank/**.patch", "patches/mod-war-effort/**.patch"]
+precedence = "override"
+SPDX-FileCopyrightText = "2021 AzerothCore; modifications 2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["patches-cliente/PlayerBotManager/**.patch"]
+precedence = "override"
+SPDX-FileCopyrightText = "Lichborne; modifications 2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "GPL-3.0-only"
+
+[[annotations]]
+path = ["patches-cliente/GuildLevels/**.patch"]
+precedence = "override"
+SPDX-FileCopyrightText = "The mod-guild-levels contributors; modifications 2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+# Parches sobre proyectos que no declaran licencia en el commit fijado: se
+# publica sólo la diferencia; los derechos del código original son de sus autores.
+[[annotations]]
+path = ["patches/mod-guildhouse/**.patch", "patches/mod-random-enchants/**.patch", "patches-cliente/ACP/**.patch", "patches-cliente/Chatter/**.patch"]
+precedence = "override"
+SPDX-FileCopyrightText = "The respective upstream authors; modifications 2026 The Azerothcore-Single-Player contributors"
+SPDX-License-Identifier = "LicenseRef-Upstream-Undeclared"

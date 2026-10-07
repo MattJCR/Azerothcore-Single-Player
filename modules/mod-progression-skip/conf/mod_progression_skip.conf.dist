@@ -1,0 +1,45 @@
+[worldserver]
+
+###################################################################################################
+# MOD-PROGRESSION-SKIP
+#
+#   NPC neutral ("Cronista de las Eras") que deja a un personaje AVANZAR de forma
+#   irreversible en mod-individual-progression sin jugarse el contenido:
+#
+#     - Saltar Vanilla          -> etapa 8  (PROGRESSION_PRE_TBC)
+#     - Saltar Terrallende      -> etapa 13 (PROGRESSION_TBC_TIER_5)
+#     - Desactivar las etapas   -> etapa 18 (PROGRESSION_WOTLK_TIER_5)
+#
+#   Nunca reduce el estado, no entrega recompensas, logros, reputacion ni
+#   attunements: solo desbloquea las fases de contenido. Se apoya en la API
+#   publica del propio modulo (UpdateProgressionState, que ya es monotonica y ya
+#   respeta ProgressionLimit) y en sus misiones ocultas 66000+estado, asi que no
+#   crea una segunda fuente de verdad.
+#
+#   El NPC se niega a actuar en combate, muerto, en una mazmorra, banda, campo de
+#   batalla o arena, y (si RequireNoGroup = 1) estando en grupo.
+#
+#   Depende de mod-individual-progression: si el modulo no esta compilado, el NPC
+#   existe pero solo informa de que la funcion no esta disponible.
+#
+###################################################################################################
+
+#
+#    ProgressionSkip.Enable
+#        Descripcion: Interruptor general. Con 0 el Cronista guarda silencio
+#                     (el NPC sigue en el mundo pero no ofrece ningun salto).
+#        Por defecto: 0 - (desactivado)
+#                     1 - (activado)
+
+ProgressionSkip.Enable = 0
+
+#
+#    ProgressionSkip.RequireNoGroup
+#        Descripcion: Exigir que el personaje NO este en grupo para poder
+#                     confirmar un salto. Evita dejar companeros con
+#                     IndividualProgression.EnforceGroupRules activo en etapas
+#                     incompatibles. Con 0 se permite confirmar estando en grupo.
+#        Por defecto: 1 - (hay que salir del grupo)
+#                     0 - (se permite en grupo)
+
+ProgressionSkip.RequireNoGroup = 1

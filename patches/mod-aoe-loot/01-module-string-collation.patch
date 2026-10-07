@@ -1,0 +1,29 @@
+Licencia: AGPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Usar la collation de las tablas de cadenas para el nombre del modulo.
+
+Problema
+--------
+En MySQL 8.4 la variable de sesion creada desde un literal hereda
+utf8mb4_0900_ai_ci, mientras que module_string.module y
+module_string_locale.module usan utf8mb4_unicode_ci. Los DELETE de la fase 5
+fallan con ERROR 1267 (Illegal mix of collations).
+
+Solucion
+--------
+Declarar el literal utf8mb4 con utf8mb4_unicode_ci. Las comparaciones y las
+inserciones conservan el mismo contenido y la fase sigue siendo idempotente.
+
+Escrito contra mod-aoe-loot b5c663572d936985c19dc8b499ecea60e1da570d
+(rama master, 2026-07-27).
+
+diff --git a/data/sql/db-world/base/aoe_loot_module_string.sql b/data/sql/db-world/base/aoe_loot_module_string.sql
+--- a/data/sql/db-world/base/aoe_loot_module_string.sql
++++ b/data/sql/db-world/base/aoe_loot_module_string.sql
+@@ -1,4 +1,4 @@
+-SET @MODULE_STRING := 'mod-aoe-loot';
+-
++SET @MODULE_STRING := _utf8mb4'mod-aoe-loot' COLLATE utf8mb4_unicode_ci;
++
+ -- module string
+ DELETE FROM `module_string` WHERE `module` = @MODULE_STRING;

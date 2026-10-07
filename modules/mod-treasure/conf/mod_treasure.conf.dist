@@ -1,0 +1,22 @@
+# Tesoros itinerantes de SP03. 0 desactiva los cofres propios.
+SPTreasure.Enable = 1
+
+# Segundos hasta que un cofre sin recoger cambia de sitio.
+SPTreasure.LocationSeconds = 3600
+
+# Segundos desde el saqueo hasta la reposición por calidad.
+SPTreasure.BasicRespawnSeconds = 1800
+SPTreasure.RareRespawnSeconds = 5400
+SPTreasure.EpicRespawnSeconds = 14400
+
+# Distancia máxima entre el jugador humano y un punto candidato al validarlo.
+SPTreasure.CandidateRadius = 250
+
+# Efecto visual de aparición; 0 lo desactiva. Probar el hechizo en cliente.
+SPTreasure.SpawnSpell = 30262
+
+# Vida de un cofre creado con .tesoro prueba crear, en segundos (mínimo 10).
+SPTreasure.TestSeconds = 90
+
+# Intervalo de revisión de plazos y jugadores, en milisegundos.
+SPTreasure.ScanMs = 5000

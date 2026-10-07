@@ -1,0 +1,21 @@
+Licencia: MIT, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+SP01: el desafío «sólo XP por misiones» dejaba pasar XP de profesiones.
+Base: mod-challenge-modes 1930525b9530d329cb9fe0504a3c9b5b40a12261.
+Problema: el filtro sólo miraba la víctima y la XP profesional no lleva una.
+Solución: bloquear también la fuente 42 del módulo, conservando el resto de
+fuentes y los multiplicadores existentes. Sin dependencia de compilación.
+
+--- a/src/ChallengeModes.cpp
++++ b/src/ChallengeModes.cpp
+@@ -601,7 +601,9 @@
+         {
+             return;
+         }
+-        if (victim)
++        // 42: fuente independiente de mod-profession-experience; sin víctima.
++        // Conservar el tratamiento original de las demás fuentes de XP.
++        if (victim || xpSource == 42)
+         {
+             // Still award XP to pets - they won't be able to pass the player's level
+             Pet* pet = player->GetPet();

@@ -1,0 +1,350 @@
+[worldserver]
+
+###################################################################################################
+# MOD-PARTY-HERE
+#
+#   Grupo donde estas, sin cola. Un comando te forma un grupo de bots de tu
+#   nivel y tu faccion y los trae a tu lado, con tanque y sanador de verdad:
+#
+#     .grupo              grupo de 5 (tanque, sanador y dano, menos lo que tu seas)
+#     .grupo 2            dos bots
+#     .grupo mazmorra     lo mismo que .grupo
+#     .grupo banda [10|25|40]   una banda (sin numero: segun tu dificultad de banda)
+#     .grupo fuera [nombre]   se van todos, o solo ese companhero
+#     .grupo cambia <nombre>  ese se va y viene otro en su plaza
+#     .grupo quieto [nombre]  se plantan donde estan (o solo ese)
+#     .grupo sigue [nombre]   vuelven a seguirte (o solo ese)
+#     .grupo estado       quien esta y de donde vino
+#
+#   Y en automatico: al aceptar una mision de grupo ("Jugadores sugeridos: 3"
+#   en el diario) invita a los bots que falten, que se van solos al entregarla
+#   o al cambiar de zona.
+#
+#   Los bots del grupo quedan a cargo de mod-queue-bots en cuanto entrais en
+#   una instancia (equipo topado a tu fase, mod-dungeon-clear si hay tanque
+#   bot, canje de tokens tras cada jefe). Los de tu hermandad (mod-home-guild)
+#   tienen preferencia.
+#
+#   Requiere mod-playerbots con bots aleatorios. Sin el, compila y no hace nada.
+#
+###################################################################################################
+
+#
+#    PartyHere.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+PartyHere.Enable = 1
+
+#
+#    PartyHere.LevelBelow / PartyHere.LevelAbove
+#        Descripcion: Tramo de nivel de los bots, respecto al tuyo. Por defecto
+#                     hasta tres por debajo y ninguno por encima: en un grupo
+#                     de cinco un bot mas alto que tu te roba la experiencia.
+#        Por defecto: 3 / 0
+
+PartyHere.LevelBelow = 3
+PartyHere.LevelAbove = 0
+
+#
+#    PartyHere.MaxRaidBots
+#        Descripcion: Tope de bots en una banda formada con ".grupo banda".
+#                     No puede pasar de AiPlayerbot.MaxAddedBots. Rango
+#                     valido: 5-40 (fuera de ese rango se ajusta solo).
+#        Por defecto: 39
+
+PartyHere.MaxRaidBots = 39
+
+#
+#    PartyHere.AutoGroupQuests
+#        Descripcion: Al aceptar una mision con "jugadores sugeridos", invitar
+#                     a bots hasta cubrirlos (tope AutoMaxBots). Se van solos
+#                     al entregar la mision, al abandonarla o al salir de la
+#                     zona, pasados AutoLingerSeconds.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+PartyHere.AutoGroupQuests = 1
+
+#
+#    PartyHere.AutoMaxBots
+#        Descripcion: Tope de bots que se invitan solos por una mision de grupo.
+#        Por defecto: 2
+
+PartyHere.AutoMaxBots = 2
+
+#
+#    PartyHere.AutoLingerSeconds
+#        Descripcion: Segundos que los bots automaticos siguen contigo despues
+#                     de que ya no haga falta (entregada la mision, cambio de
+#                     zona), por si encadenas otra.
+#        Por defecto: 120
+
+PartyHere.AutoLingerSeconds = 120
+
+#
+#    PartyHere.SyncQuestsToGroup
+#        Descripcion: Mientras un bot sea tu companhero (por ".grupo"/".grupo
+#                     banda" o por una mision de grupo automatica), se le dan
+#                     tambien tus misiones activas que pueda coger (mismo
+#                     criterio de nivel/raza/clase/requisitos que al jugador),
+#                     incluidas las de mazmorra y banda -aqui SI, a diferencia
+#                     de QuestMates.*, porque el bot ya esta dentro contigo-.
+#                     Se le retira su copia en cuanto tu la abandones o la
+#                     entregues, o en cuanto deje de ser tu companhero. Sirve
+#                     para que tambien aproveche las copias de botin blanco de
+#                     mision de mod-quest-loot-party (SP04). No se pide ninguna
+#                     reserva nueva de BotClaims: el bot ya es tuyo mientras
+#                     este en el grupo. Con 0, como antes: el grupo no comparte
+#                     mision.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado, comportamiento anterior a SP05)
+
+PartyHere.SyncQuestsToGroup = 1
+
+#
+#    PartyHere.DismissAutoOnZoneChange
+#        Descripcion: Echar a los companeros automaticos al cambiar de zona
+#                     AUNQUE la mision de grupo que los trajo siga activa
+#                     (INCOMPLETE o pendiente de entregar). Por defecto 0:
+#                     muchas misiones "(Grupo)" se aceptan en el pueblo y se
+#                     hacen o entregan en otra zona, y con esto a 1 los bots se
+#                     iban justo cuando los necesitabas. Con 0 se quedan hasta
+#                     que entregas la mision (o pasan AutoLingerSeconds sin
+#                     ninguna mision automatica activa).
+#        Por defecto: 0 - (desactivado)
+#                     1 - (activado, comportamiento antiguo)
+
+PartyHere.DismissAutoOnZoneChange = 0
+
+#
+#    PartyHere.SummonDelay
+#        Descripcion: Segundos hasta traer al bot a tu lado tras unirse (mas
+#                     0-2 s de azar). 0 = nunca: que venga andando.
+#        Por defecto: 3
+
+PartyHere.SummonDelay = 3
+
+#
+#    PartyHere.SummonRetrySeconds / PartyHere.SummonGiveUpSeconds
+#        Descripcion: Cada cuanto se reintenta traer a un bot que no vino y
+#                     cuanto tiempo se sigue intentando antes de dejarlo donde
+#                     este.
+#        Por defecto: 3 / 60
+
+PartyHere.SummonRetrySeconds = 3
+PartyHere.SummonGiveUpSeconds = 60
+
+#
+#    PartyHere.SummonDistance / PartyHere.SummonPlaceRadius
+#        Descripcion: A partir de cuantas yardas se considera que el bot "ya
+#                     esta cerca" (y no se le trae), y radio en el que se busca
+#                     un hueco con linea de vision alrededor del lider.
+#        Por defecto: 40 / 4
+
+PartyHere.SummonDistance = 40
+PartyHere.SummonPlaceRadius = 4
+
+#
+#    PartyHere.ResurrectOnSummon
+#        Descripcion: Revivir al bot muerto antes de traerlo. Con 0 se le deja
+#                     hacer su propio regreso al cadaver.
+#        Por defecto: 1 - (activado)
+
+PartyHere.ResurrectOnSummon = 1
+
+#
+#    PartyHere.Replenish / PartyHere.ReplenishThrottleSeconds
+#        Descripcion: Reponer companheros que se van de un grupo MANUAL
+#                     (".grupo N" / ".grupo banda"): si el grupo baja de su
+#                     tamanho y no estas en una instancia, se buscan bots hasta
+#                     volver a llenarlo, respetando la composicion. Solo grupos
+#                     manuales (los automaticos por mision no se reponen). Un
+#                     bot echado a mano (".grupo fuera <nombre>") baja el tamanho:
+#                     no se repone.
+#                     ReplenishThrottleSeconds acota cada cuanto se intenta.
+#        Por defecto: 1 / 15
+
+PartyHere.Replenish = 1
+PartyHere.ReplenishThrottleSeconds = 15
+
+#
+#    PartyHere.PersistMinutes
+#        Descripcion: Si te desconectas con CUALQUIER grupo manual (".grupo",
+#                     ".grupo N" o ".grupo banda") y vuelves antes de estos
+#                     minutos, se te recompone un grupo del mismo tamanho al
+#                     entrar. Antes solo se recomponian los de mas de 5 (un
+#                     grupo de 5 nunca sobrevivia a un logout); ahora se trata
+#                     igual cualquier tamanho (M50). ".grupo fuera" cancela el
+#                     recuerdo; una baja parcial (".grupo fuera <nombre>") solo
+#                     baja el tamanho que se recompondria. Con 0 no se
+#                     recompone nada.
+#        Por defecto: 10
+
+PartyHere.PersistMinutes = 10
+
+#
+#    PartyHere.PendingTimeoutSeconds / PendingRetrySeconds / PendingWakeSeconds
+#        Descripcion: Si al pedir companheros (".grupo", ".grupo banda", una
+#                     mision de grupo o la recomposicion tras un relogin) no hay
+#                     bots suficientes, la peticion se queda pendiente y se
+#                     completa sola cuando despierten: se reintenta cada
+#                     PendingRetrySeconds, se despiertan bots como mucho cada
+#                     PendingWakeSeconds y se abandona (con aviso) pasados
+#                     PendingTimeoutSeconds. ".grupo fuera" la cancela; salir
+#                     del grupo, desconectar, entrar en una cola o terminar la
+#                     mision tambien.
+#        Por defecto: 180 / 5 / 45
+
+PartyHere.PendingTimeoutSeconds = 180
+PartyHere.PendingRetrySeconds = 5
+PartyHere.PendingWakeSeconds = 45
+
+#
+#    PartyHere.RoleWaitSeconds
+#        Descripcion: Grupo manual: segundos que se guardan libres las plazas de
+#                     tanque y sanador esperando a que despierte un bot de ese
+#                     rol, antes de cubrirlas con cualquiera. Los grupos
+#                     automaticos por mision no esperan. Con 0, como antes: se
+#                     cubren al momento con quien haya.
+#        Por defecto: 45
+
+PartyHere.RoleWaitSeconds = 45
+
+#
+#    PartyHere.RoleRespec
+#        Descripcion: Grupo manual: pasada RoleWaitSeconds sin tanque o sin
+#                     sanador, un bot libre del tramo de una clase capaz
+#                     (guerrero, paladin o caballero de la Muerte para tanque;
+#                     paladin, sacerdote, chaman o druida para sanador) cambia
+#                     su rama de talentos a la del rol, con la plantilla de
+#                     playerbots (lo mismo que su comando "talents spec"). El
+#                     cambio se queda en el bot. Si ni asi hay nadie, se avisa
+#                     al jugador de que el grupo sale sin ese rol.
+#        Por defecto: 0 (desactivado; el perfil de config.sh lo activa)
+
+PartyHere.RoleRespec = 0
+
+#
+#    PartyHere.DismissExcludeMinutes
+#        Descripcion: Minutos durante los que un bot echado con ".grupo fuera
+#                     <nombre>" o cambiado con ".grupo cambia <nombre>" no vuelve
+#                     a entrar en tu grupo por reposicion o peticion. Con 0, sin
+#                     exclusion.
+#        Por defecto: 10
+
+PartyHere.DismissExcludeMinutes = 10
+
+#
+#    PartyHere.ScanIntervalMs
+#        Descripcion: Milisegundos entre pasadas del recorrido de parties
+#                     (traer bots, echar automaticos, limpiar). Minimo 500.
+#        Por defecto: 3000
+
+PartyHere.ScanIntervalMs = 3000
+
+#
+#    PartyHere.MaxGroupBots
+#        Descripcion: Tope de bots para ".grupo N" (no ".grupo banda"). Con 0
+#                     usa PartyHere.MaxRaidBots.
+#        Por defecto: 0
+
+PartyHere.MaxGroupBots = 0
+
+#
+#    PartyHere.Tanks / PartyHere.Healers
+#        Descripcion: Fijar cuantos tanques y sanadores se aseguran en el grupo
+#                     antes de meter gente de dano. Con 0 se decide por el
+#                     tamano (grupo de 5: 1/1; banda de 10: 2/3; 25: 3/6;
+#                     40: 5/12). No se aplican a un grupo de dos.
+#        Por defecto: 0 / 0
+
+PartyHere.Tanks = 0
+PartyHere.Healers = 0
+
+#
+#    PartyHere.AutoQuestMinSuggested
+#        Descripcion: Umbral minimo de "jugadores sugeridos" de una mision de
+#                     grupo para invitar bots en automatico. Con 0, cualquier
+#                     mision que sugiera al menos 1.
+#        Por defecto: 0
+
+PartyHere.AutoQuestMinSuggested = 0
+
+#
+#    PartyHere.AnnounceErrors
+#        Descripcion: Mostrar los mensajes de fallo ("no hay bots libres", "ya
+#                     estas en otro grupo"), aparte del interruptor Announce.
+#        Por defecto: 1 - (activado)
+
+PartyHere.AnnounceErrors = 1
+
+#
+#    PartyHere.WakeThrottleSeconds
+#        Descripcion: Margen entre tandas de despertar bots dormidos.
+#        Por defecto: 15
+
+PartyHere.WakeThrottleSeconds = 15
+
+#
+#    PartyHere.WakeBots / PartyHere.WakeMax
+#        Descripcion: Si no hay bastantes bots libres de tu tramo, despertar
+#                     dormidos de la reserva (igual que mod-queue-bots).
+#        Por defecto: 1 / 20
+
+PartyHere.WakeBots = 1
+PartyHere.WakeMax = 20
+
+#
+#    PartyHere.BotMinWorldSeconds
+#        Descripcion: Antiguedad minima de la sesion de un bot antes de traerlo
+#                     junto al lider. El tiempo de espera no consume el plazo
+#                     propio del intento de teletransporte.
+#        Por defecto: 60 (0 desactiva la guarda)
+
+PartyHere.BotMinWorldSeconds = 60
+
+#
+#    PartyHere.Announce
+#        Descripcion: Avisar por chat de quien se une y quien se va.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+PartyHere.Announce = 1
+
+#
+#    PartyHere.LoadGraceSeconds
+#        Descripcion: Segundos de gracia mientras el lider cambia de mapa (entra
+#                     a una mazmorra, piedra de hogar, vuelo entre continentes):
+#                     durante ese rato su sesion sigue viva pero no esta "en el
+#                     mundo". Sin este margen, si el escaneo cae en esa ventana
+#                     la party se destruye en plena pantalla de carga. Al
+#                     desconectarse del todo la party se disuelve al momento.
+#        Por defecto: 30
+
+PartyHere.LoadGraceSeconds = 30
+
+#
+#    PartyHere.GearMode / GearMargin / GearTolerance / GearMinItemLevel
+#        Descripcion: Topar el equipo de los bots al unirse. Mismas claves y
+#                     mismo criterio que QueueBots.Gear* (ver mod_queue_bots.conf).
+#                     El tope de fase manda siempre sobre GearMinItemLevel.
+#        Por defecto: 1 / 6 / 8 / 0
+
+PartyHere.GearMode = 1
+PartyHere.GearMargin = 6
+PartyHere.GearTolerance = 8
+PartyHere.GearMinItemLevel = 0
+
+#
+#    BotPopulation.*  (coordinador compartido de logins de bot)
+#        party-here reserva cada GUID en el coordinador transversal antes de
+#        conectarlo. El bloque de opciones (PendingTimeoutSeconds /
+#        MaxPendingTotal / MaxPendingPerFaction / MaxPendingPerRange) se
+#        documenta en mod_world_bots.conf; sin world-bots se usan los valores
+#        por defecto (90 / 40 / 24 / 12) y el tope global sale de
+#        AiPlayerbot.MaxRandomBots.
+
+#
+###################################################################################################

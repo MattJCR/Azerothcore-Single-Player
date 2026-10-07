@@ -1,0 +1,31 @@
+## Interface: 30300
+## Version: 2.1.0
+## Title: MultiBot
+## Notes: Interfaz de usuario para Playerbot
+## Notes-esES: Interfaz obligatoria para controlar y organizar los bots del servidor.
+## Author: Nico Löbbert
+## SavedVariables: MultiBotSave
+
+MultiBotEngine.lua
+MultiBotLocalizationES.lua
+MultiBotHandler.lua
+MultiBotDeathKnight.lua
+MultiBotDruid.lua
+MultiBotHunter.lua
+MultiBotMage.lua
+MultiBotPaladin.lua
+MultiBotPriest.lua
+MultiBotRogue.lua
+MultiBotShaman.lua
+MultiBotWarlock.lua
+MultiBotWarrior.lua
+MultiBotEvery.lua
+MultiBotStats.lua
+MultiBotSpell.lua
+MultiBotItem.lua
+MultiBot.lua
+MultiBotModules.lua
+MultiBotItemus.lua
+MultiBotIconos.lua
+MultiBotReward.lua
+MultiBotNecronet.lua

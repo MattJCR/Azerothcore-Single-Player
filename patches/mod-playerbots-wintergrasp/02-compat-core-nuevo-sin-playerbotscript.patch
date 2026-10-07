@@ -1,0 +1,100 @@
+Licencia: GPL-2.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Compatibilidad con el core nuevo de mod-playerbots: sin PlayerbotScript ni IsBot().
+
+Problema
+--------
+El 02/10/2026 el core del fork (mod-playerbots/azerothcore-wotlk, f19a18799) y
+mod-playerbots (037c0141) dejaron de llevar los ganchos exclusivos del fork y
+pasaron a los de AzerothCore (mod-playerbots #2765, #2792, #2820):
+
+  PlayerbotScript::OnPlayerbotPacketSent(Player*, WorldPacket const*)
+                                          -> ServerScript::OnPacketSent(WorldSession*, WorldPacket const&)
+  PlayerbotScript::OnPlayerbotLogout(Player*)  -> PlayerScript::OnPlayerLogout
+  PlayerbotScript::OnPlayerbotUpdate(diff)     -> WorldScript::OnUpdate
+  WorldSession::IsBot()                        -> WorldSession::IsHeadless()
+
+mod-playerbots-wintergrasp (f313a99, sin commits nuevos arriba) sigue usando los
+cuatro: contra el core nuevo no compila ("PlayerbotScript no declarado").
+
+Solucion
+--------
+Mover las tres clases de gancho al equivalente de AzerothCore, sin cambiar lo
+que hace cada una:
+
+  - El script de paquetes pasa a ServerScript y declara solo
+    SERVERHOOK_ON_PACKET_SENT. OnPacketSent salta para TODA sesion, humana o
+    no, y tambien sin jugador (login): se saca el Player de la sesion y IsPlayerbot()
+    (ahora IsHeadless()) descarta lo que no sea un bot, igual que antes.
+  - El logout de bots pasa a PlayerScript::OnPlayerLogout, que ya salta para los
+    bots (mod-playerbots lo usa igual), filtrando por IsPlayerbot().
+  - La actualizacion de la IA tactica pasa a WorldScript::OnUpdate, al principio
+    y antes del "return" por modulo apagado, que es donde estaba el gancho viejo.
+
+IsHeadless() es "sesion sin socket", fijo desde la construccion: lo mismo que
+era IsBot() para los playerbots.
+
+Escrito contra mod-playerbots-wintergrasp f313a99 con el parche 01 ya puesto.
+Solo vale contra el core nuevo: contra el viejo (7f12e89) no compila.
+
+Nota sobre el diff: PlayerbotsWintergrasp.cpp mezcla CRLF (casi todo) con LF, y
+varias de las lineas que cambian son CRLF, asi que este parche lleva  al final
+de esas lineas. Por eso .gitattributes lo marca "-text" (el "*.patch eol=lf"
+general los quitaria y dejaria de casar byte a byte). Se aplica con
+--unidiff-zero, como el 01.
+
+diff --git a/src/PlayerbotsWintergrasp.cpp b/src/PlayerbotsWintergrasp.cpp
+index 6cd2a19..992ed71 100644
+--- a/src/PlayerbotsWintergrasp.cpp
++++ b/src/PlayerbotsWintergrasp.cpp
+@@ -23,0 +24 @@
++#include "ServerScript.h"
+@@ -250 +251 @@ namespace
+-               player->GetSession()->IsBot();
++               player->GetSession()->IsHeadless();
+@@ -344 +345 @@ namespace
+-    class PlayerbotsWintergraspPacketScript : public PlayerbotScript
++    class PlayerbotsWintergraspPacketScript : public ServerScript
+@@ -348 +349 @@ namespace
+-            : PlayerbotScript("PlayerbotsWintergraspPacketScript")
++            : ServerScript("PlayerbotsWintergraspPacketScript", { SERVERHOOK_ON_PACKET_SENT })
+@@ -352 +353 @@ namespace
+-        void OnPlayerbotPacketSent(Player* player, WorldPacket const* packet) override
++        void OnPacketSent(WorldSession* session, WorldPacket const& sentPacket) override
+@@ -353,0 +355,3 @@ namespace
++            Player* player = session ? session->GetPlayer() : nullptr;
++            WorldPacket const* packet = &sentPacket;
++
+@@ -406,15 +409,0 @@ namespace
+-
+-        void OnPlayerbotLogout(Player* player) override
+-        {
+-            if (player)
+-            {
+-                WintergraspPendingStore::Instance().Erase(player->GetGUID().GetCounter());
+-                PlayerbotsWintergrasp::ForgetBot(player->GetGUID().GetCounter());
+-            }
+-        }
+-
+-        void OnPlayerbotUpdate(uint32 diff) override
+-        {
+-            PlayerbotsWintergrasp::UpdateBotTactics(
+-                diff, IsEnabled() && TacticsEnabled(), TacticsUpdateInterval());
+-        }
+@@ -427 +416 @@ namespace
+-            : PlayerScript("PlayerbotsWintergraspAnnounceScript", { PLAYERHOOK_ON_LOGIN })
++            : PlayerScript("PlayerbotsWintergraspAnnounceScript", { PLAYERHOOK_ON_LOGIN, PLAYERHOOK_ON_LOGOUT })
+@@ -438,0 +428,9 @@ namespace
++
++        void OnPlayerLogout(Player* player) override
++        {
++            if (!player || !IsPlayerbot(player))
++                return;
++
++            WintergraspPendingStore::Instance().Erase(player->GetGUID().GetCounter());
++            PlayerbotsWintergrasp::ForgetBot(player->GetGUID().GetCounter());
++        }
+@@ -466,0 +465,3 @@ namespace
++            PlayerbotsWintergrasp::UpdateBotTactics(
++                diff, IsEnabled() && TacticsEnabled(), TacticsUpdateInterval());
++

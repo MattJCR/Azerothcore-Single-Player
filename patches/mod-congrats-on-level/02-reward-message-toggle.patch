@@ -1,0 +1,84 @@
+Licencia: AGPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Poder apagar el mensaje de recompensa de mod-congrats-on-level, e ignorar a
+los bots.
+
+El modulo manda, en cada nivel con premio, un anuncio a todo el servidor
+("[FELICITACIONES!] X ha alcanzado el nivel N") y un aviso de banda al jugador
+("Se le ha concedido N cobre y unos cuantos tesoros"), sin opcion para
+apagarlos ("Always send message on reward level up"). Con el parche 01, que
+premia en todos los niveles, salen en cada subida, y el anuncio se duplica con
+el de CongratsPerLevel.Enable.
+
+Y los bots de playerbots pasan por el mismo hook: cada bot que sube de nivel
+recibe premio (oro y objetos) y se anuncia a todo el servidor. Con cientos de
+bots es ruido continuo.
+
+Claves nuevas, declaradas en el .conf.dist para que set_conf_value no avise:
+  Congrats.RewardMessage (1 por defecto, como venia)
+  Congrats.IgnoreBots    (1 por defecto: los bots ni premio ni anuncio)
+
+Se aplica DESPUES de 01-reward-any-level.patch. Escrito el 02/09/2026 contra
+el commit fed4752e (el fijado en versions.lock) ya con el parche 01 puesto.
+
+--- a/src/mod_congratsonlevel.cpp
++++ b/src/mod_congratsonlevel.cpp
+@@ -74,6 +74,8 @@
+     uint32 acoreMessageId;
+     bool congratsAnnounce, congratsEnable;
+     bool CongratsPerLevelEnable;
++    bool rewardMessage;
++    bool ignoreBots;
+ };
+ 
+ COL col;
+@@ -142,6 +144,12 @@
+     // Level Up Rewards
+     void OnPlayerLevelChanged(Player* player, uint8 oldLevel) override
+     {
++        // Los bots de playerbots tambien pasan por aqui: cada uno que sube de
++        // nivel recibe premio y se anuncia a todo el servidor. Con cientos de
++        // bots es ruido continuo y oro regalado: Congrats.IgnoreBots.
++        if (col.ignoreBots && player->GetSession() && player->GetSession()->IsHeadless())
++            return;
++
+         // If enabled...
+         if (col.congratsEnable)
+         {
+@@ -192,8 +200,10 @@
+                 sWorldSessionMgr->SendServerMessage(SERVER_MSG_STRING, ss.str().c_str());
+             }
+ 
+-            // Always send message on reward level up
+-            if (isRewardLevel)
++            // Mensaje de recompensa (anuncio al servidor + aviso de banda al
++            // jugador). Con el premio en todos los niveles sale en cada subida,
++            // asi que se puede apagar: Congrats.RewardMessage.
++            if (isRewardLevel && col.rewardMessage)
+             {
+                 // Issue a server notification for the player on level up.
+                 std::ostringstream ss;
+@@ -282,6 +292,8 @@
+             col.congratsAnnounce = sConfigMgr->GetOption<uint32>("Congrats.Announce", 1);
+             col.congratsEnable = sConfigMgr->GetOption<uint32>("Congrats.Enable", 1);
+             col.CongratsPerLevelEnable = sConfigMgr->GetOption<uint32>("CongratsPerLevel.Enable", 1);
++            col.rewardMessage = sConfigMgr->GetOption<uint32>("Congrats.RewardMessage", 1);
++            col.ignoreBots = sConfigMgr->GetOption<uint32>("Congrats.IgnoreBots", 1);
+         }
+     }
+ };
+--- a/conf/mod_congratsonlevel.conf.dist
++++ b/conf/mod_congratsonlevel.conf.dist
+@@ -19,3 +19,12 @@
+ # ID Acore String Message
+ 
+ Congrats.Acore.String.ID = 60000
++
++# Announce the reward (server message + raid warning) when a reward level is reached? (1: true | 0: false)
++# With rewards on every level this fires on every level-up.
++
++Congrats.RewardMessage = 1
++
++# Ignore playerbots (no reward, no announcement when a bot levels up)? (1: true | 0: false)
++
++Congrats.IgnoreBots = 1

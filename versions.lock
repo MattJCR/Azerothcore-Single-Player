@@ -1,0 +1,106 @@
+# versions.lock — versiones conocidas como funcionales
+# Actualizado a mano el 2026-09-01 (core, playerbots, individual-progression, transmog)
+# 2026-09-02: añadido mod-dungeon-clear (jrad7), fijado al commit de ese día
+# 2026-09-02 (noche): añadidos mod-world-buff-bots (Rockhopper1776) y mod-token-turnin (Zerathane)
+# 2026-09-05: core, mod-playerbots, mod-dungeon-clear y mod-dungeon-master a lo último de su rama (revisado antes; ver CHANGELOG)
+# 2026-09-08: mod-dungeon-master y mod-dungeon-clear actualizados tras revisión, compilación y verificación (ver CHANGELOG)
+# 2026-09-10: mod-dungeon-clear a c09adcda (Halls of Reflection map 668 + arreglos HoR/Razorgore; aditivo, sin cambios de conf/SQL/parches)
+# 2026-09-11: core (69 commits, fixes DB/quests/Ulduar), mod-playerbots (24 commits,
+#   incl. concentrar bots en tu zona y arreglo de casteo con loot) y mod-dungeon-clear
+#   (Culling of Stratholme) a lo último de su rama. Revisado antes: los 3 parches de
+#   mod-playerbots (01-03) aplican limpios (solo desplazamiento de línea), claves
+#   AiPlayerbot.* intactas en conf.dist y código, símbolos que usan los módulos propios
+#   (IsTank/IsHeal/ResetStrategies/AddPlayerBot/LogoutPlayerBot/IsRandomBot) con la misma
+#   firma, sin SQL nuevo en ninguno de los tres. Ver CHANGELOG.
+# 2026-09-12: añadido mod-playerbots-wintergrasp (vrzgames), fijado al commit de ese día
+#   Solo la parte base (aceptar cola/entrada a
+#   Wintergrasp); la IA táctica del módulo (Tactics.Enable) va desactivada.
+#   Parche local que evita una copia de paquete innecesaria mientras la
+#   táctica está apagada: ver patches/mod-playerbots-wintergrasp/.
+# 2026-09-12: añadido mod-guild-levels (Old-Man-Warcraft), fijado al commit de ese
+#   día. Sin mod-ale/AIO (su wiring de Lua es
+#   condicional a MOD_ALE_FOUND, no se activa). Todos los hooks usados
+#   (PlayerScript/GuildScript) verificados letra por letra contra el core de
+#   esta VM antes de compilar. Sin parche local.
+# 2026-09-15: mod-dungeon-clear a 29c53fd (soporte para The Oculus, mapa 578);
+#   aditivo, sin cambios de conf/SQL, sin parche local. Desplegado y congelado
+#   con --freeze (ver CHANGELOG).
+# 2026-09-20: core (132 commits, 2026-09-11 -> 2026-09-18: fixes DB/quests/
+#   Ulduar, hooks nuevos de entrenador #27552 y ArenaScript OnAddMember que
+#   sustituye a OnGetStartPersonalRating), mod-playerbots (8 commits,
+#   reescritura de Zul'Aman, arreglos de Gruul, guard null en HandleCommand)
+#   y mod-aoe-loot (1 commit, no fusiona loot reservado por tirada de grupo)
+#   a lo último de su rama. Revisado antes: OnPlayerResurrect (parche de
+#   mod-challenge-modes) sin cambios; OnGetStartPersonalRating sin uso en
+#   ningún módulo propio ni de terceros instalado; PointMovementGenerator sin
+#   uso propio; sin claves de conf eliminadas; nuestros parches de
+#   mod-playerbots (01-04) y mod-aoe-loot no se solapan con los ficheros
+#   tocados. Añadido modules/mod-arac-trainer-audit, que usa los hooks nuevos
+#   de entrenador para verificar en el log los instructores genéricos de
+#   ARAC (ver CHANGELOG: se descartó generalizar por datos el parche de
+#   Domar Bestia a todo playercreateinfo_spell_custom, produce ~200 filas sin
+#   sentido, sobre todo pasivos/raciales/idiomas).
+# 2026-09-23: core (99 commits: la BD de playerbots sale del core al módulo,
+#   Spell con lanzador WorldObject, isLogingOut -> IsLoggingOut, hook de
+#   entrenador antes de lanzar la entrada), mod-playerbots (18, va a la par con
+#   el core), mod-dungeon-clear (4), mod-individual-progression (1, Naxx40),
+#   mod-instanced-worldbosses y mod-racial-trait-swap (solo CI). Reinstalación
+#   limpia de la VM ese mismo día. Ver CHANGELOG.
+# 2026-09-24: retirado del proyecto el módulo de talentos por era (fila, espejo
+#   y parches); reinstalación limpia de la VM para comprobarlo. Ver CHANGELOG.
+# 2026-09-27: mod-aoe-loot (1 commit: correo si no caben en las bolsas, tras
+#   AOELoot.MailEnable=0 por defecto), mod-individual-progression (2: arregla
+#   el teleport de emergencia a homebind y el crédito de misión de banda en
+#   la puerta de AQ), mod-random-enchants (1: mismo arreglo SQL que ya traía
+#   nuestro parche + return -1 en el camino sin resultados) y mod-dungeon-clear
+#   (2: compatibilidad con la forma nueva de hooks de mod-playerbots, aditivo,
+#   compila igual contra nuestro playerbots pinneado) a lo último de su rama.
+#   Revisado antes: sin conf ni comandos nuevos en ninguno de los cuatro;
+#   01-module-string-collation.patch (mod-aoe-loot) sigue aplicando igual;
+#   01-level-scaled-tiers.patch (mod-random-enchants) reescrito porque el
+#   arreglo SQL ya pasó a ser de fábrica, se queda sólo el tope de tier por
+#   nivel. Desplegado, recompilado (26m40s), verificado y congelado con
+#   --freeze el mismo día. Ver CHANGELOG.
+# 2026-10-01: mod-dungeon-clear a b501c63 (25 commits: Karazhan con ajedrez de
+#   Medivh, Blackrock Spire/Depths partidas en alas, `.dc wing`, `.dc bgqueuefill`
+#   y `.dc test plan edit|pause|resume`; relleno instantáneo de campos de
+#   batalla apagado por defecto) y mod-individual-progression a 723c510
+#   (rangos PvP: ya no borra ni reanuncia los logros; opción nueva
+#   VanillaPvpKeepAllEarnedTitles=0). Sin parches propios sobre ninguno de los
+#   dos. Ver CHANGELOG.
+# 2026-10-05: core f19a187 + mod-playerbots 037c014 (sin ganchos exclusivos del fork:
+#   WorldSession::IsBot() -> IsHeadless(), PlayerbotScript -> ServerScript/PlayerScript/
+#   WorldScript, BD de playerbots asíncrona), mod-dungeon-clear 60f3d98 y
+#   mod-individual-progression 60336b3. Migrados los módulos propios y parche 02 de
+#   mod-playerbots-wintergrasp. Ver CHANGELOG.
+#
+# Para volver a una de estas versiones:  ./install.sh --only 3 && ./install.sh --from 4
+# Para actualizar el lock a lo instalado: ./install.sh --freeze
+#
+# nombre                      	rama        	commit                                  	fecha     	url
+core	Playerbot	f19a18799a35f7c24bdcdc9ea399c601f166259b	2026-10-02	https://github.com/mod-playerbots/azerothcore-wotlk.git
+mod-1v1-arena	master	5ef5708d031f3b02283e6e599aa655bd320d904e	2026-03-25	https://github.com/azerothcore/mod-1v1-arena.git
+mod-ah-bot-plus	master	f685832994c825f90aa5a3dc0e1620aa568e875b	2026-07-02	https://github.com/NathanHandley/mod-ah-bot-plus.git
+mod-aoe-loot	master	57279b660a278e9b3a1afa425e7c7a5edc72b7bb	2026-09-25	https://github.com/azerothcore/mod-aoe-loot.git
+mod-quest-loot-party	master	6f073c1bef1bba1aa73787d1e30db7429f2b1c7b	2026-05-10	https://github.com/pangolp/mod-quest-loot-party.git
+mod-autobalance	master	73d4ad3c379fbfc35c63b5b9b44fba1f7d9e213d	2026-01-16	https://github.com/azerothcore/mod-autobalance.git
+mod-challenge-modes	master	1930525b9530d329cb9fe0504a3c9b5b40a12261	2025-11-25	https://github.com/ZhengPeiRu21/mod-challenge-modes.git
+mod-congrats-on-level	master	fed4752e0cd71db7faa4d6f9f4650f5377d2f31c	2025-02-28	https://github.com/azerothcore/mod-congrats-on-level.git
+mod-dungeon-clear	master	60f3d98b83143714041df4120abd45f0e3c3ebd7	2026-10-01	https://github.com/jrad7/mod-dungeon-clear.git
+mod-dungeon-master	main	612eaf804cd7fc4af74fde66d376a571a5550077	2026-09-06	https://github.com/InstanceForge/mod-dungeon-master.git
+mod-guild-levels	main	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	2026-05-01	https://github.com/Old-Man-Warcraft/mod-guild-levels.git
+mod-guildhouse	master	0b3cc14e947a859f8a7751a10676107d6316275b	2026-06-18	https://github.com/azerothcore/mod-guildhouse.git
+mod-individual-progression	master	60336b349cce2bc209d154bb840f2370f1cc16f2	2026-10-04	https://github.com/ZhengPeiRu21/mod-individual-progression.git
+mod-instanced-worldbosses	master	4c7a6310a748c199f79d7be2bbdcbc3191985bdc	2026-09-21	https://github.com/azerothcore/mod-instanced-worldbosses.git
+mod-instance-reset	master	1e2c20770f40f5382348b7649291371f47c86812	2026-03-23	https://github.com/azerothcore/mod-instance-reset.git
+mod-playerbots	master	037c01418b5d01506917a3db9b44fd56ac5f965c	2026-10-02	https://github.com/mod-playerbots/mod-playerbots.git
+mod-playerbots-wintergrasp	main	f313a99fb6aedd74d60275446e281552d7a0d491	2026-09-08	https://github.com/vrzgames/mod-playerbots-wintergrasp.git
+mod-racial-trait-swap	main	8ae1e6fab13b4660eed76aca8fce998a18343048	2026-09-20	https://github.com/azerothcore/mod-racial-trait-swap.git
+mod-random-enchants	master	6d49d64918f1e798490d0139038a33194fd294df	2026-09-24	https://github.com/azerothcore/mod-random-enchants.git
+mod-reagent-bank	master	62c265338ceba10fb754394413e6c4c61cedf9de	2026-04-23	https://github.com/ZhengPeiRu21/mod-reagent-bank.git
+mod-token-turnin	master	73e447c499751559549e129a39c58c42fe661e73	2026-07-30	https://github.com/Zerathane/mod-token-turnin.git
+mod-transmog	master	0d85cbc53d63ce2df8527169ce6ae47f5f6f6ba8	2026-07-26	https://github.com/azerothcore/mod-transmog.git
+mod-war-effort	master	512a2dd97e6589482148ed870dc67e7292a8c5ac	2026-06-21	https://github.com/azerothcore/mod-war-effort.git
+mod-world-buff-bots	main	baae5656aa6a375e103bc83da8262f2061dbfcb6	2026-08-29	https://github.com/Rockhopper1776/mod-world-buff-bots.git
+mod-arac	master	3f605e09c656eb3b620ef2d70c7ef61808c1cfb0	2025-07-24	https://github.com/heyitsbench/mod-arac.git
+mod-profession-experience	main	d1bd97085d27bb8de11d13af097d02460556b0f3	2026-07-23	https://github.com/Tereneckla/mod-profession-experience.git

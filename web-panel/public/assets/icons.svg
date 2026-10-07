@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Razas: retratos heráldicos simplificados, legibles incluso a 20 px. -->
+    <symbol id="race-1" viewBox="0 0 32 32"><path d="M10 6l3-3 3 3 3-3 3 3 3 10-4 11H11L7 16zm2 7v5l4 4 4-4v-5l-4 2z"/></symbol>
+    <symbol id="race-2" viewBox="0 0 32 32"><path d="M6 11l6-7 4 5 4-5 6 7-3 4 2 6-9 7-9-7 2-6zm6 3v6l4 3 4-3v-6l-4 2z"/></symbol>
+    <symbol id="race-3" viewBox="0 0 32 32"><path d="M8 9l4-6 4 5 4-5 4 6-2 5 3 4-4 10H11L7 18l3-4zm4 4v6l4 4 4-4v-6l-4 2z"/></symbol>
+    <symbol id="race-4" viewBox="0 0 32 32"><path d="M4 5l9 5 3-7 3 7 9-5-6 11 1 8-7 5-7-5 1-8zm9 9v7l3 3 3-3v-7l-3 2z"/></symbol>
+    <symbol id="race-5" viewBox="0 0 32 32"><path d="M8 8l5-5 3 5 3-5 5 5-2 6 4 6-6 9-4-5-4 5-6-9 4-6zm5 4v7l3-3 3 3v-7l-3 2z"/></symbol>
+    <symbol id="race-6" viewBox="0 0 32 32"><path d="M2 7l11 3 3-7 3 7 11-3-7 8 2 8-9 6-9-6 2-8zm11 7v7l3 3 3-3v-7l-3 2z"/></symbol>
+    <symbol id="race-7" viewBox="0 0 32 32"><path d="M7 10l5-7 4 6 4-6 5 7-3 5 3 7-9 7-9-7 3-7zm5 4v6l4 4 4-4v-6l-4 2z"/></symbol>
+    <symbol id="race-8" viewBox="0 0 32 32"><path d="M5 5l8 6 3-8 3 8 8-6-5 12 4 9-8-4-2 7-2-7-8 4 4-9zm8 9v5l3 3 3-3v-5l-3 2z"/></symbol>
+    <symbol id="race-10" viewBox="0 0 32 32"><path d="M3 4l10 7 3-8 3 8 10-7-7 13 2 8-8 4-8-4 2-8zm10 10v6l3 4 3-4v-6l-3 2z"/></symbol>
+    <symbol id="race-11" viewBox="0 0 32 32"><path d="M7 3l7 8 2-9 2 9 7-8-3 13 4 7-7 6-3-6-3 6-7-6 4-7zm6 11v5l3 4 3-4v-5l-3 2z"/></symbol>
+    <!-- Clases -->
+    <symbol id="class-1" viewBox="0 0 32 32"><path d="M5 4l11 9L27 4l-7 13 7 11-11-7-11 7 7-11zm11 11l-3 3 3 2 3-2z"/></symbol>
+    <symbol id="class-2" viewBox="0 0 32 32"><path d="M13 2h6v9h9v6h-9v13h-6V17H4v-6h9z"/></symbol>
+    <symbol id="class-3" viewBox="0 0 32 32"><path d="M4 26L24 6l-3-3 8 1 1 8-3-3L7 29zm7-4l-5-5 2-2 5 5z"/></symbol>
+    <symbol id="class-4" viewBox="0 0 32 32"><path d="M7 3l8 11-5 15-3-13-4-4zm18 0l-8 11 5 15 3-13 4-4zM14 19h4l-2 10z"/></symbol>
+    <symbol id="class-5" viewBox="0 0 32 32"><path d="M14 2h4v8h7v4h-7v6l6 3-2 7-6-5-6 5-2-7 6-3v-6H7v-4h7z"/></symbol>
+    <symbol id="class-6" viewBox="0 0 32 32"><path d="M16 2l4 8 9 1-7 6 2 10-8-5-8 5 2-10-7-6 9-1zm0 8l-4 7 4 3 4-3z"/></symbol>
+    <symbol id="class-7" viewBox="0 0 32 32"><path d="M16 2l5 8 9 2-7 6 1 10-8-4-8 4 1-10-7-6 9-2zm0 8l-4 6 4 5 4-5z"/></symbol>
+    <symbol id="class-8" viewBox="0 0 32 32"><path d="M15 2h2l2 10 8-6 1 2-7 8 9 4-1 2-11-2-1 10h-2l-1-10-11 2-1-2 9-4-7-8 1-2 8 6z"/></symbol>
+    <symbol id="class-9" viewBox="0 0 32 32"><path d="M16 2l4 8 8-3-3 9 5 7-9-1-5 8-5-8-9 1 5-7-3-9 8 3zm0 9l-4 5 4 6 4-6z"/></symbol>
+    <symbol id="class-11" viewBox="0 0 32 32"><path d="M16 2c3 6 9 8 12 13-4 0-6 1-8 3 1 4 0 8-4 12-4-4-5-8-4-12-2-2-4-3-8-3C7 10 13 8 16 2zm0 8l-3 7 3 5 3-5z"/></symbol>
+    <!-- Roles -->
+    <symbol id="role-tank" viewBox="0 0 32 32"><path d="M16 2l12 5v8c0 8-5 13-12 16C9 28 4 23 4 15V7zm0 6l-6 3v5c0 4 2 7 6 9 4-2 6-5 6-9v-5z"/></symbol>
+    <symbol id="role-healer" viewBox="0 0 32 32"><path d="M12 3h8v9h9v8h-9v9h-8v-9H3v-8h9z"/></symbol>
+    <symbol id="role-dps" viewBox="0 0 32 32"><path d="M25 2l5 5-9 9 3 3-5 5-3-3-10 9-4-4 9-10-3-3 5-5 3 3z"/></symbol>
+  </defs>
+</svg>

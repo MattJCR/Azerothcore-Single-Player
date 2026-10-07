@@ -1,0 +1,37 @@
+Licencia: MIT, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+SQL de personajes idempotente para poder repetir las fases 5 y 8.
+
+Problema
+--------
+wareffort_setup.sql crea la tabla sin IF NOT EXISTS e inserta las dos filas
+iniciales sin comprobar si ya existen. Una segunda ejecucion de la fase 5
+falla con ERROR 1050 y aborta el despliegue; si solo se corrigiera el CREATE,
+duplicaria ademas las filas y el progreso.
+
+Solucion
+--------
+Conservar la tabla existente y sembrar cada faccion solamente cuando falte.
+El parche no borra ni reinicia el progreso acumulado.
+
+Escrito contra mod-war-effort 512a2dd97e6589482148ed870dc67e7292a8c5ac
+(rama master, 2026-06-21).
+
+diff --git a/data/sql/db-characters/base/wareffort_setup.sql b/data/sql/db-characters/base/wareffort_setup.sql
+--- a/data/sql/db-characters/base/wareffort_setup.sql
++++ b/data/sql/db-characters/base/wareffort_setup.sql
+@@ -1,3 +1,3 @@
+-CREATE TABLE `wareffort` (
++CREATE TABLE IF NOT EXISTS `wareffort` (
+ `id` INT UNSIGNED NOT NULL,
+ `faction` TINYINT NOT NULL,
+@@ -19,4 +19,6 @@
+ );
+-
+-insert into `wareffort` (`id`, `faction`, `bandages01`, `bandages02`, `bandages03`, `food01`, `food02`, `food03`, `herbs01`, `herbs02`, `herbs03`, `metals01`, `metals02`, `metals03`, `leather01`, `leather02`, `leather03`) values('1','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0');
+-insert into `wareffort` (`id`, `faction`, `bandages01`, `bandages02`, `bandages03`, `food01`, `food02`, `food03`, `herbs01`, `herbs02`, `herbs03`, `metals01`, `metals02`, `metals03`, `leather01`, `leather02`, `leather03`) values('1','1','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0');
++
++insert into `wareffort` (`id`, `faction`, `bandages01`, `bandages02`, `bandages03`, `food01`, `food02`, `food03`, `herbs01`, `herbs02`, `herbs03`, `metals01`, `metals02`, `metals03`, `leather01`, `leather02`, `leather03`)
++select '1','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0' where not exists (select 1 from `wareffort` where `id`=1 and `faction`=0);
++insert into `wareffort` (`id`, `faction`, `bandages01`, `bandages02`, `bandages03`, `food01`, `food02`, `food03`, `herbs01`, `herbs02`, `herbs03`, `metals01`, `metals02`, `metals03`, `leather01`, `leather02`, `leather03`)
++select '1','1','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0' where not exists (select 1 from `wareffort` where `id`=1 and `faction`=1);

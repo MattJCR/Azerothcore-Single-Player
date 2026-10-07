@@ -1,0 +1,11 @@
+## Interface: 30300
+## Title: ServerHelp
+## Notes: La pestaña "Ayuda básica" de Solicitud de ayuda enseña los comandos y artículos del servidor (necesita mod-server-help en el servidor).
+## Notes-esES: La pestaña "Ayuda básica" de Solicitud de ayuda enseña los comandos y artículos del servidor (necesita mod-server-help en el servidor).
+## Notes-enUS: The "Knowledge Base" tab of the Help Request window shows the server's commands and articles (needs mod-server-help on the server).
+## Author: Instalador AzerothCore WotLK esES
+## Version: 1.0.0
+## X-Category: Interface Enhancements
+
+Locales.lua
+ServerHelp.lua

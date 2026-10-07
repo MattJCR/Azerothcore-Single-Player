@@ -1,0 +1,128 @@
+Licencia: la del proyecto que modifica, que no la declara en el código fijado; sólo se publica esta diferencia (ver THIRD-PARTY-NOTICES.txt).
+
+Tope de tier de encantamiento segun el nivel del personaje.
+
+Problema
+--------
+El tier del encantamiento salia UNICAMENTE de la calidad del objeto, asi que
+un arma verde de una quest de nivel 10 podia recibir un encantamiento de
+tier 3 pensado para el endgame.
+
+Solucion
+--------
+getRandEnchantment() recibe ahora el Player y limita el tier resultante al
+nivel del personaje (RandomEnchants.ScaleWithLevel, activado por defecto;
+Tier2MinLevel..Tier5MinLevel configurables). La calidad del objeto sigue
+mandando hacia abajo, nunca por encima de lo que corresponde al nivel.
+
+Reescrito el 27/09/2026 contra el commit 6d49d64 (PR #36, "fix: tier and
+subclass filtering in enchant selection, and its empty-result path"): ese
+commit ya trae de fabrica el arreglo de la consulta SQL (`exclusiveSubClass
+IS NULL` en vez de `=NULL`, parentesis correctos alrededor del OR) y el
+return -1 en el camino sin resultados que este parche arreglaba antes contra
+02a2e0d8 (2025-07-24); se ha quitado esa parte para no duplicarla y sólo
+queda el tope de tier por nivel.
+
+Escrito contra mod-random-enchants 6d49d64918f1e798490d0139038a33194fd294df
+(rama master, 2026-09-24).
+
+diff --git a/conf/random_enchants.conf.dist b/conf/random_enchants.conf.dist
+index 462f8ef..fbb7b86 100644
+--- a/conf/random_enchants.conf.dist
++++ b/conf/random_enchants.conf.dist
+@@ -73,3 +73,22 @@ RandomEnchants.EnchantChance2=65.0
+ #        Default:     60.0
+
+ RandomEnchants.EnchantChance3=60.0
++
++#
++#     RandomEnchants.ScaleWithLevel
++#        Anadido por patches/mod-random-enchants/01-level-scaled-tiers.patch.
++#        Limita el nivel del encantamiento al nivel del personaje: un personaje
++#        de nivel 12 no recibe un encantamiento de nivel 70.
++#        Default:     1 (activado)
++
++RandomEnchants.ScaleWithLevel = 1
++
++#
++#     RandomEnchants.Tier2MinLevel .. Tier5MinLevel
++#        Nivel minimo del personaje para cada tramo de encantamientos.
++#        Defaults:    20 / 40 / 60 / 71
++
++RandomEnchants.Tier2MinLevel = 20
++RandomEnchants.Tier3MinLevel = 40
++RandomEnchants.Tier4MinLevel = 60
++RandomEnchants.Tier5MinLevel = 71
+diff --git a/src/random_enchants.cpp b/src/random_enchants.cpp
+index 03ae834..193623b 100644
+--- a/src/random_enchants.cpp
++++ b/src/random_enchants.cpp
+@@ -26,11 +26,11 @@ void rollPossibleEnchant(Player* player, Item* item)
+     float enchantChance3 = sConfigMgr->GetOption<float>("RandomEnchants.EnchantChance3", 60.0f);
+
+     if (rand_chance() < enchantChance1)
+-        slotRand[0] = getRandEnchantment(item);
++        slotRand[0] = getRandEnchantment(player, item);
+     if (slotRand[0] != -1 && rand_chance() < enchantChance2)
+-        slotRand[1] = getRandEnchantment(item);
++        slotRand[1] = getRandEnchantment(player, item);
+     if (slotRand[1] != -1 && rand_chance() < enchantChance3)
+-        slotRand[2] = getRandEnchantment(item);
++        slotRand[2] = getRandEnchantment(player, item);
+
+     for (int i = 0; i < 3; i++)
+     {
+@@ -62,7 +62,7 @@ void rollPossibleEnchant(Player* player, Item* item)
+         chathandle.PSendSysMessage("Newly Acquired |cffFF0000 {} |rhas received|cffFF0000 1 |rrandom enchantment!", name);
+ }
+
+-uint32 getRandEnchantment(Item* item)
++uint32 getRandEnchantment(Player* player, Item* item)
+ {    
+     uint32 itemClass = item->GetTemplate()->Class;
+     uint32 itemQuality = item->GetTemplate()->Quality;
+@@ -119,6 +119,31 @@ uint32 getRandEnchantment(Item* item)
+     else
+         tier = 5;
+
++    /* Tope de tier segun el nivel del jugador.
++       Antes el tier salia UNICAMENTE de la calidad del objeto, asi que un arma
++       verde de una quest de nivel 10 podia recibir un encantamiento de tier 3
++       pensado para el endgame. Ahora la calidad sigue mandando hacia abajo,
++       pero nunca por encima de lo que corresponde al nivel del personaje.
++       El filtro SQL de tier/clase/subclase ya viene arreglado de fabrica
++       desde 6d49d64 (antes lo arreglaba este mismo parche). */
++    if (player && sConfigMgr->GetOption<bool>("RandomEnchants.ScaleWithLevel", true))
++    {
++        uint8 playerLevel = player->GetLevel();
++        uint8 levelTier = 1;
++
++        if (playerLevel >= sConfigMgr->GetOption<uint32>("RandomEnchants.Tier2MinLevel", 20))
++            levelTier = 2;
++        if (playerLevel >= sConfigMgr->GetOption<uint32>("RandomEnchants.Tier3MinLevel", 40))
++            levelTier = 3;
++        if (playerLevel >= sConfigMgr->GetOption<uint32>("RandomEnchants.Tier4MinLevel", 60))
++            levelTier = 4;
++        if (playerLevel >= sConfigMgr->GetOption<uint32>("RandomEnchants.Tier5MinLevel", 71))
++            levelTier = 5;
++
++        if (tier > levelTier)
++            tier = levelTier;
++    }
++
+     QueryResult result = WorldDatabase.Query("SELECT `enchantID` FROM `item_enchantment_random_tiers` WHERE `tier`={} AND (`class`='{}' OR `class`='ANY') AND (`exclusiveSubClass` IS NULL OR `exclusiveSubClass`={}) ORDER BY RAND() LIMIT 1", tier, classQueryString, item->GetTemplate()->SubClass);
+
+     if (!result)
+diff --git a/src/random_enchants.h b/src/random_enchants.h
+index 1a11691..6c08b14 100644
+--- a/src/random_enchants.h
++++ b/src/random_enchants.h
+@@ -18,7 +18,7 @@ enum ItemQuality
+ };
+
+ void rollPossibleEnchant(Player* player, Item* item);
+-[[nodiscard]] uint32 getRandEnchantment(Item* item);
++[[nodiscard]] uint32 getRandEnchantment(Player* player, Item* item);
+
+ class RandomEnchantsPlayer : public PlayerScript
+ {

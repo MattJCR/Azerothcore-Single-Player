@@ -1,0 +1,51 @@
+Licencia: GPL-2.0-or-later, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+El limite de nivel por etapa (mod-world-bots) no se sostenia: el gestor de
+brackets lo devolvia al tope de siempre a los pocos segundos.
+
+Problema
+--------
+mod-world-bots cambia sPlayerbotAIConfig.randomBotMaxLevel en caliente cuando
+cambia la etapa de progresion (Vanilla/TBC/WotLK), sin disparar un
+".reload config". RandomBotLevelMgr solo copiaba ese valor a su miembro interno
+_randomBotMaxLevel (y clampaba los limites superiores de sus brackets contra
+el) en LoadConfig(), que unicamente se llama al arranque y en un reload
+explicito. Con AiPlayerbot.LevelBrackets.Enabled activo (como en este
+servidor, junto con WorldBots.Stage.Enable), RunLevelBracketsDistribution()
+corre en su propio temporizador y reasigna nivel a los bots segun esos
+brackets con tope obsoleto (el de arranque, tipicamente el maximo global),
+sin saber nada de la etapa activa. El resultado: mod-world-bots baja a un bot
+por encima del tope de la etapa, y la siguiente pasada de brackets lo vuelve
+a subir. El limite por etapa nunca llegaba a sostenerse.
+
+Solucion
+--------
+Volver a cargar la configuracion de brackets (LoadConfig(), que ya copia
+randomBotMinLevel/randomBotMaxLevel y re-clampa los limites) al principio de
+cada pasada de RunLevelBracketsDistribution(), no solo al arranque o al
+recargar. Es una operacion barata (un par de vectores pequenos) y segura de
+repetir: las tablas de origen en PlayerbotAIConfig no se tocan tras cargarse.
+Con esto, cualquier cambio en caliente del tope (etapa u otro) se refleja en
+la siguiente pasada de brackets en vez de quedar pisado.
+
+Escrito contra
+--------------
+mod-playerbots @ b949b50bfcdd4fab937781bac2d7765e39330e4b (2026-09-04), con
+01-highest-player-bracket.patch ya aplicado.
+
+diff --git a/src/Bot/RandomBotLevelMgr.cpp b/src/Bot/RandomBotLevelMgr.cpp
+--- a/src/Bot/RandomBotLevelMgr.cpp
++++ b/src/Bot/RandomBotLevelMgr.cpp
+@@ -555,6 +555,12 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
+ {
+     auto const& allPlayers = ObjectAccessor::GetPlayers();
+
++    // Other modules can change randomBotMinLevel/randomBotMaxLevel at runtime
++    // without a ".reload config" (e.g. mod-world-bots' progression stage); this
++    // was previously loaded only at startup/reload, so bracket bounds went
++    // stale and kept the old, wider cap. Cheap to redo every pass.
++    LoadConfig();
++
+     LoadSocialFriendList();
+
+     if (sPlayerbotAIConfig.levelBracketsDynamicDistribution)

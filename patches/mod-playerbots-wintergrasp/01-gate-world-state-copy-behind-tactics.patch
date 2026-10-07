@@ -1,0 +1,59 @@
+Licencia: GPL-2.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Deja de copiar el paquete de cada bot cuando la IA tactica esta apagada.
+
+Problema
+--------
+OnPlayerbotPacketSent llama SIEMPRE a ObserveWorldStatePacket, para todo
+paquete que el core manda a todo playerbot (WorldSession::SendPacket invoca
+el hook para cada Player, real o bot). ObserveWorldStatePacket empieza asi:
+
+  WorldPacket copy(packet);
+  copy.rpos(0);
+
+Esa copia (un ByteBuffer entero) se paga SIEMPRE, antes incluso de mirar el
+opcode del paquete, para poblar una cache de world-states que solo lee la IA
+tactica (WintergraspTactics, via WintergraspBotController::UpdateOne). Con
+PlayerbotsWintergrasp.Tactics.Enable=0 -el valor con el que se despliega este
+modulo- nadie lee esa cache nunca: la copia es
+puro coste, en todo paquete de todo bot del servidor entero (500-600 bots, no
+solo dentro de Wintergrasp), para siempre.
+
+Solucion
+--------
+Solo llamar a ObserveWorldStatePacket() cuando TacticsEnabled() (la misma
+funcion que ya usa el propio modulo para decidir si UpdateBotTactics hace
+algo). Al activar mas adelante la IA tactica, la cache se repuebla igual:
+UpdateBotTactics ya manda un SendInitWorldStatesTo() al bot la primera vez
+que se le crea un BotTactics, y ese paquete SMSG_INIT_WORLD_STATES pasa por
+este mismo hook con TacticsEnabled() ya en true.
+
+No cambia ningun comportamiento observable con Tactics.Enable=0 (que es con
+lo que corre este servidor): TrackBot() y el resto del hook (aceptar cola y
+entrada a la batalla) siguen igual.
+
+Nota sobre el diff: PlayerbotsWintergrasp.cpp en el upstream mezcla finales
+de linea (CRLF salvo un puñado de lineas sueltas en LF, y la linea que este
+parche toca cae justo en una de las LF). Generado con "git diff -U0" (cero
+lineas de contexto) para no arrastrar ninguna linea CRLF vecina, que
+".gitattributes" (*.patch text eol=lf) normalizaria a LF al comitear y
+rompería el casado byte a byte contra el CRLF real del modulo. Por eso hace
+falta "--unidiff-zero" al aplicarlo (ya añadido a apply_module_patches en
+lib/utils.sh).
+
+Escrito contra
+--------------
+mod-playerbots-wintergrasp @ f313a99fb6aedd74d60275446e281552d7a0d491 (main)
+diff --git a/src/PlayerbotsWintergrasp.cpp b/src/PlayerbotsWintergrasp.cpp
+index 3b52440..6cd2a19 100644
+--- a/src/PlayerbotsWintergrasp.cpp
++++ b/src/PlayerbotsWintergrasp.cpp
+@@ -358 +358,7 @@ namespace
+-            PlayerbotsWintergrasp::ObserveWorldStatePacket(player, *packet);
++
++            // ObserveWorldStatePacket copies the packet buffer to feed the
++            // tactical AI (WintergraspTactics). With Tactics.Enable=0 nothing
++            // ever reads that cache, so skip the copy for every packet sent to
++            // every bot in the entire server instead of only inside Wintergrasp.
++            if (TacticsEnabled())
++                PlayerbotsWintergrasp::ObserveWorldStatePacket(player, *packet);

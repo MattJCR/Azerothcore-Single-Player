@@ -1,0 +1,13 @@
+{
+  "nombre": "vm-pruebas",
+  "host": "192.168.1.100",
+  "cuenta": "VERIFICADOR",
+  "clave": "CAMBIAME",
+  "reino_esperado": "Azeroth SP",
+  "cliente_wow": "C:\\Juegos\\WoW 3.3.5a",
+  "idioma": "esES",
+  "prefijo": "Vs",
+  "permitir_escrituras": false,
+  "acciones_admitidas": ["conectar", "leer", "personaje", "gm", "comprar", "selfbot", "grupo", "cola", "mazmorra"],
+  "timeout_conexion": 60
+}

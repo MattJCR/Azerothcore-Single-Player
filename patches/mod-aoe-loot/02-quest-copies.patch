@@ -1,0 +1,133 @@
+Licencia: AGPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+SP04: AoE Loot omite los objetos de mision freeforall en los cadaveres vecinos.
+Usar la copia personal creada por el core al morir la criatura; dejar las demas
+copias y derechos intactos. Exigir espacio para toda la pila antes de guardarla.
+Escrito contra mod-aoe-loot 57279b660a278e9b3a1afa425e7c7a5edc72b7bb.
+
+diff --git a/src/aoe_loot.cpp b/src/aoe_loot.cpp
+--- a/src/aoe_loot.cpp
++++ b/src/aoe_loot.cpp
+@@ -431,6 +431,22 @@
+         for (size_t i = 0; i < loot->items.size(); ++i)
+             loot->items[i].itemIndex = static_cast<uint32>(i);
+     }
++
++    // FillQuestLoot builds this list for party members present at the kill.
++    // The shared LootItem row must remain until every personal copy is taken.
++    QuestItem* GetUnlootedQuestCopy(Loot* loot, Player* player, size_t sourceIndex)
++    {
++        auto const& copies = loot->GetPlayerQuestItems();
++        auto playerCopies = copies.find(player->GetGUID());
++        if (playerCopies == copies.end() || !playerCopies->second)
++            return nullptr;
++
++        for (QuestItem& copy : *playerCopies->second)
++            if (copy.index == sourceIndex && !copy.is_looted)
++                return &copy;
++
++        return nullptr;
++    }
+ }
+ 
+ void AOELootPlayer::OnPlayerLogin(Player* player)
+@@ -627,16 +643,20 @@
+             if (!player->HasQuestForItem(questItem.itemid))
+                 continue;
+ 
+-            // Special group/free-for-all quest items remain on their
+-            // source corpse so we don't damage ownership information.
+-            if (questItem.freeforall ||
+-                questItem.is_blocked ||
++            // Group roll and blocked items remain on their source corpse.
++            // Free-for-all rows are safe only when this player received a
++            // personal copy at the kill.
++            if (questItem.is_blocked ||
+                 questItem.follow_loot_rules ||
+-                !questItem.conditions.empty() ||
++                (!questItem.freeforall && !questItem.conditions.empty()) ||
+                 questItem.rollWinnerGUID)
+             {
+                 continue;
+             }
++
++            if (questItem.freeforall &&
++                !GetUnlootedQuestCopy(loot, player, i))
++                continue;
+ 
+             // Quest rows are only filled for looters present at the kill.
+             if (!questItem.AllowedForPlayer(
+@@ -695,7 +715,13 @@
+             for (LootItem const& mainQuestItem :
+                  mainLoot->quest_items)
+             {
+-                if (mainQuestItem.itemid == questItem.itemid)
++                size_t mainIndex = &mainQuestItem - mainLoot->quest_items.data();
++                if (mainQuestItem.itemid == questItem.itemid &&
++                    !mainQuestItem.is_looted &&
++                    mainQuestItem.AllowedForPlayer(player, mainLoot->sourceWorldObjectGUID) &&
++                    mainQuestItem.GetAllowedLooters().count(player->GetGUID()) &&
++                    (!mainQuestItem.freeforall ||
++                        GetUnlootedQuestCopy(mainLoot, player, mainIndex)))
+                     ownedCount += mainQuestItem.count;
+             }
+ 
+@@ -803,15 +829,49 @@
+         if (sourceItem.is_looted)
+             continue;
+ 
+-        uint32 amountToAdd = std::min<uint32>(
+-            candidate.item.count,
+-            sourceItem.count);
+-
+-        if (amountToAdd == 0 ||
+-            !player->AddItem(
+-                sourceItem.itemid,
+-                amountToAdd))
+-        {
++        QuestItem* personalCopy = sourceItem.freeforall
++            ? GetUnlootedQuestCopy(sourceLoot, player, candidate.sourceIndex)
++            : nullptr;
++        if (sourceItem.freeforall && !personalCopy)
++            continue;
++
++        if (!sourceItem.AllowedForPlayer(player, sourceLoot->sourceWorldObjectGUID) ||
++            !sourceItem.GetAllowedLooters().count(player->GetGUID()))
++            continue;
++
++        uint32 amountToAdd = sourceItem.freeforall
++            ? sourceItem.count
++            : std::min<uint32>(candidate.item.count, sourceItem.count);
++
++        if (amountToAdd == 0)
++            continue;
++
++        // AddItem can accept a partial stack when bags are nearly full and
++        // returns only a bool. StoreNewItem keeps the source untouched unless
++        // the complete copy fits, and retains random properties/trade rights.
++        ItemPosCountVec dest;
++        if (player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest,
++                sourceItem.itemid, amountToAdd) != EQUIP_ERR_OK)
++            continue;
++
++        AllowedLooterSet allowedLooters = sourceItem.GetAllowedLooters();
++        Item* newItem = player->StoreNewItem(dest, sourceItem.itemid, true,
++            sourceItem.randomPropertyId, allowedLooters);
++        if (!newItem)
++            continue;
++
++        player->SendNewItem(newItem, amountToAdd, false, false, true);
++        LootItem takenItem = sourceItem;
++        takenItem.count = static_cast<uint8>(amountToAdd);
++        player->UpdateLootAchievements(&takenItem, sourceLoot);
++        sScriptMgr->OnPlayerLootItem(player, newItem, amountToAdd,
++            candidate.sourceCreature->GetGUID());
++
++        if (personalCopy)
++        {
++            personalCopy->is_looted = true;
++            if (sourceLoot->unlootedCount > 0)
++                --sourceLoot->unlootedCount;
+             continue;
+         }
+ 

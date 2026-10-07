@@ -1,0 +1,172 @@
+# CI de la edición pública (PUB04). Se ejecuta en cada push a main y en cada PR,
+# sólo con permisos de lectura y sin secretos: un PR externo no puede escribir en
+# el repositorio ni ejecutar nada fuera del runner alojado. Las acciones van
+# fijadas al SHA completo del commit de su versión.
+#
+# Todo parte de lo que hay en el checkout: lo que la edición pública no lleva
+# (snapshots de mirrors/, addons de terceros) se reconstruye por SHA-256 y, si
+# falta una entrada o un hash no cuadra, el trabajo falla; no se omite el check.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TERM: xterm-256color
+
+jobs:
+  sintaxis:
+    name: Sintaxis y estructura del paquete
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Estructura de la edición pública
+        run: bash tests/estructura-publica.sh
+      - name: Bash (todos los .sh, sin node_modules)
+        run: |
+          fail=0
+          while IFS= read -r -d '' f; do
+            bash -n "$f" || { echo "::error file=$f::no compila"; fail=1; }
+          done < <(find . -name '*.sh' -not -path './web-panel/node_modules/*' -not -path './cliente/*' -print0)
+          exit $fail
+      - name: Python (todos los .py)
+        run: |
+          fail=0
+          while IFS= read -r -d '' f; do
+            python3 -m py_compile "$f" || { echo "::error file=$f::no compila"; fail=1; }
+          done < <(find . -name '*.py' -not -path './web-panel/node_modules/*' -not -path '*/__pycache__/*' -print0)
+          exit $fail
+      - name: Secretos en el árbol (gitleaks fijado por versión y SHA-256)
+        run: |
+          set -euo pipefail
+          v=8.30.1
+          curl -fsSL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${v}/gitleaks_${v}_linux_x64.tar.gz"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tgz" | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+          ./gitleaks dir . --no-banner --redact --exit-code 1 --config .gitleaks.toml
+      - name: Licencias y copyright por fichero (REUSE 3.3)
+        run: pipx run reuse==6.2.0 lint
+
+  instalador:
+    name: Instalador, asistente y hidratación
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s tests -p 'test_*.py'
+      - run: bash tests/instalacion-reanudable.sh
+      - run: bash tests/primer-arranque.sh
+      - run: bash tests/set-conf-value.sh
+      - run: bash tests/apply-panel-config.sh
+      - run: bash tests/core-patches.sh
+      - run: bash tests/hidratar-mirrors.sh
+      - run: bash tests/datos-cliente.sh
+      - run: bash tests/proteger-cliente-sintetico.sh --autotest
+
+  cliente-sintetico-intacto:
+    name: El cliente sintético sólo recibe líneas nuevas
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # Ayuda a la revisión, no la garantía: un PR podría tocar este mismo flujo, y por eso
+      # .github/ y tests/ están reservados en CODEOWNERS y cada PR se revisa a mano.
+      - run: bash tests/proteger-cliente-sintetico.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}"
+
+  snapshots-y-parches:
+    name: Snapshots por SHA-256 y parches contra el commit fijado
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # La caché sólo acelera: install.sh --hidratar vuelve a comprobar cada SHA-256.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: mirrors/*.tar.gz
+          key: snapshots-${{ hashFiles('mirrors/MANIFEST.tsv') }}
+      - name: Coherencia de versions.lock y MANIFEST.tsv
+        run: bash install.sh --verify-mirrors
+      - name: Hidratar (asset o upstream exacto) y verificar los hashes
+        run: bash install.sh --hidratar && bash install.sh --verify-mirrors --hidratados
+      - name: Los parches propios aplican sobre el commit fijado
+        run: bash tools/verificar-parches.sh
+
+  addons:
+    name: Addons de terceros reconstruidos por hash
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web-panel/package-lock.json
+      - run: sudo apt-get install -y --no-install-recommends libarchive-tools
+      - working-directory: web-panel
+        run: npm ci --no-audit --no-fund
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .instalacion/cache/addons
+          key: addons-${{ hashFiles('web-panel/addons/fuentes.json') }}
+      - name: Construir y comprobar los 309 addons (MultiBot y ServerHelp van en el árbol)
+        working-directory: web-panel
+        run: |
+          node tools/build-addons.mjs build
+          node tools/build-addons.mjs verificar --estricto
+
+  panel:
+    name: Panel web, sintaxis y pruebas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web-panel/package-lock.json
+      - working-directory: web-panel
+        run: npm ci --no-audit --no-fund
+      - run: sudo apt-get install -y --no-install-recommends libarchive-tools
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .instalacion/cache/addons
+          key: addons-${{ hashFiles('web-panel/addons/fuentes.json') }}
+      # Las pruebas del catálogo de addons necesitan los 309 en el árbol: se construyen igual que en la instalación.
+      - name: Construir los addons de cliente
+        working-directory: web-panel
+        run: node tools/build-addons.mjs build
+      - working-directory: web-panel
+        run: npm run check
+      - working-directory: web-panel
+        run: npm test
+      - name: Generadores de recursos (insumos sueltos)
+        run: |
+          sudo apt-get install -y --no-install-recommends python3-pil
+          python3 -m unittest discover -s tests -p 'test_generar_recursos.py'

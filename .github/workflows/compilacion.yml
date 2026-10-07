@@ -1,0 +1,72 @@
+# Compilación completa en Ubuntu 24.04 aislado (PUB04): el mismo instalador que
+# usa el servidor, hasta la fase 4, sobre un runner limpio de GitHub.
+#
+# No corre en cada cambio: un core con los módulos tarda decenas de minutos (el
+# servidor de pruebas, de 8 CPU, necesita ~46 min con la instalación completa) y
+# un runner alojado de 4 CPU será más lento. Se lanza a mano antes de una versión
+# y una vez al mes; la compilación incremental con caché queda por medir (la caché del
+# runner admite 10 GiB y el árbol de compilación pesa varios). Las pruebas con el cliente sintético NO corren aquí: necesitan
+# un servidor entero y viven en un entorno de pruebas aparte, nunca contra la
+# máquina de uso habitual desde una CI pública.
+name: Compilación completa
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 1 * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compilacion
+  cancel-in-progress: false
+
+env:
+  TERM: xterm-256color
+
+jobs:
+  compilar:
+    name: Fases 1 a 4 del instalador
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Espacio libre
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          df -h /
+      - name: Configuración local de la prueba
+        run: |
+          # config.sh es neutro; los valores propios van en config.local.sh (ignorado).
+          # La clave se genera una vez: config.local.sh se evalúa en cada fase.
+          db_pass=$(openssl rand -hex 12)
+          {
+            echo 'REALM_IP="127.0.0.1"'
+            echo "AC_DB_PASS=\"$db_pass\""
+            echo 'INSTALL_WEB_PANEL=false'
+          } > config.local.sh
+      # La caché de snapshots sólo acelera; --hidratar vuelve a comprobar los SHA-256.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: mirrors/*.tar.gz
+          key: snapshots-${{ hashFiles('mirrors/MANIFEST.tsv') }}
+      - name: Fase 1, dependencias del sistema
+        run: bash install.sh --only 1
+      - name: Fase 2, MySQL
+        run: bash install.sh --only 2
+      - name: Fase 3, código del core y módulos en el commit fijado, con parches
+        run: bash install.sh --only 3
+      - name: Fase 4, compilación
+        run: bash install.sh --only 4
+      - name: Binarios y extractores generados
+        run: |
+          set -e
+          d="$HOME/azerothcore/env/dist/bin"
+          ls -l "$d"
+          test -x "$d/worldserver" && test -x "$d/authserver"
+      - name: Registro de la instalación si algo falla
+        if: failure()
+        run: tail -n 200 "$HOME/azerothcore/logs/install.log" || true

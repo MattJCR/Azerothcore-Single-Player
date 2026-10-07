@@ -1,0 +1,67 @@
+[worldserver]
+
+###################################################################################################
+# MOD-ARAC-TRAINER-AUDIT
+#
+#   Verificacion, via los hooks de entrenador del core (OnPlayerAfterTrainSpell,
+#   OnPlayerCanLearnSpell), de que los instructores genericos de mod-arac
+#   (creature_template 26324-26332, ver patches/arac/04) siguen funcionando
+#   para cualquier combinacion raza/clase. No anade hechizos ni toca
+#   trainer_spell: solo dice en el log lo que se compra y bloquea, con un
+#   aviso, cualquier compra que no encaje con la raza/clase del jugador (el
+#   core ya lo filtra antes de dejar comprar; esto es una red de seguridad).
+#
+###################################################################################################
+
+#
+#    AracTrainerAudit.Enable
+#        Descripcion: Interruptor general del modulo.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+AracTrainerAudit.Enable = 1
+
+#
+#    AracTrainerAudit.LogTrainerPurchases
+#        Descripcion: Dejar en Server.log (categoria "module") cada hechizo
+#                     comprado en un entrenador, con raza, clase y entrenador.
+#                     Pensado para verificar tras una actualizacion del core
+#                     que los entrenadores genericos de ARAC siguen enseñando
+#                     sin tener que jugar cada combinacion raza/clase a mano.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+AracTrainerAudit.LogTrainerPurchases = 1
+
+#
+#    AracTrainerAudit.GuardClassRaceFit
+#        Descripcion: Vetar (con aviso WARN) el aprendizaje de un hechizo que
+#                     no encaje con la raza/clase del jugador. Red de
+#                     seguridad: el core ya hace esta misma comprobacion
+#                     dentro de Trainer::GetSpellState antes de dejar comprar,
+#                     asi que en el camino normal esto no deberia dispararse
+#                     nunca.
+#        Por defecto: 1 - (activado)
+#                     0 - (desactivado)
+
+AracTrainerAudit.GuardClassRaceFit = 1
+
+#    AracTrainerAudit.RefreshDruidTrainerList
+#        Descripcion: Reenviar la lista del instructor generico de druida
+#                     (26324) tras cada compra correcta, conservando todos los
+#                     filtros del core y de era. Mitigacion del bloqueo Feral
+#                     que se recupera cerrando y abriendo el entrenador.
+#                     Independiente de LogTrainerPurchases. La prueba real
+#                     no resolvio el bloqueo: desactivado por defecto.
+#        Por defecto: 0 - (desactivado), 1 - (activado)
+
+AracTrainerAudit.RefreshDruidTrainerList = 0
+
+#    AracTrainerAudit.TraceAccountId
+#        Cuenta cuya comunicacion con entrenadores se registra (RX/TX).
+#        No registra otros paquetes ni modifica su contenido.
+#        0 desactiva la traza. Usar temporalmente durante una reproduccion.
+AracTrainerAudit.TraceAccountId = 0
+
+#
+###################################################################################################
