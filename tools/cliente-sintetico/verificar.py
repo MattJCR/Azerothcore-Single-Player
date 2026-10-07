@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2026 The Azerothcore-Single-Player contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Cliente sintético de WoW 3.3.5a: verifica el servidor sin jugar. Ver README.md y GUIA-IA.md.
-
     python tools/cliente-sintetico/verificar.py listar [--json]
     python tools/cliente-sintetico/verificar.py describir mazmorra [--json]
     python tools/cliente-sintetico/verificar.py ejecutar diagnostico
@@ -10,9 +9,7 @@
     python tools/cliente-sintetico/verificar.py ejecutar mazmorra -p mazmorra=bfd -p duracion=5400
     python tools/cliente-sintetico/verificar.py ejecutar todo --dry-run
     python tools/cliente-sintetico/verificar.py limpiar
-
 Atajo compatible: `verificar.py arac|progresion|bots|todo` = `ejecutar ...`.
-
 Códigos de salida: 0 todo OK/AVISO · 1 algún FALLO · 2 BLOQUEADO u OMITIDO ·
 3 ERROR de infraestructura · 4 uso incorrecto.
 """
@@ -21,17 +18,12 @@ import datetime
 import json
 import os
 import sys
-
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from wowsintetico import catalogo, entorno as ent             # noqa: E402
 from wowsintetico.ejecutor import ejecutar_caso, limpiar_huerfanos  # noqa: E402
 from wowsintetico.informe import USO_INCORRECTO, Informe      # noqa: E402
-
 VERSION = "2.0"
 CARPETA = os.path.dirname(os.path.abspath(__file__))
-
-
 def _versiones_fijadas() -> dict:
     """Commits fijados de mirrors/MANIFEST.tsv (core y terceros)."""
     ruta = os.path.join(CARPETA, "..", "..", "mirrors", "MANIFEST.tsv")
@@ -191,3 +183,4 @@ def main(argv=None):
 
 if __name__ == "__main__":
     sys.exit(main())
+# linea nueva
