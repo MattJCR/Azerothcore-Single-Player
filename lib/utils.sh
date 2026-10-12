@@ -166,8 +166,8 @@ _flush_one_conf_file() {
     # deja pegada al final del fichero sin que la lea nadie.
     #
     # Este agujero ha costado ya cuatro incidentes reales, los cuatro mudos:
-    #   AiPlayerbot.RandomBotMaxGearQuality           bots vestidos de azul
-    #   AiPlayerbot.LevelBrackets.*                   sin bots de nivel 80
+    #   Playerbots.RandomBotMaxGearQuality           bots vestidos de azul
+    #   Playerbots.LevelBrackets.*                   sin bots de nivel 80
     #   MapUpdateThreadCount                          mapas con UN hilo
     #   AllowTwoSide.{Trade,Mail,WhoList,AddFriend}   cross-faction a medias
     #

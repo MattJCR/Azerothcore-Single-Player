@@ -145,7 +145,7 @@ HomeGuild.KeepOnlineBatch = 5
 #
 #    HomeGuild.MaxOnlineBots
 #        Descripcion: Tope propio de bots de hermandad conectados a la vez. Con
-#                     0 usa AiPlayerbot.MaxRandomBots. Nunca lo supera.
+#                     0 usa Playerbots.MaxRandomBots. Nunca lo supera.
 #        Por defecto: 0
 
 HomeGuild.MaxOnlineBots = 0
@@ -245,7 +245,7 @@ HomeGuild.LegacyNumberMax = 100
 #        (PendingTimeoutSeconds / MaxPendingTotal / MaxPendingPerFaction /
 #        MaxPendingPerRange) se documenta en mod_world_bots.conf; sin world-bots
 #        se usan los valores por defecto (90 / 40 / 24 / 12) y el tope global
-#        sale de AiPlayerbot.MaxRandomBots.
+#        sale de Playerbots.MaxRandomBots.
 
 #
 ###################################################################################################

@@ -31,7 +31,7 @@ grep -nE "^(MapUpdateThreadCount|AllowTwoSide\.(Interaction\.(Trade|Mail)|WhoLis
     && echo "    ¡SIGUEN AHI!" || echo "    ninguna, correcto"
 
 echo "=== 3. level brackets ==="
-grep -E "^AiPlayerbot\.(LevelBrackets\.(Enabled|Dynamic\.(UseDynamicDistribution|RealPlayerWeight))|SyncLevelWithPlayers)" "$PB" 2>/dev/null | sed 's/^/  /'
+grep -E "^Playerbots.(LevelBrackets\.(Enabled|Dynamic\.(UseDynamicDistribution|RealPlayerWeight))|SyncLevelWithPlayers)" "$PB" 2>/dev/null | sed 's/^/  /'
 
 echo "=== 4. avisos de claves no declaradas durante la instalacion ==="
 grep -a "NO declarada\|NO declaradas" ${INSTALL_LOG_FILE:-$HOME/instalacion.log} 2>/dev/null | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | sed 's/^/  /' | head -20 || echo "  ninguno"

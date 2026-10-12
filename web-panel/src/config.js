@@ -77,7 +77,7 @@ export const config = Object.freeze({
     enabled: process.env.WORLDSERVER_STANDBY === 'true',
     statePath: process.env.WORLDSERVER_STATE_PATH || '/run/azerothcore/worldserver.state',
   },
-  // Prefijo de cuentas de bot que ya usa mod-playerbots (AiPlayerbot.RandomBotAccountPrefix
+  // Prefijo de cuentas de bot que ya usa mod-playerbots (Playerbots.RandomBotAccountPrefix
   // en worldserver.conf, por defecto "rndbot" seguido sólo de dígitos — mismo
   // criterio que modules/mod-home-guild/src/mod_home_guild.cpp:IsRandomBotAccount).
   // El panel no lee C++ ni el .conf: sólo necesita el mismo prefijo para

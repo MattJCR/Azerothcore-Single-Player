@@ -1166,7 +1166,8 @@
    "patches-cliente/QuestRadar/02-localizacion-segun-idioma-del-cliente.patch"
   ],
   "PlayerBotManager": [
-   "patches-cliente/PlayerBotManager/01-localizacion-segun-idioma-del-cliente.patch"
+   "patches-cliente/PlayerBotManager/01-localizacion-segun-idioma-del-cliente.patch",
+   "patches-cliente/PlayerBotManager/02-claves-playerbots-renombradas.patch"
   ]
  },
  "propios": [

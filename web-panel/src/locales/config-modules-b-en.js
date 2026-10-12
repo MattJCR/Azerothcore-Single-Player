@@ -15,7 +15,7 @@ export default {
   "HomeGuild.Members": "Target group size.",
   "HomeGuild.AutoAdopt": "Founding a guild turns it into a home guild automatically. With 0, it is enabled by hand with \".hermandad activar\".",
   "HomeGuild.InactiveOwnerReclaimDays": "Days the founder has not logged in (and is not online) before their bots are removed from the guild and returned to the pool. With 0 it is never reclaimed.",
-  "HomeGuild.MaxOnlineBots": "Own cap on guild bots online at once. 0 uses AiPlayerbot.MaxRandomBots; it never exceeds it.",
+  "HomeGuild.MaxOnlineBots": "Own cap on guild bots online at once. 0 uses Playerbots.MaxRandomBots; it never exceeds it.",
   "HomeGuild.CareIntervalSeconds": "How many seconds between care passes for each guild (recruit, log in, re-level).",
   "HomeGuild.KeepOnlineBatch": "Guild bots logged in per pass.",
   "HomeGuild.ReLevelPerPass": "Guild bots levelled up per pass (it is expensive).",
@@ -27,7 +27,7 @@ export default {
 
   // ── mod-party-here ────────────────────────────────────────────────────
   "PartyHere.Enable": "Master switch of the module.",
-  "PartyHere.MaxRaidBots": "Tied to AiPlayerbot.MaxAddedBots; it should not exceed it.",
+  "PartyHere.MaxRaidBots": "Tied to Playerbots.MaxAddedBots; it should not exceed it.",
   "PartyHere.LoadGraceSeconds": "Margin while the leader changes map (dungeon, hearthstone, flight between continents): during that time the party is not disbanded. When fully disconnecting it is dissolved at once.",
   "PartyHere.BotMinWorldSeconds": "Wait after logging in a bot before teleporting it next to the leader; protects the settling of its session.",
   "PartyHere.DismissAutoOnZoneChange": "Dismiss the automatic mates on a zone change even if the group quest that brought them is still active. Default 0: many \"(Group)\" quests are accepted in one place and done or handed in somewhere else.",
@@ -108,7 +108,7 @@ export default {
   "WorldBots.MaxTeleportsPerPass": "Global budget of bot relocations and logins per pass, shared among all players and zones.",
   "WorldBots.BotMinWorldSeconds": "Minimum age of a bot session before relocating it for population or PvP.",
   "WorldBots.Stage.SyncSeconds": "Interval for reconciling the stage cap and maps if another playerbots reload overwrites them.",
-  "WorldBots.PlayerScale.Enable": "Overwrites AiPlayerbot.MinRandomBots/MaxRandomBots live with PerPlayer × connected real players (cap Ceiling). With no players it touches nothing. When disabled it restores the value playerbots.conf had.",
+  "WorldBots.PlayerScale.Enable": "Overwrites Playerbots.MinRandomBots/MaxRandomBots live with PerPlayer × connected real players (cap Ceiling). With no players it touches nothing. When disabled it restores the value playerbots.conf had.",
   "WorldBots.PlayerScale.PerPlayer": "Target bots per connected real player.",
   "WorldBots.PlayerScale.Ceiling": "Hard cap on the total, even if many players connect.",
   "WorldBots.PlayerScale.SyncSeconds": "How often the target is recalculated. Lowering it does not kick bots out at once: it only stops admitting new ones.",

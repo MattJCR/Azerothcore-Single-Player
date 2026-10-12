@@ -30,7 +30,7 @@
  *
  * Playerbots no les toca el nivel por su cuenta: LevelBrackets ignora por
  * defecto a las hermandades lideradas por un humano
- * (AiPlayerbot.LevelBrackets.IgnoreGuildBotsWithRealPlayers = 1), y el gestor
+ * (Playerbots.LevelBrackets.IgnoreGuildBotsWithRealPlayers = 1), y el gestor
  * respeta la hermandad de un bot que ya tiene una (PlayerbotFactory::InitGuild
  * sale si GetGuildId() != 0). Lo único que hace el gestor es desconectarlos
  * cuando caduca su turno, y aquí se vuelven a conectar.
@@ -124,7 +124,7 @@ namespace
         uint32      keepOnlineBatch   = 5;     // bots conectados por pasada
         uint32      reLevelPerPass    = 1;     // bots re-nivelados por pasada
         bool        recruitFromOfflinePool = true; // paso 2 de Recruit (tabla characters)
-        uint32      maxOnlineBots     = 0;     // tope propio; 0 = AiPlayerbot.MaxRandomBots
+        uint32      maxOnlineBots     = 0;     // tope propio; 0 = Playerbots.MaxRandomBots
         std::string allianceRaces     = "1,3,4,7,11";
         std::string hordeRaces        = "2,5,6,8,10";
         uint32      legacyNumberMax   = 100;   // "<100" en el nombre antiguo "Companeros N"
@@ -269,7 +269,7 @@ namespace
             return false;
 
         std::string const username = (*result)[0].Get<std::string>();
-        std::string const prefix = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotAccountPrefix", "rndbot");
+        std::string const prefix = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotAccountPrefix", "rndbot");
         if (prefix.empty() || username.size() <= prefix.size())
             return false;
 
@@ -808,7 +808,7 @@ namespace
         candidates.insert(candidates.end(), others.begin(), others.end());
 
         uint32 const requested = std::min<uint32>(cfg.keepOnlineBatch, static_cast<uint32>(candidates.size()));
-        uint32 const globalCap = sConfigMgr->GetOption<uint32>("AiPlayerbot.MaxRandomBots", 200);
+        uint32 const globalCap = sConfigMgr->GetOption<uint32>("Playerbots.MaxRandomBots", 200);
         uint32 const cap = cfg.maxOnlineBots ? std::min(cfg.maxOnlineBots, globalCap) : globalCap;
         // Foto cacheada del coordinador: mismo escaneo que los Reserve de abajo.
         uint32 const online = BotPopulationCoordinator::OnlineCount(now);
@@ -821,7 +821,7 @@ namespace
 
         if (!batch)
         {
-            LOG_DEBUG("module", "[home-guild] Sin hueco bajo AiPlayerbot.MaxRandomBots ({}): "
+            LOG_DEBUG("module", "[home-guild] Sin hueco bajo Playerbots.MaxRandomBots ({}): "
                                 "no se conectan bots de hermandad en esta pasada.", cap);
             return 0;
         }

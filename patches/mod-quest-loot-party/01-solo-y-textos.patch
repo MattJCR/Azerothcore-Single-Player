@@ -4,12 +4,16 @@ SP04: el hook original convierte en freeforall los objetos blancos de misión
 también para personajes sin grupo. Sólo queremos copias para miembros del grupo
 presentes al generarse el botín; en solitario manda el core. Se cierra además
 el color del anuncio en esES/esMX y se explica lo que realmente hace.
-Escrito contra mod-quest-loot-party 6f073c1bef1bba1aa73787d1e30db7429f2b1c7b.
+Escrito contra mod-quest-loot-party 6f073c1bef1bba1aa73787d1e30db7429f2b1c7b;
+rehecho el 12/10/2026 contra c3955915c76d5a22a9d25a44482345d368a8de82 (el modulo anadio
+traducciones a otros idiomas en el mismo SQL; el C++ no cambio).
 
 diff --git a/src/qlp_main.cpp b/src/qlp_main.cpp
 --- a/src/qlp_main.cpp
 +++ b/src/qlp_main.cpp
-@@ -22,6 +22,9 @@ public:
+@@ -21,8 +21,11 @@ public:
+         }
+     }
  
 -    void OnPlayerBeforeFillQuestLootItem(Player* /*player*/, LootItem& item) override
 +    void OnPlayerBeforeFillQuestLootItem(Player* player, LootItem& item) override
@@ -31,9 +35,12 @@ diff --git a/data/sql/db-world/base/qlp_2026_04_19_00.sql b/data/sql/db-world/ba
  
  DELETE FROM `module_string_locale` WHERE `module`='mod-quest-loot-party';
  INSERT INTO `module_string_locale` (`module`, `id`, `locale`, `string`) VALUES
-@@ -8,3 +8,3 @@
+@@ -9,6 +9,6 @@ INSERT INTO `module_string_locale` (`module`, `id`, `locale`, `string`) VALUES
  ('mod-quest-loot-party', 1, 'deDE', 'Dieser Server verwendet das |cff4CFF00Quest Loot Party |rModul.'),
+ ('mod-quest-loot-party', 1, 'zhCN', '此服务器正在运行 |cff4CFF00Quest Loot Party |r模块。'),
+ ('mod-quest-loot-party', 1, 'zhTW', '此伺服器正在執行 |cff4CFF00Quest Loot Party |r模組。'),
 -('mod-quest-loot-party', 1, 'esES', 'Este servidor está ejecutando el módulo |cff4CFF00Quest Loot Party.'),
--('mod-quest-loot-party', 1, 'esMX', 'Este servidor está ejecutando el módulo |cff4CFF00Quest Loot Party.');
+-('mod-quest-loot-party', 1, 'esMX', 'Este servidor está ejecutando el módulo |cff4CFF00Quest Loot Party.'),
 +('mod-quest-loot-party', 1, 'esES', 'En grupo, cada miembro elegible puede recoger su copia del botín blanco de misión.'),
-+('mod-quest-loot-party', 1, 'esMX', 'En grupo, cada miembro elegible puede recoger su copia del botín blanco de misión.');
++('mod-quest-loot-party', 1, 'esMX', 'En grupo, cada miembro elegible puede recoger su copia del botín blanco de misión.'),
+ ('mod-quest-loot-party', 1, 'ruRU', 'На этом сервере запущен модуль |cff4CFF00Quest Loot Party|r.');

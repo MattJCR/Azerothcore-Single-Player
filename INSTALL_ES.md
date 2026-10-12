@@ -398,7 +398,7 @@ en el `.conf`, avisa en rojo y la repite en un resumen al final:
 Ese aviso existe porque el instalador llevaba meses escribiendo claves que
 ningún programa leía, sin que nadie se enterase: `MapUpdateThreadCount` (el
 servidor corría con **un** hilo de mapas con 250 bots), `AllowTwoSide.Interaction.Trade`,
-`AutoBalance.Raids`, `AiPlayerbot.RandomBotMaxGearQuality`, `Transmogrification.Enabled`…
+`AutoBalance.Raids`, `Playerbots.RandomBotMaxGearQuality`, `Transmogrification.Enabled`…
 Como los `.conf` se copian de su `.dist`, que declara todas las claves reales,
 "no estaba" significa casi siempre "no existe". **Si ves ese aviso, comprueba el
 nombre contra el `.conf.dist` o el código.** Las dos únicas excepciones legítimas
@@ -569,10 +569,10 @@ versión fijada (b949b50b, 04/09/2026; el `.conf.dist` no cambió desde 2f7d9f77
 
 | `config.sh` | Clave | Valor | Por qué |
 |---|---|---|---|
-| `BOTS_MIN` / `BOTS_MAX` | `AiPlayerbot.MinRandomBots` / `MaxRandomBots` | **500 / 600** (desde 03/09/2026; antes 400/500 y 200/250) | El módulo elige un objetivo entre los dos y lo cambia cada 30-120 min. **Es cuántos bots llegan a existir de verdad**: se despierta hasta ese tope y a cada bot se le tira el dado del nivel la primera vez; el resto se queda en la reserva a nivel 1. Se subió para que mod-world-bots tenga de dónde sacar bots de tu tramo sin vaciar el resto del mundo. El dist trae 500/500. **Pendiente de vigilar la memoria**: con 153 bots el worldserver ocupaba 3,7 GB |
+| `BOTS_MIN` / `BOTS_MAX` | `Playerbots.MinRandomBots` / `MaxRandomBots` | **500 / 600** (desde 03/09/2026; antes 400/500 y 200/250) | El módulo elige un objetivo entre los dos y lo cambia cada 30-120 min. **Es cuántos bots llegan a existir de verdad**: se despierta hasta ese tope y a cada bot se le tira el dado del nivel la primera vez; el resto se queda en la reserva a nivel 1. Se subió para que mod-world-bots tenga de dónde sacar bots de tu tramo sin vaciar el resto del mundo. El dist trae 500/500. **Pendiente de vigilar la memoria**: con 153 bots el worldserver ocupaba 3,7 GB |
 | `BOT_ACTIVE_ALONE` | `BotActiveAlone` | 10 | Porcentaje de bots que simula de verdad lejos de cualquier jugador. Los de tu zona se despiertan siempre (`BotActiveAloneForceWhenInZone = 1`, del dist). Es lo que contiene el coste de 400-500 bots |
 | `BOTS_PERIODIC_ONLINE_OFFLINE` / `BOTS_PERIODIC_RATIO` | `EnablePeriodicOnlineOffline` / `PeriodicOnlineOfflineRatio` | **true** / 2.0 (desde 02/09/2026) | Los bots entran y salen por turnos, como gente real: de un conjunto de 2 × `BOTS_MAX` (1000 de los 1500) hay `BOTS_MAX` conectados y van rotando. Con el tiempo se estrenan más bots y la población cambia de un día a otro |
-| `BOTS_ACCOUNT_COUNT` | `AiPlayerbot.RandomBotAccountCount` | 150 | 10 personajes por cuenta → 1500 bots en la reserva |
+| `BOTS_ACCOUNT_COUNT` | `Playerbots.RandomBotAccountCount` | 150 | 10 personajes por cuenta → 1500 bots en la reserva |
 | `BOTS_LEVEL_MIN` / `MAX` | `RandomBotMinLevel` / `MaxLevel` | 1 / 80 | |
 | `BOTS_DISABLED_WITHOUT_PLAYER` | `DisabledWithoutRealPlayer` | **true** | Los bots aleatorios solo aparecen con un jugador real. Al salir el último, se desconectan tras 10 minutos (`BOTS_NO_PLAYER_LOGOUT_DELAY=600`). |
 | `BOTS_MAX_PER_PLAYER` | `MaxAddedBots` | 40 | Tope de bots propios en tu banda. Con 4 no se podía formar una banda, y con individual-progression la progresión **es** la banda |
@@ -593,7 +593,7 @@ versión fijada (b949b50b, 04/09/2026; el `.conf.dist` no cambió desde 2f7d9f77
 | `BOTS_LEVEL_BRACKETS_SYNC_FACTIONS` | `LevelBrackets.Dynamic.SyncFactions` | **true** | Alianza y Horda siguen el mismo bracket |
 | `BOTS_LEVEL_BRACKETS_PLAYER_WEIGHT` | `LevelBrackets.Dynamic.RealPlayerWeight` | 1000.0 | Respaldo si el parche faltase; con `HighestPlayerOnly` activo no decide el reparto |
 | `BOTS_LEVEL80_PCT` | porcentajes `LevelBrackets.<facción>.Range*.Pct` | 0 | No impone ninguna cuota fija de nivel 80. `mod-adaptive-ai` está archivado |
-| `BOTS_WORLD_TIME_MIN` / `_MAX` | `AiPlayerbot.MinRandomBotInWorldTime` / `Max...` | 7200 / 28800 | Segundos que un bot se queda en el mundo antes de que se le pueda rotar |
+| `BOTS_WORLD_TIME_MIN` / `_MAX` | `Playerbots.MinRandomBotInWorldTime` / `Max...` | 7200 / 28800 | Segundos que un bot se queda en el mundo antes de que se le pueda rotar |
 
 > ⚠️ Para mover un bot de franja, LevelBrackets lo **re-rula entero** con
 > `PlayerbotFactory::Randomize()`: nivel, equipo, talentos y misiones. Es el
@@ -644,13 +644,13 @@ Cómo funciona por dentro, y lo que costó que funcionara: `REFERENCES.md`.
 
 Merece la pena conocerlas aunque `config.sh` no las toque:
 
-- `AiPlayerbot.BotActiveAloneForceWhenInZone = 1`: los bots de tu zona simulan
+- `Playerbots.BotActiveAloneForceWhenInZone = 1`: los bots de tu zona simulan
   siempre al 100 %, estén donde estén dentro de ella. Es lo que hace que los
   que trae mod-world-bots se muevan de verdad. (`BotActiveAlone`, el porcentaje
   para los que están lejos, ya lo gobierna `BOT_ACTIVE_ALONE`: §3.1.)
-- `AiPlayerbot.EnableGreet = 0`, `RandomBotEmote = 0`, `RandomBotSayWithoutMaster = 0`:
+- `Playerbots.EnableGreet = 0`, `RandomBotEmote = 0`, `RandomBotSayWithoutMaster = 0`:
   los bots no saludan ni gesticulan. Decidido así el 01/09/2026.
-- `AiPlayerbot.MinRandomBotTeleportInterval = 3600` / `Max = 18000`: un bot cambia
+- `Playerbots.MinRandomBotTeleportInterval = 3600` / `Max = 18000`: un bot cambia
   de zona cada 1-5 horas.
 - Los textos que dicen los bots (`ai_playerbot_texts`, 1908 filas) **están en
   español desde el 02/09/2026**: 1062 ya venían traducidos en la versión fijada
@@ -782,7 +782,7 @@ entrar en una instancia (mazmorra o banda, vengan del buscador o de
 | `HOME_GUILD_ANNOUNCE` | `HomeGuild.Announce` | true | El resumen al entrar |
 
 El módulo no crea ni adopta guilds y tampoco cambia
-`AiPlayerbot.RandomBotInvitePlayer`: el jugador conserva ambas decisiones.
+`Playerbots.RandomBotInvitePlayer`: el jugador conserva ambas decisiones.
 
 **Fundar la hermandad de partida.** Blizzard exige 9 firmas en la carta (10
 personajes en total con el fundador) para fundar una guild — en single
@@ -861,7 +861,7 @@ el ala en Roca Negra: `lbrs`/`ubrs`, `brd-db`/`brd-uc`).
 
 | `config.sh` | Clave (`mod_dungeon_clear.conf`) | Valor | Por qué |
 |---|---|---|---|
-| `INSTALL_MOD_DUNGEON_CLEAR` | `DungeonClear.Enable` | true / 1 | Fijado en `versions.lock` (`60f3d98`, 05/10/2026). Es el módulo más frágil ante actualizaciones de playerbots. Su llenado de la cola del buscador (`DungeonClear.DungeonQueueFill.*`, desde 03/09) y el de campos de batalla (`DungeonClear.BgQueueFill.*`, desde 01/10/2026) se quedan apagados: eso lo hace mod-queue-bots |
+| `INSTALL_MOD_DUNGEON_CLEAR` | `DungeonClear.Enable` | true / 1 | Fijado en `versions.lock` (`07f8e33`, 12/10/2026). Es el módulo más frágil ante actualizaciones de playerbots. Su llenado de la cola del buscador (`DungeonClear.DungeonQueueFill.*`, desde 03/09) y el de campos de batalla (`DungeonClear.BgQueueFill.*`, desde 01/10/2026) se quedan apagados: eso lo hace mod-queue-bots |
 | `DUNGEON_CLEAR_WAIT_AT_BOSS` | `DungeonClear.WaitAtBoss` | false | Con true, pausa antes de cada jefe hasta que digas `.dc pause` |
 | `DUNGEON_CLEAR_SMART_REST` | `DungeonClear.SmartRest` | **false** | El descanso inteligente sigue adelante a los 3 minutos aunque estés AFK; el clásico espera a que tengas vida y maná, sin límite |
 | `DUNGEON_CLEAR_REZ_TIMEOUT` | `DungeonClear.PostCombatRezTimeoutSecs` | 180 | Segundos fuera de combate para la recuperación por resurrección antes de rendirse (el dist trae 90) |
@@ -1639,7 +1639,7 @@ nuevo servía):
     activamente si simplifica, sustituye o complementa lo que ya existe —
     y dejar la decisión (y el motivo) por escrito en el CHANGELOG, aunque
     sea "se deja como está porque...". Ejemplo real: mod-playerbots trajo
-    `AiPlayerbot.RandomBotConcentrateInPlayerZone`, que concentra bots por
+    `Playerbots.RandomBotConcentrateInPlayerZone`, que concentra bots por
     zona alrededor del jugador — mismo espíritu que nuestro
     `01-highest-player-bracket.patch` (que concentra por nivel), ejes
     distintos y sin conflicto de código, pero exactamente el tipo de
@@ -1699,7 +1699,7 @@ este orden:
    parche aplica igual. Si ha cambiado, `git apply --check` sobre el árbol nuevo.
    El de `mod-challenge-modes` depende del **core**: mirar que
    `OnPlayerResurrect` siga con `bool&` en `PlayerScript.h`.
-2. **Claves de configuración**: cada `AiPlayerbot.*` / clave de módulo que
+2. **Claves de configuración**: cada `Playerbots.*` / clave de módulo que
    escribe `05_configure_server.sh` tiene que existir en el `.conf.dist` **y en
    el código** nuevos. `git diff <viejo>..<nuevo> -- conf/*.conf.dist | grep '^-'`
    enseña las eliminadas.
@@ -1747,6 +1747,10 @@ Detalles que cuestan un intento fallido si no se saben:
   y un solo módulo tocado son ~3 min; sin caché, ~25.
 - **`--only 5`**: las tres advertencias de `HomeGuild.*` "NO declarada" son
   conocidas (claves propias de `mod-home-guild`, §3.10) y no cuentan.
+- **Tras el primer arranque con un módulo actualizado**: si el SQL del módulo se reejecuta puede borrar
+  filas de `patches/locales-es/` que la fase 5 aplicó antes (pasó con `mod-transmog` el 12/10/2026).
+  `./install.sh --doctor` lo avisa (`traducciones-es`); se arregla con
+  `bash scripts/reaplicar-traducciones.sh` (idempotente, no toca nada más).
 
 Si todo va bien: `./install.sh --mirror` y traer `mirrors/` al repo (§8).
 

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Reparto de loot en grupo con dos jugadores humanos reales y un bot (M40).
 
-`AiPlayerbot.LootRollAfterRealPlayersPass` (activo en la VM, confirmado por
+`Playerbots.LootRollAfterRealPlayersPass` (activo en la VM, confirmado por
 SSH antes de escribir este caso: `grep LootRollAfterRealPlayersPass
 env/dist/etc/modules/playerbots.conf` → `= 1`; `config.sh` lo trae ya a
 `true` por defecto) hace que, con reparto «Botín de grupo» o «Necesidad antes
@@ -75,7 +75,7 @@ def _formar_con_un_bot(m, inf, sec, espera=90) -> dict:
     return miembros
 
 
-def _matar_criatura_de_prueba(m, entry=CREATURA_PRUEBA):
+def _matar_criatura_de_prueba(m, entry=CREATURA_PRUEBA, registro=None):
     """`.npc add <entry>` junto al grupo y muerte por un golpe cuerpo a cuerpo REAL
     (`.modify hp 1` + `CMSG_ATTACKSWING`), no `.die`/`.damage` de GM. Comprobado en vivo:
     `Unit::Kill` sólo genera botín si `Creature::IsDamageEnoughForLootingAndReward()` es
@@ -94,6 +94,8 @@ def _matar_criatura_de_prueba(m, entry=CREATURA_PRUEBA):
     objetivo = next(iter(nuevos), None)
     if objetivo is None:
         return None
+    if registro is not None:
+        registro.append(objetivo)          # se borra al salir del caso (regla 9 de AGENTS.md)
     m.seleccionar(objetivo)
     m.bombear(1)
     m.comando("modify hp 1", 2)
@@ -135,7 +137,15 @@ def ejecutar(ctx):
     eventos = []
     a.oyentes.append(lambda t, ev, d: eventos.append((t, ev, dict(d))) if ev == "tirada_voto" else None)
 
+    creados = []                                  # criaturas de prueba (`.npc add`) a borrar al salir
+
     def deshacer(m):
+        if m is a:
+            while creados:
+                m.seleccionar(creados.pop())
+                m.bombear(1)
+                m.comando("npc delete", 2)
+                m.bombear(1)
         if (m.grupo or {}).get("miembros"):
             m.comando("grupo fuera", 2)
             m.bombear(1)
@@ -179,15 +189,20 @@ def ejecutar(ctx):
             # cada muerte (el resto de su tabla es probabilística); varias muertes seguidas
             # hasta reunir tiradas reales, en vez de forzar un único intento con RNG en contra.
             intentos_matanza = 0
+            respuestas = []                              # qué contestó CMSG_LOOT en cada intento
             while len(a.tiradas) < 1 and intentos_matanza < 3:
                 intentos_matanza += 1
-                objetivo = _matar_criatura_de_prueba(a)
+                objetivo = _matar_criatura_de_prueba(a, registro=creados)
                 if objetivo is None:
+                    respuestas.append("sin cadaver (no murio en 40 s)")
                     continue
                 try:
-                    a.abrir_criatura(objetivo, espera=25.0)
+                    r = a.abrir_criatura(objetivo, espera=25.0)
+                    respuestas.append("abierto=%s error_loot=%s objetos=%s" % (
+                        r.get("abierto"), r.get("error_loot"),
+                        [(o["entrada"], o["tipo"]) for o in r.get("objetos", [])]))
                 except TimeoutError:
-                    pass                                 # servidor cargado (600 bots activos): reintenta
+                    respuestas.append("CMSG_LOOT sin respuesta en 25 s")   # servidor cargado: reintenta
                 a.bombear(2)
                 b.bombear(1)
                 if not a.tiradas:
@@ -198,7 +213,7 @@ def ejecutar(ctx):
                     a.bombear(1)
             inf.anotar(sec, "OK" if a.tiradas else "AVISO",
                       "se coloca y mata una criatura de prueba (%d) hasta obtener botín verde+" % CREATURA_PRUEBA,
-                      "%d intento(s)" % intentos_matanza)
+                      "%d intento(s): %s" % (intentos_matanza, "; ".join(respuestas)))
             tiradas = list(a.tiradas.items())
             if not inf.comprobar(sec, len(tiradas) >= 1,
                                  "abrir el cadáver arranca tiradas de botín de grupo reales",

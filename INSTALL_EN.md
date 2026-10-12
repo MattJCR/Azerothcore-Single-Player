@@ -406,7 +406,7 @@ Since 2026-09-01, if phase 5 tries to write a key that **does not exist** in the
 That warning exists because the installer had been writing, for months, keys that
 no program read, without anyone noticing: `MapUpdateThreadCount` (the server ran
 with **one** map thread with 250 bots), `AllowTwoSide.Interaction.Trade`,
-`AutoBalance.Raids`, `AiPlayerbot.RandomBotMaxGearQuality`,
+`AutoBalance.Raids`, `Playerbots.RandomBotMaxGearQuality`,
 `Transmogrification.Enabled`… Since the `.conf` files are copied from their
 `.dist`, which declares all the real keys, "it wasn't there" almost always means
 "it doesn't exist". **If you see that warning, check the name against the
@@ -580,10 +580,10 @@ that the installer writes exist.
 
 | `config.sh` | Key | Value | Why |
 |---|---|---|---|
-| `BOTS_MIN` / `BOTS_MAX` | `AiPlayerbot.MinRandomBots` / `MaxRandomBots` | **500 / 600** (since 2026-09-03; before 400/500 and 200/250) | The module picks a target between the two and changes it every 30-120 min. **It is how many bots actually come to exist**: it wakes up to that cap and each bot gets its level roll the first time; the rest stay in the reserve at level 1. It was raised so that mod-world-bots has somewhere to take bots of your bracket from without emptying the rest of the world. The dist brings 500/500. **Memory still to be watched**: with 153 bots the worldserver took 3.7 GB |
+| `BOTS_MIN` / `BOTS_MAX` | `Playerbots.MinRandomBots` / `MaxRandomBots` | **500 / 600** (since 2026-09-03; before 400/500 and 200/250) | The module picks a target between the two and changes it every 30-120 min. **It is how many bots actually come to exist**: it wakes up to that cap and each bot gets its level roll the first time; the rest stay in the reserve at level 1. It was raised so that mod-world-bots has somewhere to take bots of your bracket from without emptying the rest of the world. The dist brings 500/500. **Memory still to be watched**: with 153 bots the worldserver took 3.7 GB |
 | `BOT_ACTIVE_ALONE` | `BotActiveAlone` | 10 | Percentage of bots that really simulate far from any player. Those in your zone are always woken up (`BotActiveAloneForceWhenInZone = 1`, from the dist). It is what contains the cost of 400-500 bots |
 | `BOTS_PERIODIC_ONLINE_OFFLINE` / `BOTS_PERIODIC_RATIO` | `EnablePeriodicOnlineOffline` / `PeriodicOnlineOfflineRatio` | **true** / 2.0 (since 2026-09-02) | Bots come and go in turns, like real people: from a set of 2 × `BOTS_MAX` (1000 of the 1500) there are `BOTS_MAX` connected and they keep rotating. Over time more bots are debuted and the population changes from one day to the next |
-| `BOTS_ACCOUNT_COUNT` | `AiPlayerbot.RandomBotAccountCount` | 150 | 10 characters per account → 1500 bots in the reserve |
+| `BOTS_ACCOUNT_COUNT` | `Playerbots.RandomBotAccountCount` | 150 | 10 characters per account → 1500 bots in the reserve |
 | `BOTS_LEVEL_MIN` / `MAX` | `RandomBotMinLevel` / `MaxLevel` | 1 / 80 | |
 | `BOTS_DISABLED_WITHOUT_PLAYER` | `DisabledWithoutRealPlayer` | **true** | Random bots only appear with a real player. When the last one leaves, they disconnect after 10 minutes (`BOTS_NO_PLAYER_LOGOUT_DELAY=600`). |
 | `BOTS_MAX_PER_PLAYER` | `MaxAddedBots` | 40 | Cap of own bots in your raid. With 4 a raid could not be formed, and with individual-progression progression **is** the raid |
@@ -604,7 +604,7 @@ that the installer writes exist.
 | `BOTS_LEVEL_BRACKETS_SYNC_FACTIONS` | `LevelBrackets.Dynamic.SyncFactions` | **true** | Alliance and Horde follow the same bracket |
 | `BOTS_LEVEL_BRACKETS_PLAYER_WEIGHT` | `LevelBrackets.Dynamic.RealPlayerWeight` | 1000.0 | Fallback in case the patch is missing; with `HighestPlayerOnly` active it does not decide the spread |
 | `BOTS_LEVEL80_PCT` | percentages `LevelBrackets.<faction>.Range*.Pct` | 0 | It imposes no fixed quota of level 80. `mod-adaptive-ai` is archived |
-| `BOTS_WORLD_TIME_MIN` / `_MAX` | `AiPlayerbot.MinRandomBotInWorldTime` / `Max...` | 7200 / 28800 | Seconds a bot stays in the world before it can be rotated |
+| `BOTS_WORLD_TIME_MIN` / `_MAX` | `Playerbots.MinRandomBotInWorldTime` / `Max...` | 7200 / 28800 | Seconds a bot stays in the world before it can be rotated |
 
 > ⚠️ To move a bot to another bracket, LevelBrackets **re-rolls it entirely** with
 > `PlayerbotFactory::Randomize()`: level, gear, talents and quests. It is the
@@ -656,13 +656,13 @@ How it works inside, and what it took to make it work: `REFERENCES.md`.
 
 They are worth knowing even if `config.sh` does not touch them:
 
-- `AiPlayerbot.BotActiveAloneForceWhenInZone = 1`: the bots in your zone always
+- `Playerbots.BotActiveAloneForceWhenInZone = 1`: the bots in your zone always
   simulate at 100 %, wherever they are within it. It is what makes the ones
   brought by mod-world-bots really move. (`BotActiveAlone`, the percentage for
   those far away, is already governed by `BOT_ACTIVE_ALONE`: §3.1.)
-- `AiPlayerbot.EnableGreet = 0`, `RandomBotEmote = 0`, `RandomBotSayWithoutMaster = 0`:
+- `Playerbots.EnableGreet = 0`, `RandomBotEmote = 0`, `RandomBotSayWithoutMaster = 0`:
   the bots neither greet nor gesticulate. Decided so on 2026-09-01.
-- `AiPlayerbot.MinRandomBotTeleportInterval = 3600` / `Max = 18000`: a bot
+- `Playerbots.MinRandomBotTeleportInterval = 3600` / `Max = 18000`: a bot
   changes zone every 1-5 hours.
 - The texts the bots say (`ai_playerbot_texts`, 1908 rows) **have been in Spanish
   since 2026-09-02**: 1062 already came translated in the pinned version and the
@@ -792,7 +792,7 @@ that module's groups. The caps per phase are in `REFERENCES.md` (shared headers)
 | `HOME_GUILD_ANNOUNCE` | `HomeGuild.Announce` | true | The summary on login |
 
 The module neither creates nor adopts guilds and does not change
-`AiPlayerbot.RandomBotInvitePlayer` either: the player keeps both decisions.
+`Playerbots.RandomBotInvitePlayer` either: the player keeps both decisions.
 
 **Founding the starting guild.** Blizzard requires 9 signatures on the charter
 (10 characters in total with the founder) to found a guild — in single player
@@ -873,7 +873,7 @@ You cannot be the tank. Commands: `.dc on/off/pause/skip/status/bosses/go/wing/s
 
 | `config.sh` | Key (`mod_dungeon_clear.conf`) | Value | Why |
 |---|---|---|---|
-| `INSTALL_MOD_DUNGEON_CLEAR` | `DungeonClear.Enable` | true / 1 | Pinned in `versions.lock` (`60f3d98`, 2026-10-05). It is the module most fragile to playerbots updates. Its dungeon-finder queue fill (`DungeonClear.DungeonQueueFill.*`, since 03/09) and its battleground one (`DungeonClear.BgQueueFill.*`, since 2026-10-01) stay off: mod-queue-bots does that |
+| `INSTALL_MOD_DUNGEON_CLEAR` | `DungeonClear.Enable` | true / 1 | Pinned in `versions.lock` (`07f8e33`, 2026-10-12). It is the module most fragile to playerbots updates. Its dungeon-finder queue fill (`DungeonClear.DungeonQueueFill.*`, since 03/09) and its battleground one (`DungeonClear.BgQueueFill.*`, since 2026-10-01) stay off: mod-queue-bots does that |
 | `DUNGEON_CLEAR_WAIT_AT_BOSS` | `DungeonClear.WaitAtBoss` | false | With true, it pauses before each boss until you say `.dc pause` |
 | `DUNGEON_CLEAR_SMART_REST` | `DungeonClear.SmartRest` | **false** | The smart rest moves on at 3 minutes even if you are AFK; the classic one waits until you have health and mana, with no limit |
 | `DUNGEON_CLEAR_REZ_TIMEOUT` | `DungeonClear.PostCombatRezTimeoutSecs` | 180 | Seconds out of combat for the resurrection recovery before giving up (the dist brings 90) |
@@ -1658,7 +1658,7 @@ new was useful):
     whether it simplifies, replaces or complements what already exists — and leave the
     decision (and the reason) in writing in the CHANGELOG, even if it is "left as is
     because...". Real example: mod-playerbots brought
-    `AiPlayerbot.RandomBotConcentrateInPlayerZone`, which concentrates bots by zone around
+    `Playerbots.RandomBotConcentrateInPlayerZone`, which concentrates bots by zone around
     the player — same spirit as our `01-highest-player-bracket.patch` (which concentrates
     by level), different axes and no code conflict, but exactly the kind of novelty that
     deserves its own review and not just a "compiles, breaks nothing, carry on".
@@ -1713,7 +1713,7 @@ Clone the repos that change (`git clone --filter=blob:none`) and check, in this 
    applies just the same. If it has changed, `git apply --check` on the new tree. The one
    for `mod-challenge-modes` depends on the **core**: check that `OnPlayerResurrect` still
    takes `bool&` in `PlayerScript.h`.
-2. **Configuration keys**: every `AiPlayerbot.*` / module key that `05_configure_server.sh`
+2. **Configuration keys**: every `Playerbots.*` / module key that `05_configure_server.sh`
    writes has to exist in the new `.conf.dist` **and in the code**.
    `git diff <old>..<new> -- conf/*.conf.dist | grep '^-'` shows the removed ones.
 3. **Own modules** (`modules/`): the playerbots symbols they use (`IsTank`, `IsHeal`,
@@ -1759,6 +1759,10 @@ Details that cost a failed attempt if you do not know them:
   touched it is ~3 min; without cache, ~25.
 - **`--only 5`**: the three "NOT declared" warnings for `HomeGuild.*` are known (own keys
   of `mod-home-guild`, §3.10) and do not count.
+- **After the first start with an updated module**: if the module's SQL re-runs it can delete rows from
+  `patches/locales-es/` that phase 5 applied earlier (it happened with `mod-transmog` on 2026-10-12).
+  `./install.sh --doctor` reports it (`traducciones-es`); fix it with
+  `bash scripts/reaplicar-traducciones.sh` (idempotent, touches nothing else).
 
 If all goes well: `./install.sh --mirror` and bring `mirrors/` to the repo (§8).
 

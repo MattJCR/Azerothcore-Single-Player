@@ -760,7 +760,7 @@ hermandad de un bot que ya tiene una (`PlayerbotFactory::InitGuild`) y
 `LevelBrackets.IgnoreGuildBotsWithRealPlayers = 1` (dist) deja en paz el nivel
 de los bots de una hermandad liderada por un humano. Lo único que hace el
 gestor es desconectarlos cuando caduca su turno, y aquí se vuelven a conectar.
-El módulo no cambia `AiPlayerbot.RandomBotInvitePlayer`.
+El módulo no cambia `Playerbots.RandomBotInvitePlayer`.
 
 Al primer arranque de la versión del 08/09, `CleanupLegacyAutoGuilds` disuelve
 una sola vez las guilds automáticas antiguas que coincidan en nombre generado,
@@ -773,7 +773,7 @@ Si sólo coincide una parte de la firma, no borra nada y deja un aviso en el log
 `grep -a 'home-guild' Server.log`. Si al fundarla no queda vinculada, comprueba
 que existen las tablas `mod_home_guild*` en `acore_characters`. Si los bots no
 se conectan, mira `HomeGuild.KeepOnline` y el tope de
-`AiPlayerbot.MaxRandomBots`. Para deshacerlo, disuelve la guild normalmente; el
+`Playerbots.MaxRandomBots`. Para deshacerlo, disuelve la guild normalmente; el
 hook borra su marca y no se creará otra por sí sola.
 
 ---
@@ -1579,8 +1579,8 @@ se colaron, sin que nadie se enterase:
 
 | Clave fantasma | Consecuencia |
 |---|---|
-| `AiPlayerbot.RandomBotMaxGearQuality` | Bots de nivel 80 vestidos de azul |
-| `AiPlayerbot.LevelBrackets.*` (versión sin el sistema) | Sin bots de nivel 80 |
+| `Playerbots.RandomBotMaxGearQuality` | Bots de nivel 80 vestidos de azul |
+| `Playerbots.LevelBrackets.*` (versión sin el sistema) | Sin bots de nivel 80 |
 | `MapUpdateThreadCount` | **Un solo hilo de mapas** con 250 bots, un núcleo al 93 % |
 | `AllowTwoSide.Interaction.{Trade,Mail}`, `WhoList`, `AddFriend` | Nada (no existen); y faltaba `.Interaction.Chat` |
 | `AutoBalance.enable`, `rate.global.*`, `Raids` | Escalado con los valores de fábrica |
@@ -3129,7 +3129,7 @@ restablece a la base común elegida en `config.sh`.
   esta fuente. `03-bloquear-xp-profesiones-solo-misiones.patch`, en Challenge Modes,
   impide que la ausencia de víctima eluda el desafío «sólo misiones». No cambia
   el tratamiento de otras fuentes de XP de ese módulo.
-- No se excluyen bots. Su multiplicador general `AiPlayerbot.RandomBotXPRate`
+- No se excluyen bots. Su multiplicador general `Playerbots.RandomBotXPRate`
   sigue aplicándose según las reglas de Playerbots; en esta instalación vale 1.
 - Individual Progression conserva sus vetos de 60/70; XP bloqueada y nivel máximo
   los resuelve `Player::GiveXP`. AutoBalance no escala esta XP sin víctima.

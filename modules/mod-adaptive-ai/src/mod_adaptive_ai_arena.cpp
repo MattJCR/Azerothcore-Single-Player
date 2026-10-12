@@ -525,8 +525,8 @@ namespace AdaptiveAI
             uint32 worn = WornItemLevel(bot);
             if (!force && worn + cfg.arenaGearTolerance >= cfg.arenaGearScore && worn <= cfg.arenaGearScore + cfg.arenaGearTolerance)
                 return;
-            uint32 quality = sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoGearQualityLimit", 4);
-            bool twoRounds = sConfigMgr->GetOption<bool>("AiPlayerbot.TwoRoundsGearInit", true);
+            uint32 quality = sConfigMgr->GetOption<uint32>("Playerbots.AutoGearQualityLimit", 4);
+            bool twoRounds = sConfigMgr->GetOption<bool>("Playerbots.TwoRoundsGearInit", true);
             PlayerbotFactory::DestroyEquippedGear(bot);
             PlayerbotFactory::AutoGear(bot, quality, cfg.arenaGearScore, false, twoRounds);
             LOG_DEBUG("module", "[adaptive-ai] {} reequipado de nivel de objeto {} a ~{}.", bot->GetName(), worn, WornItemLevel(bot));

@@ -6,7 +6,7 @@ por un objeto: los bots compiten desde el primer instante.
 
 Problema
 --------
-AiPlayerbot.LootNeedRollLevel y AiPlayerbot.LootGreedRollLevel solo
+Playerbots.LootNeedRollLevel y Playerbots.LootGreedRollLevel solo
 transforman una necesidad/codicia ya calculada por la IA en pasar, codicia o
 necesidad (0/1/2 y 0/1 respectivamente); no dicen nada de CUANDO se emite el
 voto. LootRollAction::Execute() recorre las tiradas pendientes desde el
@@ -48,7 +48,7 @@ ampliar el core.
 
 Activacion
 ----------
-El comportamiento nuevo queda detras de AiPlayerbot.LootRollAfterRealPlayersPass
+El comportamiento nuevo queda detras de Playerbots.LootRollAfterRealPlayersPass
 (nuevo, por defecto 0/desactivado en el .conf.dist del modulo). Con el parche
 sin activar, LootRollAction::Execute() se comporta exactamente igual que
 antes de este parche.
@@ -59,20 +59,26 @@ mod-playerbots @ b6696bdbd3740e575598d167d69f39f68cc0b907, con
 01-highest-player-bracket.patch, 02-stage-live-cap.patch y
 03-stage-cap-autopopulation.patch ya aplicados.
 
+Actualizado 12/10/2026
+----------------------
+Rehecho contra mod-playerbots @ 79bd428115c8f33b74b13de23b133d49c3f75c60 (2026-10-09). La #2854
+renombro las claves AiPlayerbot.* a Playerbots.* y los miembros de PlayerbotAIConfig a
+UpperCamelCase (randomBotMaxLevel -> RandomBotMaxLevel, etc.); la logica del parche no cambia.
+
 diff --git a/conf/playerbots.conf.dist b/conf/playerbots.conf.dist
 --- a/conf/playerbots.conf.dist
 +++ b/conf/playerbots.conf.dist
-@@ -324,6 +324,14 @@ AiPlayerbot.LootRollRecipe = 0
+@@ -330,6 +330,14 @@ Playerbots.LootRollRecipe = 0
  # Default: 0 (disabled)
- AiPlayerbot.LootRollDisenchant = 0
-
+ Playerbots.LootRollDisenchant = 0
+ 
 +# In a group with real players, make bots hold their loot roll vote on an item until every real
 +# player who is rolling on it has passed (explicitly, by auto-pass, or by rolling Need/Greed/
 +# Disenchant themselves, which makes the bots PASS on that item instead of competing). Bots in a
 +# group made up only of bots are unaffected. Does not apply to Master Loot or Free-for-All, where
 +# bots already always pass.
 +# Default: 0 (disabled - bots roll immediately, same as real players)
-+AiPlayerbot.LootRollAfterRealPlayersPass = 0
++Playerbots.LootRollAfterRealPlayersPass = 0
 +
  # A list of GameObject GUIDs that bots will not interact with.
  # List of default GUIDs:
@@ -81,11 +87,11 @@ diff --git a/src/Ai/Base/Actions/LootRollAction.cpp b/src/Ai/Base/Actions/LootRo
 --- a/src/Ai/Base/Actions/LootRollAction.cpp
 +++ b/src/Ai/Base/Actions/LootRollAction.cpp
 @@ -29,6 +29,38 @@ bool LootRollAction::Execute(Event /*event*/)
-
+ 
          ObjectGuid guid = roll->itemGUID;
          uint32 itemId = roll->itemid;
 +
-+        if (sPlayerbotAIConfig.lootRollAfterRealPlayersPass &&
++        if (sPlayerbotAIConfig.LootRollAfterRealPlayersPass &&
 +            group->GetLootMethod() != MASTER_LOOT && group->GetLootMethod() != FREE_FOR_ALL)
 +        {
 +            bool anyRealPlayer = false;
@@ -122,22 +128,22 @@ diff --git a/src/Ai/Base/Actions/LootRollAction.cpp b/src/Ai/Base/Actions/LootRo
 diff --git a/src/PlayerbotAIConfig.cpp b/src/PlayerbotAIConfig.cpp
 --- a/src/PlayerbotAIConfig.cpp
 +++ b/src/PlayerbotAIConfig.cpp
-@@ -708,6 +708,7 @@ bool PlayerbotAIConfig::Initialize()
-     lootRollRecipe = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollRecipe", false);
-     lootRollDisenchant = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollDisenchant", false);
-     lootGreedRollLevel = sConfigMgr->GetOption<bool>("AiPlayerbot.LootGreedRollLevel", false);
-+    lootRollAfterRealPlayersPass = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollAfterRealPlayersPass", false);
-     autoPickReward = sConfigMgr->GetOption<std::string>("AiPlayerbot.AutoPickReward", "yes");
-     autoEquipUpgradeLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoEquipUpgradeLoot", true);
-     equipUpgradeThreshold = sConfigMgr->GetOption<float>("AiPlayerbot.EquipUpgradeThreshold", 1.1f);
+@@ -711,6 +711,7 @@ bool PlayerbotAIConfig::Initialize()
+     LootRollRecipe = sConfigMgr->GetOption<bool>("Playerbots.LootRollRecipe", false);
+     LootRollDisenchant = sConfigMgr->GetOption<bool>("Playerbots.LootRollDisenchant", false);
+     LootGreedRollLevel = sConfigMgr->GetOption<bool>("Playerbots.LootGreedRollLevel", false);
++    LootRollAfterRealPlayersPass = sConfigMgr->GetOption<bool>("Playerbots.LootRollAfterRealPlayersPass", false);
+     AutoPickReward = sConfigMgr->GetOption<std::string>("Playerbots.AutoPickReward", "yes");
+     AutoEquipUpgradeLoot = sConfigMgr->GetOption<bool>("Playerbots.AutoEquipUpgradeLoot", true);
+     EquipUpgradeThreshold = sConfigMgr->GetOption<float>("Playerbots.EquipUpgradeThreshold", 1.1f);
 diff --git a/src/PlayerbotAIConfig.h b/src/PlayerbotAIConfig.h
 --- a/src/PlayerbotAIConfig.h
 +++ b/src/PlayerbotAIConfig.h
-@@ -375,6 +375,7 @@ public:
-     bool lootGreedRollLevel;
-     bool lootRollRecipe;
-     bool lootRollDisenchant;
-+    bool lootRollAfterRealPlayersPass;
-     std::string autoPickReward;
-     bool autoEquipUpgradeLoot;
-     float equipUpgradeThreshold;
+@@ -376,6 +376,7 @@ public:
+     bool LootGreedRollLevel;
+     bool LootRollRecipe;
+     bool LootRollDisenchant;
++    bool LootRollAfterRealPlayersPass;
+     std::string AutoPickReward;
+     bool AutoEquipUpgradeLoot;
+     float EquipUpgradeThreshold;

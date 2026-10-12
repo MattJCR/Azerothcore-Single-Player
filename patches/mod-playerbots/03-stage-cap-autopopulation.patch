@@ -13,7 +13,7 @@ corrigiera.
 
 RandomPlayerbotMgr::AddRandomBots() es el bucle propio de mod-playerbots que
 mantiene la poblacion de bots aleatorios cerca de su objetivo
-(AiPlayerbot.MinRandomBots/MaxRandomBots), totalmente aparte de
+(Playerbots.MinRandomBots/MaxRandomBots), totalmente aparte de
 mod-world-bots. Su lambda tryLoginBot elige que personaje desconectado
 despertar mirando solo cuenta/facción/clase (Death Knight deshabilitado);
 NUNCA mira el nivel guardado del personaje. Cualquiera de los ~1500
@@ -44,13 +44,19 @@ Escrito contra
 mod-playerbots @ b949b50bfcdd4fab937781bac2d7765e39330e4b (2026-09-04), con
 01-highest-player-bracket.patch y 02-stage-live-cap.patch ya aplicados.
 
+Actualizado 12/10/2026
+----------------------
+Rehecho contra mod-playerbots @ 79bd428115c8f33b74b13de23b133d49c3f75c60 (2026-10-09). La #2854
+renombro las claves AiPlayerbot.* a Playerbots.* y los miembros de PlayerbotAIConfig a
+UpperCamelCase (randomBotMaxLevel -> RandomBotMaxLevel, etc.); la logica del parche no cambia.
+
 diff --git a/src/Bot/RandomPlayerbotMgr.cpp b/src/Bot/RandomPlayerbotMgr.cpp
 --- a/src/Bot/RandomPlayerbotMgr.cpp
 +++ b/src/Bot/RandomPlayerbotMgr.cpp
-@@ -744,6 +744,18 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
+@@ -765,6 +765,18 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                  return false;
              }
-
+ 
 +            // Otro modulo puede haber bajado randomBotMaxLevel en caliente (p.ej.
 +            // una etapa de progresion): este personaje ya existe con el nivel que
 +            // tuviera guardado de su ultima sesion, y aqui no se le va a
@@ -58,11 +64,11 @@ diff --git a/src/Bot/RandomPlayerbotMgr.cpp b/src/Bot/RandomPlayerbotMgr.cpp
 +            // que corregirlo despues -caro, un teleport entre mapas o un
 +            // PlayerbotFactory::Randomize completo-; mas barato no despertarlo.
 +            if (sCharacterCache->GetCharacterLevelByGuid(ObjectGuid::Create<HighGuid::Player>(charInfo.guid))
-+                    > sPlayerbotAIConfig.randomBotMaxLevel)
++                    > sPlayerbotAIConfig.RandomBotMaxLevel)
 +            {
 +                return false;
 +            }
 +
-             uint32 add_time = sPlayerbotAIConfig.enablePeriodicOnlineOffline
-                                 ? urand(sPlayerbotAIConfig.minRandomBotInWorldTime,
-                                         sPlayerbotAIConfig.maxRandomBotInWorldTime)
+             uint32 add_time = sPlayerbotAIConfig.EnablePeriodicOnlineOffline
+                                 ? urand(sPlayerbotAIConfig.MinRandomBotInWorldTime,
+                                         sPlayerbotAIConfig.MaxRandomBotInWorldTime)

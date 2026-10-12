@@ -432,7 +432,7 @@ class PruebasObjetos(unittest.TestCase):
 
 
 class PruebasTiradasLoot(unittest.TestCase):
-    """M40: reparto de loot con jugadores reales (AiPlayerbot.LootRollAfterRealPlayersPass)."""
+    """M40: reparto de loot con jugadores reales (Playerbots.LootRollAfterRealPlayersPass)."""
 
     def test_paquete_metodo_loot(self):
         from wowsintetico.mundo import _paquete_metodo_loot

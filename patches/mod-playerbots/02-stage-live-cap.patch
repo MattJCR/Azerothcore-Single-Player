@@ -10,7 +10,7 @@ cambia la etapa de progresion (Vanilla/TBC/WotLK), sin disparar un
 ".reload config". RandomBotLevelMgr solo copiaba ese valor a su miembro interno
 _randomBotMaxLevel (y clampaba los limites superiores de sus brackets contra
 el) en LoadConfig(), que unicamente se llama al arranque y en un reload
-explicito. Con AiPlayerbot.LevelBrackets.Enabled activo (como en este
+explicito. Con Playerbots.LevelBrackets.Enabled activo (como en este
 servidor, junto con WorldBots.Stage.Enable), RunLevelBracketsDistribution()
 corre en su propio temporizador y reasigna nivel a los bots segun esos
 brackets con tope obsoleto (el de arranque, tipicamente el maximo global),
@@ -33,13 +33,19 @@ Escrito contra
 mod-playerbots @ b949b50bfcdd4fab937781bac2d7765e39330e4b (2026-09-04), con
 01-highest-player-bracket.patch ya aplicado.
 
+Actualizado 12/10/2026
+----------------------
+Rehecho contra mod-playerbots @ 79bd428115c8f33b74b13de23b133d49c3f75c60 (2026-10-09). La #2854
+renombro las claves AiPlayerbot.* a Playerbots.* y los miembros de PlayerbotAIConfig a
+UpperCamelCase (randomBotMaxLevel -> RandomBotMaxLevel, etc.); la logica del parche no cambia.
+
 diff --git a/src/Bot/RandomBotLevelMgr.cpp b/src/Bot/RandomBotLevelMgr.cpp
 --- a/src/Bot/RandomBotLevelMgr.cpp
 +++ b/src/Bot/RandomBotLevelMgr.cpp
-@@ -555,6 +555,12 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
+@@ -564,6 +564,12 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
  {
      auto const& allPlayers = ObjectAccessor::GetPlayers();
-
+ 
 +    // Other modules can change randomBotMinLevel/randomBotMaxLevel at runtime
 +    // without a ".reload config" (e.g. mod-world-bots' progression stage); this
 +    // was previously loaded only at startup/reload, so bracket bounds went
@@ -47,5 +53,5 @@ diff --git a/src/Bot/RandomBotLevelMgr.cpp b/src/Bot/RandomBotLevelMgr.cpp
 +    LoadConfig();
 +
      LoadSocialFriendList();
-
-     if (sPlayerbotAIConfig.levelBracketsDynamicDistribution)
+ 
+     if (sPlayerbotAIConfig.LevelBracketsDynamicDistribution)

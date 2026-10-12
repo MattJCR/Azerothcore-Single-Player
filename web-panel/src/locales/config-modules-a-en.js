@@ -3,14 +3,14 @@
 // Descripciones en inglés de los parámetros de módulos de terceros (primera mitad).
 export default {
   // ── mod-playerbots ────────────────────────────────────────────────────
-  "AiPlayerbot.Enabled": "Master switch; affects the bot population of the whole server.",
-  "AiPlayerbot.RandomBotAutologin": "Autologin of random bots.",
-  "AiPlayerbot.MinRandomBots": "A high number means high CPU/memory load; the current server uses its own value, different from the .dist, so check before touching it. With WorldBots.PlayerScale.Enable=1 (mod_world_bots.conf), mod-world-bots overrides it live every few seconds according to the connected players: editing it here has no effect while that is active.",
-  "AiPlayerbot.MaxRandomBots": "A high number means high CPU/memory load; the current server uses its own value, different from the .dist, so check before touching it. With WorldBots.PlayerScale.Enable=1 (mod_world_bots.conf), mod-world-bots overrides it live every few seconds according to the connected players: editing it here has no effect while that is active.",
-  "AiPlayerbot.RandomBotMinLevel": "Minimum level of random bots.",
-  "AiPlayerbot.RandomBotMaxLevel": "Maximum level of random bots.",
-  "AiPlayerbot.MinRandomBotInWorldTime": "Minimum seconds a random bot stays in the world.",
-  "AiPlayerbot.MaxRandomBotInWorldTime": "Maximum seconds a random bot stays in the world.",
+  "Playerbots.Enabled": "Master switch; affects the bot population of the whole server.",
+  "Playerbots.RandomBotAutologin": "Autologin of random bots.",
+  "Playerbots.MinRandomBots": "A high number means high CPU/memory load; the current server uses its own value, different from the .dist, so check before touching it. With WorldBots.PlayerScale.Enable=1 (mod_world_bots.conf), mod-world-bots overrides it live every few seconds according to the connected players: editing it here has no effect while that is active.",
+  "Playerbots.MaxRandomBots": "A high number means high CPU/memory load; the current server uses its own value, different from the .dist, so check before touching it. With WorldBots.PlayerScale.Enable=1 (mod_world_bots.conf), mod-world-bots overrides it live every few seconds according to the connected players: editing it here has no effect while that is active.",
+  "Playerbots.RandomBotMinLevel": "Minimum level of random bots.",
+  "Playerbots.RandomBotMaxLevel": "Maximum level of random bots.",
+  "Playerbots.MinRandomBotInWorldTime": "Minimum seconds a random bot stays in the world.",
+  "Playerbots.MaxRandomBotInWorldTime": "Maximum seconds a random bot stays in the world.",
 
   // ── mod-autobalance ───────────────────────────────────────────────────
   "AutoBalance.Enable.Global": "Master switch for the whole module.",

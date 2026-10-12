@@ -392,85 +392,85 @@ if [ "$INSTALL_MOD_PLAYERBOTS" = true ]; then
     # Playerbots puede depositar el conf en bin/ o en etc/modules/ según versión
     if install_module_conf "mod-playerbots" "playerbots.conf"; then
         CONF="$MOD_CONF_DIR/playerbots.conf"
-        set_conf_value "$CONF" "AiPlayerbot.Enabled"                    "1"
-        set_conf_value "$CONF" "AiPlayerbot.MinRandomBots"               "$BOTS_MIN"
-        set_conf_value "$CONF" "AiPlayerbot.MaxRandomBots"               "$BOTS_MAX"
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotMinLevel"           "$BOTS_LEVEL_MIN"
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotMaxLevel"           "$BOTS_LEVEL_MAX"
+        set_conf_value "$CONF" "Playerbots.Enabled"                    "1"
+        set_conf_value "$CONF" "Playerbots.MinRandomBots"               "$BOTS_MIN"
+        set_conf_value "$CONF" "Playerbots.MaxRandomBots"               "$BOTS_MAX"
+        set_conf_value "$CONF" "Playerbots.RandomBotMinLevel"           "$BOTS_LEVEL_MIN"
+        set_conf_value "$CONF" "Playerbots.RandomBotMaxLevel"           "$BOTS_LEVEL_MAX"
         # Cuánto se queda un bot en el mundo antes de que se le pueda rotar:
         # el .conf.dist del módulo trae 10 minutos, el propio código de
         # playerbots usa 2 horas por defecto. Con 10 minutos hay trasiego
         # constante de entradas y salidas, y cada re-entrada de un bot de
         # entrenamiento cuesta un Randomize completo (03/09/2026).
-        set_conf_value "$CONF" "AiPlayerbot.MinRandomBotInWorldTime"     "${BOTS_WORLD_TIME_MIN:-7200}"
-        set_conf_value "$CONF" "AiPlayerbot.MaxRandomBotInWorldTime"     "${BOTS_WORLD_TIME_MAX:-28800}"
-        set_conf_value "$CONF" "AiPlayerbot.DisabledWithoutRealPlayer"   "$(bool_to_int "$BOTS_DISABLED_WITHOUT_PLAYER")"
-        set_conf_value "$CONF" "AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay" "${BOTS_NO_PLAYER_LOGOUT_DELAY:-600}"
+        set_conf_value "$CONF" "Playerbots.MinRandomBotInWorldTime"     "${BOTS_WORLD_TIME_MIN:-7200}"
+        set_conf_value "$CONF" "Playerbots.MaxRandomBotInWorldTime"     "${BOTS_WORLD_TIME_MAX:-28800}"
+        set_conf_value "$CONF" "Playerbots.DisabledWithoutRealPlayer"   "$(bool_to_int "$BOTS_DISABLED_WITHOUT_PLAYER")"
+        set_conf_value "$CONF" "Playerbots.DisabledWithoutRealPlayerLogoutDelay" "${BOTS_NO_PLAYER_LOGOUT_DELAY:-600}"
         # Porcentaje de bots que simula de verdad lejos de cualquier jugador. Es
         # lo que contiene el coste de subir MinRandomBots/MaxRandomBots a 400/500.
-        set_conf_value "$CONF" "AiPlayerbot.BotActiveAlone"              "${BOT_ACTIVE_ALONE:-10}"
+        set_conf_value "$CONF" "Playerbots.BotActiveAlone"              "${BOT_ACTIVE_ALONE:-10}"
         # Rotación de bots conectados/desconectados, como gente real.
-        set_conf_value "$CONF" "AiPlayerbot.EnablePeriodicOnlineOffline"  "$(bool_to_int "${BOTS_PERIODIC_ONLINE_OFFLINE:-false}")"
-        set_conf_value "$CONF" "AiPlayerbot.PeriodicOnlineOfflineRatio"   "${BOTS_PERIODIC_RATIO:-2.0}"
-        set_conf_value "$CONF" "AiPlayerbot.MaxAddedBots"                "$BOTS_MAX_PER_PLAYER"
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinBG"         "$(bool_to_int "$BOTS_AUTO_JOIN_BG")"
+        set_conf_value "$CONF" "Playerbots.EnablePeriodicOnlineOffline"  "$(bool_to_int "${BOTS_PERIODIC_ONLINE_OFFLINE:-false}")"
+        set_conf_value "$CONF" "Playerbots.PeriodicOnlineOfflineRatio"   "${BOTS_PERIODIC_RATIO:-2.0}"
+        set_conf_value "$CONF" "Playerbots.MaxAddedBots"                "$BOTS_MAX_PER_PLAYER"
+        set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinBG"         "$(bool_to_int "$BOTS_AUTO_JOIN_BG")"
         # OJO: RandomBotMaxGearQuality NO existe en el módulo (se comprobó con un
         # grep sobre su código). Las claves que sí se leen son estas dos: la
         # primera manda al aleatorizar un bot, la segunda al auto-equiparlo.
-        set_conf_value "$CONF" "AiPlayerbot.RandomGearQualityLimit"      "$BOTS_MAX_GEAR_QUALITY"
-        set_conf_value "$CONF" "AiPlayerbot.AutoGearQualityLimit"        "$BOTS_MAX_GEAR_QUALITY"
-        set_conf_value "$CONF" "AiPlayerbot.TwoRoundsGearInit"           "$(bool_to_int "${BOTS_GEAR_TWO_ROUNDS:-true}")"
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotMaps"               "0,1,530,571"
+        set_conf_value "$CONF" "Playerbots.RandomGearQualityLimit"      "$BOTS_MAX_GEAR_QUALITY"
+        set_conf_value "$CONF" "Playerbots.AutoGearQualityLimit"        "$BOTS_MAX_GEAR_QUALITY"
+        set_conf_value "$CONF" "Playerbots.TwoRoundsGearInit"           "$(bool_to_int "${BOTS_GEAR_TWO_ROUNDS:-true}")"
+        set_conf_value "$CONF" "Playerbots.RandomBotMaps"               "0,1,530,571"
 
         # Prioridad de botín para jugadores humanos: requiere el parche 04 de
         # patches/mod-playerbots/ (fase 3); sin él aplicado esta clave no la lee
         # nadie. Al activarla se fija también el resto de la decisión de la IA
         # (necesidad/codicia), que las reglas de utilidad y objetos únicos del
         # bot siguen acotando como siempre.
-        set_conf_value "$CONF" "AiPlayerbot.LootRollAfterRealPlayersPass" "$(bool_to_int "${BOTS_LOOT_ROLL_AFTER_REAL_PLAYERS_PASS:-false}")"
+        set_conf_value "$CONF" "Playerbots.LootRollAfterRealPlayersPass" "$(bool_to_int "${BOTS_LOOT_ROLL_AFTER_REAL_PLAYERS_PASS:-false}")"
         if [ "${BOTS_LOOT_ROLL_AFTER_REAL_PLAYERS_PASS:-false}" = true ]; then
-            set_conf_value "$CONF" "AiPlayerbot.LootNeedRollLevel"  "2"
-            set_conf_value "$CONF" "AiPlayerbot.LootGreedRollLevel" "1"
+            set_conf_value "$CONF" "Playerbots.LootNeedRollLevel"  "2"
+            set_conf_value "$CONF" "Playerbots.LootGreedRollLevel" "1"
         fi
 
         # Aviso «Eating [objeto] (85%)» al comer/beber (UPD-B). Clave nueva de
         # mod-playerbots 037c014; en versiones anteriores no la lee nadie.
-        set_conf_value "$CONF" "AiPlayerbot.AnnounceConsumableUse" "$(bool_to_int "${BOTS_ANNOUNCE_CONSUMABLE_USE:-false}")"
+        set_conf_value "$CONF" "Playerbots.AnnounceConsumableUse" "$(bool_to_int "${BOTS_ANNOUNCE_CONSUMABLE_USE:-false}")"
 
         # ── Que siempre haya bots de tu nivel ────────────────────────────────
         # SyncLevelWithPlayers es la opción clave: pega el nivel máximo de los
         # bots al del jugador de más nivel conectado, así los bots se reparten
         # entre 1 y tu nivel en vez de diluirse hasta 80. Con 150 bots y un
         # jugador de nivel 20 salen ~7 bots por nivel en vez de ~2.
-        set_conf_value "$CONF" "AiPlayerbot.SyncLevelWithPlayers"    "$(bool_to_int "$BOTS_SYNC_LEVEL_WITH_PLAYERS")"
+        set_conf_value "$CONF" "Playerbots.SyncLevelWithPlayers"    "$(bool_to_int "$BOTS_SYNC_LEVEL_WITH_PLAYERS")"
 
         # Los bots usan el buscador de mazmorras: es lo que llena las colas.
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotJoinLfg"        "$(bool_to_int "$BOTS_JOIN_LFG")"
+        set_conf_value "$CONF" "Playerbots.RandomBotJoinLfg"        "$(bool_to_int "$BOTS_JOIN_LFG")"
 
         # El módulo amontona por defecto un 10% de bots en el nivel mínimo y
         # otro 10% en el máximo, dejando pelados los niveles intermedios.
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotMinLevelChance" "$BOTS_MIN_LEVEL_CHANCE"
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotMaxLevelChance" "$BOTS_MAX_LEVEL_CHANCE"
+        set_conf_value "$CONF" "Playerbots.RandomBotMinLevelChance" "$BOTS_MIN_LEVEL_CHANCE"
+        set_conf_value "$CONF" "Playerbots.RandomBotMaxLevelChance" "$BOTS_MAX_LEVEL_CHANCE"
 
         # Cuentas de bot (10 personajes cada una). El módulo sube este número
         # solo si le hace falta para cumplir con BOTS_MAX, pero nunca lo baja.
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotAccountCount"   "${BOTS_ACCOUNT_COUNT:-0}"
+        set_conf_value "$CONF" "Playerbots.RandomBotAccountCount"   "${BOTS_ACCOUNT_COUNT:-0}"
 
         # ── Battlegrounds en todos los rangos ────────────────────────────────
         # El módulo solo apunta bots al bracket MÁS ALTO de cada BG (WS=7,
         # AB=6, AV=3, EY=2, IC=1), así que por debajo de nivel 70 las colas no
         # arrancaban nunca. Y AV/IC venían con Count=0, o sea, nunca.
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotJoinBG"     "1"
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinBG" "$(bool_to_int "$BOTS_AUTO_JOIN_BG")"
+        set_conf_value "$CONF" "Playerbots.RandomBotJoinBG"     "1"
+        set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinBG" "$(bool_to_int "$BOTS_AUTO_JOIN_BG")"
 
         if [ "$BOTS_BG_ALL_BRACKETS" = true ] && [ "$BOTS_AUTO_JOIN_BG" = true ]; then
-            set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinWSBrackets" "0,1,2,3,4,5,6,7"
-            set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinABBrackets" "0,1,2,3,4,5,6"
-            set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinAVBrackets" "0,1,2,3"
-            set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinEYBrackets" "0,1,2"
-            set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinICBrackets" "0,1"
+            set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinWSBrackets" "0,1,2,3,4,5,6,7"
+            set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinABBrackets" "0,1,2,3,4,5,6"
+            set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinAVBrackets" "0,1,2,3"
+            set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinEYBrackets" "0,1,2"
+            set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinICBrackets" "0,1"
             for BG_CODE in WS AB AV EY IC; do
-                set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinBG${BG_CODE}Count" "$BOTS_BG_PER_BRACKET"
+                set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinBG${BG_CODE}Count" "$BOTS_BG_PER_BRACKET"
             done
             log "[mod-playerbots] Colas de BG activas en todos los rangos de nivel."
         fi
@@ -484,12 +484,12 @@ if [ "$INSTALL_MOD_PLAYERBOTS" = true ]; then
         if [ "$BOTS_LEVEL_BRACKETS" = true ]; then
             if grep -rq 'LevelBrackets' "$AC_DIR/modules/mod-playerbots/src" 2>/dev/null; then
                 DYN="$(bool_to_int "${BOTS_LEVEL_BRACKETS_DYNAMIC:-false}")"
-                set_conf_value "$CONF" "AiPlayerbot.LevelBrackets.Enabled"                        "1"
-                set_conf_value "$CONF" "AiPlayerbot.LevelBrackets.Dynamic.UseDynamicDistribution" "$DYN"
-                set_conf_value "$CONF" "AiPlayerbot.LevelBrackets.Dynamic.RealPlayerWeight"       "$BOTS_LEVEL_BRACKETS_PLAYER_WEIGHT"
-                set_conf_value "$CONF" "AiPlayerbot.LevelBrackets.Dynamic.HighestPlayerOnly"       "$(bool_to_int "${BOTS_LEVEL_BRACKETS_HIGHEST_ONLY:-false}")"
-                set_conf_value "$CONF" "AiPlayerbot.LevelBrackets.Dynamic.SyncFactions"            "$(bool_to_int "${BOTS_LEVEL_BRACKETS_SYNC_FACTIONS:-false}")"
-                set_conf_value "$CONF" "AiPlayerbot.SyncLevelWithPlayers"                         "0"
+                set_conf_value "$CONF" "Playerbots.LevelBrackets.Enabled"                        "1"
+                set_conf_value "$CONF" "Playerbots.LevelBrackets.Dynamic.UseDynamicDistribution" "$DYN"
+                set_conf_value "$CONF" "Playerbots.LevelBrackets.Dynamic.RealPlayerWeight"       "$BOTS_LEVEL_BRACKETS_PLAYER_WEIGHT"
+                set_conf_value "$CONF" "Playerbots.LevelBrackets.Dynamic.HighestPlayerOnly"       "$(bool_to_int "${BOTS_LEVEL_BRACKETS_HIGHEST_ONLY:-false}")"
+                set_conf_value "$CONF" "Playerbots.LevelBrackets.Dynamic.SyncFactions"            "$(bool_to_int "${BOTS_LEVEL_BRACKETS_SYNC_FACTIONS:-false}")"
+                set_conf_value "$CONF" "Playerbots.SyncLevelWithPlayers"                         "0"
                 if [ "$DYN" = "1" ]; then
                     log "[mod-playerbots] Reparto dinámico por franjas de nivel activo."
                     warn "  El reparto dinámico PISA los porcentajes fijos (BOTS_LEVEL80_PCT)."
@@ -514,9 +514,9 @@ if [ "$INSTALL_MOD_PLAYERBOTS" = true ]; then
                     rest=$(( (100 - pct80) / 8 ))
                     for faction in Alliance Horde; do
                         for r in 1 2 3 4 5 6 7 8; do
-                            set_conf_value "$CONF" "AiPlayerbot.LevelBrackets.${faction}.Range${r}.Pct" "$rest"
+                            set_conf_value "$CONF" "Playerbots.LevelBrackets.${faction}.Range${r}.Pct" "$rest"
                         done
-                        set_conf_value "$CONF" "AiPlayerbot.LevelBrackets.${faction}.Range9.Pct" "$pct80"
+                        set_conf_value "$CONF" "Playerbots.LevelBrackets.${faction}.Range9.Pct" "$pct80"
                     done
                     info "  (franja de nivel 80 al ${pct80} %, las ocho de abajo al ${rest} % cada una)"
                 fi
@@ -530,14 +530,14 @@ if [ "$INSTALL_MOD_PLAYERBOTS" = true ]; then
         # ── Arenas puntuadas ─────────────────────────────────────────────────
         # El módulo crea equipos de arena de bots pero de fábrica no los apunta a
         # ninguna partida, así que la arena puntuada nunca arrancaba.
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinBGRatedArena2v2Count" "$BOTS_ARENA_RATED_2V2"
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinBGRatedArena3v3Count" "$BOTS_ARENA_RATED_3V3"
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotAutoJoinBGRatedArena5v5Count" "$BOTS_ARENA_RATED_5V5"
+        set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinBGRatedArena2v2Count" "$BOTS_ARENA_RATED_2V2"
+        set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinBGRatedArena3v3Count" "$BOTS_ARENA_RATED_3V3"
+        set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinBGRatedArena5v5Count" "$BOTS_ARENA_RATED_5V5"
 
         # ── Mundo vivo y coherencia con la progresión ────────────────────────
-        set_conf_value "$CONF" "AiPlayerbot.RandomBotInvitePlayer"   "$(bool_to_int "$BOTS_GUILD_INVITE_PLAYER")"
-        set_conf_value "$CONF" "AiPlayerbot.LimitTalentsExpansion"   "$(bool_to_int "$BOTS_LIMIT_TALENTS_EXPANSION")"
-        set_conf_value "$CONF" "AiPlayerbot.SelfBotLevel"            "$BOTS_SELFBOT_LEVEL"
+        set_conf_value "$CONF" "Playerbots.RandomBotInvitePlayer"   "$(bool_to_int "$BOTS_GUILD_INVITE_PLAYER")"
+        set_conf_value "$CONF" "Playerbots.LimitTalentsExpansion"   "$(bool_to_int "$BOTS_LIMIT_TALENTS_EXPANSION")"
+        set_conf_value "$CONF" "Playerbots.SelfBotLevel"            "$BOTS_SELFBOT_LEVEL"
     else
         warn "playerbots.conf no encontrado aún — se generará al compilar."
         warn "Ejecuta './install.sh --only 5' tras compilar para aplicar la configuración."
@@ -1018,7 +1018,7 @@ if [ "${INSTALL_MOD_WORLD_BOTS:-false}" = true ]; then
         set_conf_value "$CONF" "WorldBots.Stage.TbcMaps"        "\"${WORLD_BOTS_STAGE_TBC_MAPS:-0,1,530}\""
         set_conf_value "$CONF" "WorldBots.Stage.PerPass"        "${WORLD_BOTS_STAGE_PER_PASS:-3}"
         set_conf_value "$CONF" "WorldBots.Stage.SyncSeconds"     "${WORLD_BOTS_STAGE_SYNC_SECONDS:-60}"
-        # Escalado de poblacion por jugador conectado: pisa AiPlayerbot.MinRandomBots/
+        # Escalado de poblacion por jugador conectado: pisa Playerbots.MinRandomBots/
         # MaxRandomBots en caliente (BOTS_MIN/BOTS_MAX de mas arriba quedan como el
         # valor de arranque y el que se restaura si esto se desactiva).
         set_conf_value "$CONF" "WorldBots.PlayerScale.Enable"      "$(bool_to_int "${BOTS_PER_PLAYER_SCALE:-false}")"

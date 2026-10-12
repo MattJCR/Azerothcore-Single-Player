@@ -14,6 +14,92 @@
 > llamándolo `INSTALL.md`; su traducción es `INSTALL_EN.md`. Lo mismo pasa con `README.md`,
 > que ahora es un selector de idioma: el contenido completo está en `README_ES.md` y `README_EN.md`.
 
+## 12/10/2026 (19:40) — Comprobaciones pendientes con el cliente sintético; copias antiguas borradas
+
+- **Copias borradas en la VM** (a petición de Matt): `~/upd-dc-20261007.log` y las `worldserver.conf.bak.*` y `authserver.conf.bak.*` que escribe la fase 5 (16 ficheros). Se conservan las cinco carpetas `~/backup-*` (la de hoy es `backup-20261012-1657`). Quedan en `~` los logs viejos del instalador (`fase3.log`, `fase4.log`, `fase5.log`, `i18n-build.log`, `instalacion-completa.log`, `make-k.log`, `primer-arranque.log`), que no son de esta sesión y no se tocaron.
+- **`mazmorra` — OK (20 OK, 0 avisos, 0 fallos):** Sima Ígnea, mago humano de nivel 17 en selfbot y cuatro compañeros de party-here (tanque, sanador y dos de daño). queue-bots activó dungeon-clear solo a los 68 s; los cuatro jefes murieron (Oggleflint 575 s, Taragaman 962 s, Jergosh 1224 s, Bazzalan 1435 s), recorrido de 1441 s, **sin intervenciones del agente y sin muertes**. Es la primera pasada completa de esta mazmorra desde la entrada del 07/10 (UPD-H); no demuestra por sí sola qué cambió entre `d224254` y `07f8e33`, porque aquel día no se midió con este método.
+- **`monturas-bots` (caso nuevo) — OK:** el personaje de prueba sube a nivel 45, va a Ventormenta y observa durante 240 s el nivel y `UNIT_FIELD_MOUNTDISPLAYID` de los jugadores vistos: 30 vistos, 23 de nivel 20 o más, 6 montados alguna vez (niveles 24, 30 y 60). Cierra lo que faltaba de UPD-L: los bots con Equitación siguen montando tras #2884. No dice nada de los 59 bots de nivel 55 sin Equitación. Fila nueva en `COBERTURA.md`.
+- **`doctor` con un fallo real — OK:** se llamó a `_doctor_persist` en la VM con una comprobación `fail` cuyo detalle lleva secuencias ANSI, `` y comillas; guardó una fila con `JSON_VALID = 1`. Después se volvió a ejecutar `doctor` (queda `manual`/`warn`) y se borraron las filas de prueba de `doctor_history`. Confirma el arreglo de las 19:00.
+- **Avisos de tick lento:** `doctor` queda en AVISOS por 5 ticks lentos de `world-bots` (104 a 148 ms) acumulados durante la hora de pruebas con unos 600 bots y el selfbot de mazmorra. El 07/10 ya hubo uno de 154 ms. No hay referencia de antes de la actualización con la misma carga, así que no se atribuye ni se descarta.
+- **`DungeonMaster.Roguelike.Buff.1`** («Missing property»): ya salía en el `Server.log` anterior a la actualización (copia de las 16:57). No es de esta actualización.
+- **Sigue abierto:** UPD-N (reparto de botín con jugadores reales).
+
+## 12/10/2026 (19:00) — Cierre de lo pendiente de la actualización: candidatos UPD-J a UPD-M, `doctor`, tooltips de addons y botín de grupo
+
+Sigue a la entrada de las 17:50. Las filas UPD-J a UPD-M salen de `PLAN.md`; entra UPD-N.
+
+### UPD-M — filas `esES` de mod-transmog: aviso en `doctor` y remedio de un comando
+
+- `lib/doctor.sh`: comprobación nueva `traducciones-es` (sólo con `LOCALE_ES` y `INSTALL_MOD_TRANSMOG`): cuenta las filas `esES` 18 y 19 de `mod-transmog` en `module_string_locale`; si no son 2, avisa con el remedio. Traducida al inglés en `web-panel/src/locales/en.js` (un test del panel exige traducción de cada mensaje de `doctor.sh`; 244/244 pasan).
+- `scripts/reaplicar-traducciones.sh` (nuevo): vuelve a aplicar `patches/locales-es/` y `locales-es-playerbots/` con `apply_sql_dir`; idempotente, sin tocar confs ni servicios. Probado en la VM (4/4 y 1/1 ficheros).
+- **Descartado reaplicarlo solo desde el `doctor` del arranque:** `ExecStartPost` del worldserver lo lanza casi a la vez que el core aplica los SQL (17:32:03 y 17:32:04 el 12/10), así que podría correr antes de que el módulo borre las filas. Queda como aviso + comando, y una línea en `INSTALL_ES.md`/`INSTALL_EN.md` §3.3.
+- `doctor` en la VM: todas las comprobaciones OK, incluida `traducciones-es`, y guarda el resultado en `acore_world.doctor_status`.
+
+### `doctor` no podía guardar su resultado («Invalid encoding in string»)
+
+Causa más probable, por lectura del código y no reproducida en vivo: el detalle de un fallo (p. ej. `mirrors`) lleva dentro el texto coloreado de `error()` con secuencias ANSI (`ESC[0;31m…`), y JSON no admite caracteres de control; `_doctor_json_escape` sólo escapaba comillas, barras, `\n` y `\t`. Ahora quita las secuencias ANSI y el resto de caracteres de control antes de escapar (`lib/doctor.sh`). Comprobado con una cadena con ANSI, `\r`, comillas, tabulador y `é` y `json.load` en local. **No se forzó un fallo real en la VM** para ver el guardado completo: la pasada de hoy salió en verde y guardó bien, lo que no prueba nada sobre el caso con fallos.
+
+### UPD-J — ReactionEngine: nada que activar
+
+Leído `conf/playerbots.conf.dist` y el commit: el motor de reacciones ya está encendido de fábrica con las estrategias `react` y `chat`; `Playerbots.ReactStrategies` y `RandomBotReactStrategies` sólo las modifican (vacías = por defecto). No hay interruptor que mover. Se dejan vacías; los casos `companeros`, `hermandad` y `bots` pasaron con él activo. Cerrado.
+
+### UPD-K — nombres de hermandad y arena por idioma: no aplica
+
+La fábrica elige la columna con `sWorld->GetDefaultDbcLocale()` (`DBC.Locale`). Aquí el servidor carga los DBC en inglés (`DBC.Locale = 255`, que detecta enUS) y la columna `name_esES` existe pero vacía (el módulo sólo trae francés). Traducir ~700 nombres no serviría sin cambiar el idioma de los DBC del servidor, que no se hace. Descartado.
+
+### UPD-L — monturas y Equitación: comprobado con datos, sin cambios
+
+En `acore_characters`, bots aleatorios: 181/181 de nivel 20–39 con Equitación 75, 87/87 de 60–69 con 225, 313/313 de 70+ con 300; de 40–59, 151/210 con 150. Los 59 sin Equitación son todos de nivel 55 exacto (un lote concreto): con #2884 esos no montarán. El reparto por nivel de los compañeros de party-here no se ve afectado. No se probó en juego.
+
+### Tooltips y ayuda de addons con la clave vieja
+
+`MultiBot` (ayuda: «(must) AiPlayerbot.AutoPickReward = no») es de este proyecto y se corrigió directamente en `MultiBot.lua` y `MultiBotLanguage.lua`. `PlayerBotManager` es de terceros: parche nuevo `patches-cliente/PlayerBotManager/02-claves-playerbots-renombradas.patch` (dos tooltips) registrado en `web-panel/addons/fuentes.json`; comprobado que `01` y `02` aplican en orden sobre el original `0a31d20` con `git apply -p3` como hace el constructor. `arbol.tsv` regenerado (sólo cambian `MultiBot` y `PlayerBotManager`) y `build-addons verificar` da 309/309. Desplegado en `/opt/azerothcore-panel/addons/client/`, `arbol.tsv`/`fuentes.json` y `en.js` en el panel, y servicio `azerothcore-panel` reiniciado (`sudo -S` con la contraseña desde fichero, como la receta del panel). Los clientes de los jugadores recibirán el cambio cuando vuelvan a descargar los addons.
+
+### Botín de grupo con jugadores reales: sigue sin verificarse (UPD-N)
+
+El caso `botin-grupo-jugadores-reales` ahora anota qué contesta `CMSG_LOOT` en cada intento y borra la criatura de prueba (ver entrada anterior). Resultado del 12/10: dos veces `abierto=False error_loot=0` (= `LOOT_ERROR_DIDNT_KILL`) y una sin respuesta en 25 s. En el core fijado (`Player.cpp`, `Unit.cpp`, `Creature.cpp` del espejo) la causa inmediata es que el cadáver no lleva `UNIT_DYNFLAG_LOOTABLE`, que sólo se fija si `IsDamageEnoughForLootingAndReward()` (`_playerDamageReq == 0` y `_damagedByPlayer`). **Hipótesis descartada:** que `.modify hp 1` dejara `_playerDamageReq` en la mitad de la vida original y el daño del golpe fuera insuficiente (el daño se cuenta limitado a la vida restante). Quitar ese paso dio el mismo resultado y se devolvió a su estado original. No se encontró qué impide cumplir la condición; queda como UPD-N con una alternativa (cofre con objetos verdes). El parche `04` sigue sin comprobarse en vivo.
+
+No se ejecutó `mazmorra` (caso largo).
+
+## 12/10/2026 (17:50) — Actualización de core y 6 módulos: mod-playerbots renombra `AiPlayerbot.*` a `Playerbots.*`
+
+Procedimiento de `INSTALL_ES.md` parte 4 §3. Los PR 1 y 2 de GitHub siguen cerrados (eran pruebas). Pasan a `versions.lock`: **core** `f19a187` → `2a2211c` (175 commits), **mod-playerbots** `037c014` → `79bd428` (26), **mod-dungeon-clear** `d224254` → `07f8e33` (5), y un commit cada uno de **mod-aoe-loot** (`44486b1`), **mod-quest-loot-party** (`c395591`), **mod-autobalance** (`1d707cb`) y **mod-transmog** (`327753a`). Los otros 19 repositorios estaban al día.
+
+### Qué trae
+
+- **mod-playerbots (#2854, el cambio que manda):** todas las claves pasan de `AiPlayerbot.*` a `Playerbots.*` y todos los miembros públicos de `PlayerbotAIConfig` a UpperCamelCase (`randomBotMaxLevel` → `RandomBotMaxLevel`, `levelBracketsEnabled` → `LevelBracketsEnabled`...). Con un `.conf` sin migrar el servidor arranca con los valores por defecto y un `Missing property` por clave, sin avisar de qué se pierde (`MaxRandomBots`, `DisabledWithoutRealPlayer`...). Única clave eliminada: `Playerbots.FleeingEnabled` (limpieza del huir v1; no la usábamos). Nuevas: `ReactStrategies` y `RandomBotReactStrategies` (vacías). Además: ReactionEngine (#2800), reliquias que escalan con el nivel (#2821), monturas condicionadas a la Equitación (#2884), arreglos de AV/EotS/WSG/AB/IoC, cerraduras alternativas en el botín (#2807), nombres de hermandad y de arena de los bots por idioma (#2088) y los mensajes de addon (`LANG_ADDON`) ya no dan órdenes a los bots (#2872; MultiBot no usa mensajes de addon para mandar a los bots, no le afecta).
+- **core:** arreglos de scripts (Ulduar, Onyxia, Trial of the Crusader, Zul'Aman...), SQL, `server info` con el resultado de la sesión anterior (#27819), `.additem` con guid al quitar. `PlayerScript.cpp` y `OnPlayerResurrect(…, bool&)` no cambian, así que `patches/core/01` y el parche de `mod-challenge-modes` siguen valiendo. `Player::_addSpell`/`removeSpell` ganan un parámetro por defecto (`sendPacket`): ningún módulo nuestro los llama.
+- **mod-aoe-loot, mod-quest-loot-party:** sólo traducciones a koKR/frFR/deDE/zhCN/zhTW/ruRU en el SQL.
+- **mod-autobalance:** los invocados por un amigo ya no heredan su nivel (arregla mascotas y guardianes escalados).
+- **mod-transmog:** SQL reorganizado (ficheros renombrados, se elimina el resto de `db_assembler`) y vuelven los mensajes de `.transmog claim` y `.transmog check` (ids 46–88), que un `DELETE` del SQL antiguo borraba.
+- **mod-dungeon-clear:** instala la estrategia `food` en cualquier bot dentro de una mazmorra que no la tenga, nombra los grupos de exclusión con los dos nombres del enumerado (#2912) y trae herramientas de desarrollo. Sin claves nuevas.
+
+### Qué hubo que tocar (revisión previa, pasos 2 y 3)
+
+- **Parches de mod-playerbots `01`–`04`:** ninguno aplicaba (`PlayerbotAIConfig.h/.cpp` y `playerbots.conf.dist` reescritos, 1.870 líneas del `.conf.dist` movidas). Rehechos contra `79bd428` con la lógica intacta: claves `Playerbots.LevelBrackets.Dynamic.HighestPlayerOnly` y `Playerbots.LootRollAfterRealPlayersPass`, miembros `LevelBracketsHighestPlayerOnly`/`LootRollAfterRealPlayersPass`. Cada cabecera lo dice.
+- **`mod-quest-loot-party/01`:** el trozo SQL cambió de contexto porque el módulo añadió filas a otros idiomas (esES/esMX intactas); rehecho. El C++ aplica igual. `mod-aoe-loot/01` y `/02` y `core/01` aplican sin tocar.
+- **Claves en todo el proyecto:** `AiPlayerbot.` → `Playerbots.` en `config.sh`, `lib/utils.sh`, la fase 5 (50 usos), `tools/verificar-instalacion.sh`, los `.conf.dist` y el C++ de los módulos propios (`BotGear.h`, `BotPopulationCoordinator.h`, `mod-world-bots`, `mod-home-guild`, `mod-party-here`, `mod-queue-bots`, `mod-standby`), el catálogo del panel y sus traducciones, el cliente sintético y la documentación (`INSTALL_ES.md`, `INSTALL_EN.md`, `REFERENCES.md`, `REFERENCIA_*`). Quedan sin tocar a propósito el CHANGELOG (histórico), `docs/archivo/`, los comentarios históricos de `versions.lock` y los textos de los addons de terceros (MultiBot y PlayerBotManager muestran «AiPlayerbot.X» en tooltips; cambiarlos altera su hash en `addons.lock`).
+- **Miembros de `PlayerbotAIConfig` en C++:** `randomBotMaxLevel`, `randomBotMaps`, `premadeSpecName`, `premadeSpecLink`, `parsedSpecLinkOrder`, `minRandomBots`, `maxRandomBots`, `levelBracketsDynamicDistribution` y `levelBracketsEnabled` pasaron a UpperCamelCase en `mod-world-bots`, `mod-home-guild`, `mod-party-here` y `mod-adaptive-ai` (archivado). `mod-dungeon-clear` ya lee los dos nombres. Los 25 símbolos de playerbots que usan los módulos propios siguen existiendo.
+- **`playerbots.conf` de la VM:** `sed` de `AiPlayerbot.` a `Playerbots.` sobre el fichero ya instalado (888 líneas) antes de la fase 5, más los cinco `.conf` de módulos propios (sólo comentarios). La única clave activa que ya no existe en el `.dist` es `Playerbots.FleeingEnabled` (inofensiva; se deja).
+
+### Despliegue (VM)
+
+Copia `~/backup-20261012-1657`; 26 ficheros subidos con md5 igual a los dos lados; fase 3 (8 s, los cuatro parches de playerbots y el de quest-loot-party aplicados), fase 4 (**33 min 21 s, compiló a la primera**: la recompilación fue completa porque el renombrado toca casi todo mod-playerbots), fase 5 (13 s, ninguna clave `Playerbots.*` sin declarar). Se arrancó `ac-authserver`, el socket y `ac-worldserver`; sin `Missing property` y el único `ERROR` es el conocido de la prioridad del proceso. `./install.sh --mirror` y `--verify-mirrors` OK (7 espejos nuevos, 7 retirados), `--freeze` (la VM conserva el `versions.lock` comentado). Segunda pasada de `tools/revisar-actualizaciones.ps1`: 26 de 26 al día.
+
+### Hallazgo: mod-transmog borra nuestras filas `esES` 18 y 19
+
+Previsto en la revisión y confirmado: al cambiar de nombre sus ficheros, `2026_05_09_migrate_to_module_string.sql` se reejecuta en el primer arranque y hace `DELETE FROM module_string_locale WHERE module = 'mod-transmog'`. La fase 5 había aplicado antes `patches/locales-es/`, así que las dos filas (`0` tras arrancar) se perdieron. Se reaplicaron a mano (`4` filas esES/esMX; el módulo trae 88 en esES). Queda en `PLAN.md` como UPD-M decidir si se reaplican solas tras el primer arranque de una actualización de un módulo.
+
+### Verificación (cliente sintético, reino real)
+
+`diagnostico` OK (6), `bot-operations-estado` OK (11), `modulos` OK (14: responden mod-standby, queue-bots, world-bots, party-here, home-guild, server-help, update-notice, dungeon-clear y playerbots), `selfbot` OK (7), `bots` OK (10; 300 bots con un jugador dentro), `companeros` OK (13), `hermandad` OK (9) y `mundo-dos-jugadores` OK (15; 443–578 bots, la zona de cada jugador queda poblada). **`botin-grupo-jugadores-reales` FALLO (6 OK, 1 aviso, 1 fallo): «0 tiradas tras 3 intentos».** Es la limitación ya registrada el 26/09 (el cadáver de prueba devuelve `LOOT_ERROR_DIDNT_KILL`, no se generan tiradas): no prueba que el parche `04` funcione ni que falle, así que **el reparto de loot con jugadores reales no queda verificado por esta actualización**. Lo que sí consta: el parche aplica, compila y la clave está en `1` en la VM. No se ejecutó `mazmorra` (largo; `.dc config` responde). **Corrección propia:** ese caso nunca borraba la criatura de prueba (`.npc add 5807`) y dejó 3 copias en Elwynn (guids 8015637–8015639, comprobadas por `id`/mapa/coordenadas antes de borrarlas por SQL; la copia legítima 26611 de Durotar no se tocó). Ahora `botin_grupo.py` anota cada copia y las borra con `.npc delete` al salir (regla 9 de `AGENTS.md`); repetido el caso, el resultado es el mismo y no queda ninguna. Personajes `Vs*`: 0. Primera comprobación, errónea: consulté `creature.id1` (no existe en este esquema, la columna es `id`) y di «sin restos» por una salida vacía; lo corrigió la segunda consulta.
+
+Observación sin investigar: `doctor` no puede guardar su resultado en `acore_world` («Invalid encoding in string» en `doctor_status.checks`); salió con los avisos de espejos de por medio y no se atribuye a esta actualización.
+
+### Revisión de oportunidades (3b/3c) y comandos (3d)
+
+Candidatos al plan, sin aplicar: **UPD-J** ReactionEngine, **UPD-K** nombres de hermandad/arena por idioma, **UPD-L** monturas según Equitación (probar en juego), **UPD-M** la pérdida de filas de transmog. No hay comandos de chat nuevos en ninguno de los repositorios, así que `mod-server-help` y el panel no cambian.
+
 ## 07/10/2026 (21:00) — UPD-H cerrado sin medir contra la versión anterior; PUB cerrada
 
 ### UPD-H — Sima Ígnea con `mod-dungeon-clear` `d224254`: se cierra con lo medido

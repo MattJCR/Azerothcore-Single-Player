@@ -660,7 +660,7 @@ BOTS_AUTO_JOIN_BG=false
 #     te hace sombra en un campo de batalla. Con mod-individual-progression el
 #     contenido de este servidor son las bandas, así que el equipo de los bots
 #     es lo que decide si son jugables o un lastre.
-# ⚠️  El instalador escribía AiPlayerbot.RandomBotMaxGearQuality, una clave que
+# ⚠️  El instalador escribía Playerbots.RandomBotMaxGearQuality, una clave que
 #     NO EXISTE en esta versión del módulo: no la lee nadie. Las buenas son
 #     RandomGearQualityLimit (equipo al aleatorizarse) y AutoGearQualityLimit
 #     (equipo con el comando de auto-equipar).
@@ -686,7 +686,7 @@ BOTS_LOOT_ROLL_AFTER_REAL_PLAYERS_PASS=true
 # Los bots de tu grupo te susurran «Eating [objeto] (85%)» cada vez que comen,
 # beben o usan un banquete. En single player, con compañeros de `.grupo` o de
 # mazmorra, es ruido en el chat. A false: siguen comiendo y bebiendo igual, pero
-# en silencio (AiPlayerbot.AnnounceConsumableUse, de mod-playerbots desde el
+# en silencio (Playerbots.AnnounceConsumableUse, de mod-playerbots desde el
 # 05/10/2026; con el valor de fábrica, true, hablaban). UPD-B.
 BOTS_ANNOUNCE_CONSUMABLE_USE=false
 
@@ -732,7 +732,7 @@ BOTS_BG_PER_BRACKET=1
 #
 # HISTORIA, porque importa: esto estuvo en false mucho tiempo y con razón. El
 # sistema NO existía en la versión de mod-playerbots que había fijada, así que
-# las claves AiPlayerbot.LevelBrackets.* que el instalador escribía no las leía
+# las claves Playerbots.LevelBrackets.* que el instalador escribía no las leía
 # nadie — y encima se había apagado (a 0.0) el único mecanismo que sí funcionaba,
 # el MIN/MAX_LEVEL_CHANCE de arriba. Resultado: ni un bot de nivel 80.
 #
@@ -1638,7 +1638,7 @@ HOME_GUILD_CARE_INTERVAL_SECONDS=30
 HOME_GUILD_RECRUIT_BACKOFF_SECONDS=300   # espera si la hermandad ya esta llena
 HOME_GUILD_KEEP_ONLINE_INTERVAL_SECONDS=15
 HOME_GUILD_KEEP_ONLINE_BATCH=5
-HOME_GUILD_MAX_ONLINE_BOTS=0             # tope propio; 0 = AiPlayerbot.MaxRandomBots
+HOME_GUILD_MAX_ONLINE_BOTS=0             # tope propio; 0 = Playerbots.MaxRandomBots
 HOME_GUILD_RELEVEL_PER_PASS=1
 HOME_GUILD_RELEVEL_TARGET_JITTER=0       # 0 = usar LEVEL_BELOW
 HOME_GUILD_RELEVEL_MIN_WORLD_SECONDS=60   # segundos conectado antes de renivelar a un bot
@@ -1720,7 +1720,7 @@ ADAPTIVE_ARENA_MAP=559                   # 559 Nagrand, 562 Filospada, 572 Lorda
 ADAPTIVE_ARENA_PREP_SECONDS=15           # cuenta atrás antes de abrir las puertas
 ADAPTIVE_ARENA_LEVEL=80                  # nivel mínimo de los bots
 ADAPTIVE_ARENA_GEAR_SCORE=264            # nivel de objeto al que se iguala el equipo (264 = Gladiador Colérico; 0 = no tocar)
-ADAPTIVE_ARENA_SPECS="warrior:arms pvp, mage:frost pvp, rogue:subtlety pvp, deathknight:unholy pvp, warlock:affli pvp, hunter:mm pvp, druid:cat pvp, paladin:ret pvp, priest:shadow pvp, shaman:ele pvp"   # spec premade de playerbots por clase en arena (nombres de AiPlayerbot.PremadeSpecName)
+ADAPTIVE_ARENA_SPECS="warrior:arms pvp, mage:frost pvp, rogue:subtlety pvp, deathknight:unholy pvp, warlock:affli pvp, hunter:mm pvp, druid:cat pvp, paladin:ret pvp, priest:shadow pvp, shaman:ele pvp"   # spec premade de playerbots por clase en arena (nombres de Playerbots.PremadeSpecName)
 ADAPTIVE_OBJECTIVES="mage:warrior=70, rogue:mage=60, rogue:warrior=55, deathknight:warrior=60, warlock:warrior=65, hunter:warrior=60, druid:warrior=65, paladin:warrior=50, priest:warrior=55, shaman:warrior=55, hunter:deathknight=65, deathknight:rogue=55, rogue:warlock=60, druid:rogue=60, warlock:mage=50, hunter:mage=60, druid:mage=55, mage:deathknight=60, mage:paladin=55, mage:priest=55, mage:shaman=60, deathknight:warlock=55, deathknight:shaman=50, deathknight:priest=55, deathknight:druid=45, warlock:paladin=55, warlock:priest=55, warlock:shaman=55, hunter:warlock=55, hunter:druid=45, hunter:paladin=50, hunter:priest=50, hunter:shaman=55, druid:deathknight=55, druid:paladin=55, druid:priest=50, druid:shaman=55, paladin:rogue=55, paladin:deathknight=55, paladin:priest=50, paladin:shaman=55, priest:rogue=45, priest:paladin=50, priest:shaman=55, shaman:rogue=40, rogue:hunter=55, rogue:paladin=45, rogue:priest=55"   # % que se espera que a gane a b (PvP Matchup Reference.md); vacío = sin objetivos
 ADAPTIVE_OBJECTIVES_STOP=true            # dejar de lanzar un 1c1 en el automático cuando alcanza su objetivo en las dos orientaciones
 ADAPTIVE_LOADOUT_ENABLE=true             # doble spec (PvE + PvP) y equipo por propósito en todos los bots de nivel 40+

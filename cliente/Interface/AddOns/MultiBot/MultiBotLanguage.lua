@@ -638,8 +638,8 @@ MultiBot.tips.main.reward =
 "Once your Character has completed the Quest, the Bots must also complete the Quest.\n"..
 "So dont cancel the Reward-Selector after your Character has his Reward.\n\n"..
 "|cffffffffMod-Playerbot-Configuration:\n"..
-"- (must) AiPlayerbot.AutoPickReward = no\n"..
-"- (recommanded) AiPlayerbot.SyncQuestWithPlayer = 1|r\n\n"..
+"- (must) Playerbots.AutoPickReward = no\n"..
+"- (recommanded) Playerbots.SyncQuestWithPlayer = 1|r\n\n"..
 "|cffff0000Left-Click to enable or disable Reward-Selector|r\n"..
 "|cff999999(Execution-Order: System)|r\n\n"..
 "|cffff0000Right-Click to open Reward-Selector|r\n"..

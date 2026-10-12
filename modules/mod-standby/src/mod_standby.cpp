@@ -334,7 +334,7 @@ public:
         // Sin SHUTDOWN_MASK_RESTART: el proceso sale con codigo 0 y systemd no
         // lo revive. Sin SHUTDOWN_MASK_IDLE: ya sabemos que no hay humanos y
         // queremos que baje si o si; a los bots que queden (deberian haber
-        // salido ya, AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay < idle)
+        // salido ya, Playerbots.DisabledWithoutRealPlayerLogoutDelay < idle)
         // el apagado normal les guarda el personaje igual.
         LOG_INFO("server.worldserver",
             "[standby] {} min sin jugadores humanos: apagando el worldserver en {} s (modo en espera).",

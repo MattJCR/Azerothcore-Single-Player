@@ -171,7 +171,7 @@ namespace
         // Escalado de poblacion por jugador conectado: servidor de una sola
         // persona, asi que el min/max fijo de playerbots (500/600) gasta RAM
         // las 24h que hay alguien dentro aunque sea uno solo. Con esto activo,
-        // AiPlayerbot.MinRandomBots/MaxRandomBots dejan de leerse del .conf en
+        // Playerbots.MinRandomBots/MaxRandomBots dejan de leerse del .conf en
         // caliente: los pisa PlayerScalePerPlayer * humanos conectados (tope
         // PlayerScaleCeiling). Sin jugadores no se toca nada: DisabledWithoutRealPlayer
         // ya vacia el mundo por su cuenta.
@@ -651,7 +651,7 @@ namespace
         // Un login pesa tanto como un teletransporte: sale del mismo presupuesto.
         wanted = std::min({ wanted, cfg.wakeMax, teleportsLeft });
 
-        uint32 const cap = sConfigMgr->GetOption<uint32>("AiPlayerbot.MaxRandomBots", 200);
+        uint32 const cap = sConfigMgr->GetOption<uint32>("Playerbots.MaxRandomBots", 200);
         // Solo bots aleatorios: contar los alt-bots de jugadores contra
         // MaxRandomBots inflaba el recuento y MakeRoom mandaba a dormir bots
         // aleatorios que no sobraban (§3.2 BAJO).
@@ -970,8 +970,8 @@ namespace
 #ifdef WORLD_BOTS_WITH_PLAYERBOTS
         if (!g_stageApplied)
         {
-            g_stageSavedMaxLevel = sPlayerbotAIConfig.randomBotMaxLevel;
-            g_stageSavedMaps = sPlayerbotAIConfig.randomBotMaps;
+            g_stageSavedMaxLevel = sPlayerbotAIConfig.RandomBotMaxLevel;
+            g_stageSavedMaps = sPlayerbotAIConfig.RandomBotMaps;
         }
         g_stage = stage;
         g_stageBy = by;
@@ -986,16 +986,16 @@ namespace
         {
             if (g_stageApplied)
             {
-                sPlayerbotAIConfig.randomBotMaxLevel = g_stageSavedMaxLevel;
-                sPlayerbotAIConfig.randomBotMaps = g_stageSavedMaps;
+                sPlayerbotAIConfig.RandomBotMaxLevel = g_stageSavedMaxLevel;
+                sPlayerbotAIConfig.RandomBotMaps = g_stageSavedMaps;
             }
             g_stageApplied = false;
             LOG_INFO("module", "[world-bots] Etapa activa: WotLK, sin restriccion ({}): bots aleatorios hasta {} en los mapas {}.",
-                     by, sPlayerbotAIConfig.randomBotMaxLevel, JoinMaps(sPlayerbotAIConfig.randomBotMaps));
+                     by, sPlayerbotAIConfig.RandomBotMaxLevel, JoinMaps(sPlayerbotAIConfig.RandomBotMaps));
             return;
         }
-        sPlayerbotAIConfig.randomBotMaxLevel = StageCap();
-        sPlayerbotAIConfig.randomBotMaps = StageMaps();
+        sPlayerbotAIConfig.RandomBotMaxLevel = StageCap();
+        sPlayerbotAIConfig.RandomBotMaps = StageMaps();
         g_stageApplied = true;
         LOG_INFO("module", "[world-bots] Etapa activa: {} ({}): bots aleatorios hasta el nivel {} en los mapas {}.",
                  StageName(stage), by, StageCap(), JoinMaps(StageMaps()));
@@ -1055,8 +1055,8 @@ namespace
             return;
         g_nextStageSync = now + TimeMs::SecsToMs(cfg.stageSyncSecs);
 
-        if (sPlayerbotAIConfig.randomBotMaxLevel != StageCap()
-            || sPlayerbotAIConfig.randomBotMaps != StageMaps())
+        if (sPlayerbotAIConfig.RandomBotMaxLevel != StageCap()
+            || sPlayerbotAIConfig.RandomBotMaps != StageMaps())
             ApplyStage(g_stage, "resincronizacion periodica");
 #else
         (void)now;
@@ -1073,7 +1073,7 @@ namespace
         return WorldBotsPolicy::PlayerScaleTarget(humanCount, cfg.playerScalePerPlayer, cfg.playerScaleCeiling);
     }
 
-    // Pisa AiPlayerbot.MinRandomBots/MaxRandomBots en caliente (campos publicos
+    // Pisa Playerbots.MinRandomBots/MaxRandomBots en caliente (campos publicos
     // que RandomPlayerbotMgr::UpdateAIInternal relee en cada tick, igual que
     // ApplyStage pisa randomBotMaxLevel). Con min == max, el objetivo aleatorio
     // interno del modulo (bot_count) sale exacto y se recalcula solo, en el
@@ -1087,12 +1087,12 @@ namespace
 #ifdef WORLD_BOTS_WITH_PLAYERBOTS
         if (!g_playerScaleApplied)
         {
-            g_playerScaleSavedMin = sPlayerbotAIConfig.minRandomBots;
-            g_playerScaleSavedMax = sPlayerbotAIConfig.maxRandomBots;
+            g_playerScaleSavedMin = sPlayerbotAIConfig.MinRandomBots;
+            g_playerScaleSavedMax = sPlayerbotAIConfig.MaxRandomBots;
         }
         uint32 const target = PlayerScaleTarget(humanCount);
-        sPlayerbotAIConfig.minRandomBots = target;
-        sPlayerbotAIConfig.maxRandomBots = target;
+        sPlayerbotAIConfig.MinRandomBots = target;
+        sPlayerbotAIConfig.MaxRandomBots = target;
         g_playerScaleApplied = true;
         LOG_INFO("module", "[world-bots] Poblacion objetivo ajustada a {} ({} jugador(es) x {}, tope {}).",
                  target, humanCount, cfg.playerScalePerPlayer, cfg.playerScaleCeiling);
@@ -1109,7 +1109,7 @@ namespace
         g_nextPlayerScaleSync = now + TimeMs::SecsToMs(cfg.playerScaleSyncSecs);
 
         uint32 const target = PlayerScaleTarget(humanCount);
-        if (sPlayerbotAIConfig.minRandomBots != target || sPlayerbotAIConfig.maxRandomBots != target)
+        if (sPlayerbotAIConfig.MinRandomBots != target || sPlayerbotAIConfig.MaxRandomBots != target)
             ApplyPlayerScale(humanCount);
 #else
         (void)now; (void)humanCount;
@@ -1345,7 +1345,7 @@ public:
         // Los mapas son los de playerbots: fuera de ellos no vive ningún bot
         // aleatorio, así que no tendría sentido soltarlos ahí.
         cfg.maps.clear();
-        std::string const maps = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotMaps", "0,1,530,571");
+        std::string const maps = sConfigMgr->GetOption<std::string>("Playerbots.RandomBotMaps", "0,1,530,571");
         for (std::string_view token : Acore::Tokenize(maps, ',', false))
             if (Optional<uint32> mapId = Acore::StringTo<uint32>(token))
                 cfg.maps.push_back(*mapId);
@@ -1372,7 +1372,7 @@ public:
         }
 
 #ifdef WORLD_BOTS_WITH_PLAYERBOTS
-        // WorldBots.Stage muta en caliente sPlayerbotAIConfig.randomBotMaxLevel
+        // WorldBots.Stage muta en caliente sPlayerbotAIConfig.RandomBotMaxLevel
         // y randomBotMaps. Tras un ".reload config" hay que reconciliar:
         //  - si el modulo o la etapa se han apagado y habia restriccion puesta,
         //    restaurar los valores originales de playerbots (antes quedaban
@@ -1383,15 +1383,15 @@ public:
         //    tras ese reload, pero solo se usa al restaurar.
         if (reload && g_stageApplied && (!cfg.enabled || !cfg.stageEnable))
         {
-            sPlayerbotAIConfig.randomBotMaxLevel = g_stageSavedMaxLevel;
-            sPlayerbotAIConfig.randomBotMaps     = g_stageSavedMaps;
+            sPlayerbotAIConfig.RandomBotMaxLevel = g_stageSavedMaxLevel;
+            sPlayerbotAIConfig.RandomBotMaps     = g_stageSavedMaps;
             g_stageApplied = false;
             g_stage = 2;
             BotPopulationCoordinator::SetStageCap(MaxPlayerLevel());
             LOG_INFO("module", "[world-bots] Etapa restaurada ({} desactivado): "
                      "playerbots vuelve a nivel {} en los mapas {}.",
                      cfg.enabled ? "WorldBots.Stage.Enable" : "WorldBots.Enable",
-                     sPlayerbotAIConfig.randomBotMaxLevel, JoinMaps(sPlayerbotAIConfig.randomBotMaps));
+                     sPlayerbotAIConfig.RandomBotMaxLevel, JoinMaps(sPlayerbotAIConfig.RandomBotMaps));
         }
         else if (reload && cfg.enabled && cfg.stageEnable && g_stageApplied)
         {
@@ -1405,13 +1405,13 @@ public:
         // ya se puso a 0 arriba y la siguiente pasada de DoUpdate recalcula.
         if (reload && g_playerScaleApplied && (!cfg.enabled || !cfg.playerScaleEnable))
         {
-            sPlayerbotAIConfig.minRandomBots = g_playerScaleSavedMin;
-            sPlayerbotAIConfig.maxRandomBots = g_playerScaleSavedMax;
+            sPlayerbotAIConfig.MinRandomBots = g_playerScaleSavedMin;
+            sPlayerbotAIConfig.MaxRandomBots = g_playerScaleSavedMax;
             g_playerScaleApplied = false;
             LOG_INFO("module", "[world-bots] Escalado por jugador restaurado ({} desactivado): "
                      "playerbots vuelve a min/max {}/{}.",
                      cfg.enabled ? "WorldBots.PlayerScale.Enable" : "WorldBots.Enable",
-                     sPlayerbotAIConfig.minRandomBots, sPlayerbotAIConfig.maxRandomBots);
+                     sPlayerbotAIConfig.MinRandomBots, sPlayerbotAIConfig.MaxRandomBots);
         }
 #endif
     }

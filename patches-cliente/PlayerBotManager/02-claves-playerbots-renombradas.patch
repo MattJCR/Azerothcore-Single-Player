@@ -1,0 +1,30 @@
+Licencia: GPL-3.0, la del proyecto que modifica (ver THIRD-PARTY-NOTICES.txt).
+
+Las claves de mod-playerbots pasaron de AiPlayerbot.* a Playerbots.* (#2854, 12/10/2026).
+Los dos avisos que indican al jugador que clave activar en el servidor decian la vieja.
+Escrito contra Lichborne-AC/PlayerbotManager 0a31d203f6669d500dd2db6df73557e3cb1854e2.
+
+diff --git a/a/PlayerBotManager/PBM/PBM_Tab_Playerbots.lua b/b/PlayerBotManager/PBM/PBM_Tab_Playerbots.lua
+--- a/a/PlayerBotManager/PBM/PBM_Tab_Playerbots.lua
++++ b/b/PlayerBotManager/PBM/PBM_Tab_Playerbots.lua
+@@ -183,7 +183,7 @@
+         GameTooltip:AddLine("Reset Instances", 0.78, 0.61, 0.23)
+         GameTooltip:AddLine("Resets instances for entire group using", 0.8, 0.8, 0.8)
+         GameTooltip:AddLine(".playerbots bot refresh=raid *", 0.8, 0.8, 0.8)
+-        GameTooltip:AddLine("Requires AiPlayerbot.ResetInstanceIdForAltBots = 1", 1, 0.2, 0.2)
++        GameTooltip:AddLine("Requires Playerbots.ResetInstanceIdForAltBots = 1", 1, 0.2, 0.2)
+         GameTooltip:Show()
+     end)
+     resetInstBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+diff --git a/a/PlayerBotManager/PBM/PBM_TrackerCore.lua b/b/PlayerBotManager/PBM/PBM_TrackerCore.lua
+--- a/a/PlayerBotManager/PBM/PBM_TrackerCore.lua
++++ b/b/PlayerBotManager/PBM/PBM_TrackerCore.lua
+@@ -2050,7 +2050,7 @@
+         GameTooltip:AddLine("SETTING UP PLAYERBOTS", 0.78, 0.61, 0.23)
+         GameTooltip:AddLine("|cffd4af37Linking Accounts|r", 1, 1, 1)
+         GameTooltip:AddLine("Linking sets you as the |cffFF8C00owner|r of bots on other accounts.", 0.9, 0.9, 0.9)
+-        GameTooltip:AddLine("|cffff4444Requires:|r  AiPlayerbot.AllowTrustedAccountBots = 1", 0.9, 0.9, 0.9)
++        GameTooltip:AddLine("|cffff4444Requires:|r  Playerbots.AllowTrustedAccountBots = 1", 0.9, 0.9, 0.9)
+         GameTooltip:AddLine("  |cff69CCF0.playerbots account setKey <key>|r", 1, 1, 1)
+         GameTooltip:AddLine("  |cff69CCF0.playerbots account link <acct> <key>|r", 1, 1, 1)
+         GameTooltip:AddLine(" ", 1, 1, 1)

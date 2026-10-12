@@ -560,8 +560,8 @@ namespace BotGear
             return false;
         }
 
-        uint32_t const quality = sConfigMgr->GetOption<uint32_t>("AiPlayerbot.AutoGearQualityLimit", 4);
-        bool const twoRounds = sConfigMgr->GetOption<bool>("AiPlayerbot.TwoRoundsGearInit", true);
+        uint32_t const quality = sConfigMgr->GetOption<uint32_t>("Playerbots.AutoGearQualityLimit", 4);
+        bool const twoRounds = sConfigMgr->GetOption<bool>("Playerbots.TwoRoundsGearInit", true);
 
         // el presupuesto se gasta al INTENTAR, no al terminar bien.
         {

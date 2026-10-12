@@ -577,7 +577,7 @@ namespace
         // Si el mundo está lleno de bots, se hace sitio antes. El recuento sale
         // de la foto cacheada del coordinador, la misma que usarán los Reserve
         // de abajo: un solo escaneo de ObjectAccessor por pasada.
-        uint32 const cap = sConfigMgr->GetOption<uint32>("AiPlayerbot.MaxRandomBots", 200);
+        uint32 const cap = sConfigMgr->GetOption<uint32>("Playerbots.MaxRandomBots", 200);
         uint32 const online = BotPopulationCoordinator::OnlineCount(now);
         if (online + wanted > cap)
             MakeRoom(online + wanted - cap, minLevel, maxLevel);
@@ -877,10 +877,10 @@ public:
         cfg.delaySeconds   = sConfigMgr->GetOption<uint32>("QueueBots.Delay", 0);
         cfg.forceAfterSecs = sConfigMgr->GetOption<uint32>("QueueBots.ForceAcceptAfter", 5);
         cfg.maxRaidBots    = sConfigMgr->GetOption<uint32>("QueueBots.MaxRaidBots", 39);
-        // El .conf.dist promete que no pasa de AiPlayerbot.MaxAddedBots: sin este
+        // El .conf.dist promete que no pasa de Playerbots.MaxAddedBots: sin este
         // tope una banda pedida por config podía exceder lo que playerbots deja
         // añadir a un jugador (B_maxRaid).
-        if (uint32 const addedCap = sConfigMgr->GetOption<uint32>("AiPlayerbot.MaxAddedBots", 40))
+        if (uint32 const addedCap = sConfigMgr->GetOption<uint32>("Playerbots.MaxAddedBots", 40))
             cfg.maxRaidBots = std::min(cfg.maxRaidBots, addedCap);
         // Gate principal del ritmo de rellenado (g_nextScanOf). Estaba declarado
         // con default 2000 pero nunca se leia de config ni aparecia en el .dist.

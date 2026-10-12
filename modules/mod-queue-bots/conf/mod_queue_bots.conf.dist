@@ -13,7 +13,7 @@
 #     - Buscador de bandas: te forma el grupo con ".bot add"
 #
 #   Requiere mod-playerbots con bots conectados. Sustituye al auto-apuntado a
-#   ciegas del propio playerbots (AiPlayerbot.RandomBotAutoJoinBG), que reparte
+#   ciegas del propio playerbots (Playerbots.RandomBotAutoJoinBG), que reparte
 #   los bots entre 24 batallas a la vez y no llena ninguna: si usas este modulo,
 #   aquel debe estar apagado.
 #
@@ -148,7 +148,7 @@ QueueBots.ForceAcceptAfter = 5
 #
 #    QueueBots.MaxRaidBots
 #        Descripcion: Tope de bots que se meten en tu banda desde el buscador.
-#                     No puede pasar de AiPlayerbot.MaxAddedBots.
+#                     No puede pasar de Playerbots.MaxAddedBots.
 #        Por defecto: 39 (una banda de 40 contigo dentro)
 
 QueueBots.MaxRaidBots = 39
@@ -365,12 +365,12 @@ QueueBots.TokenTurnInDelay = 90
 #
 #    BotPopulation.*  (coordinador compartido de logins de bot)
 #        Este modulo reserva cada GUID en el coordinador transversal antes de
-#        conectarlo, para no pasarse de AiPlayerbot.MaxRandomBots cuando varios
+#        conectarlo, para no pasarse de Playerbots.MaxRandomBots cuando varios
 #        modulos despiertan bots a la vez. El bloque de opciones documentado
 #        (PendingTimeoutSeconds / MaxPendingTotal / MaxPendingPerFaction /
 #        MaxPendingPerRange) vive en mod_world_bots.conf; si world-bots esta
 #        desactivado se usan los valores por defecto (90 / 40 / 24 / 12) y el
-#        tope global se toma siempre de AiPlayerbot.MaxRandomBots.
+#        tope global se toma siempre de Playerbots.MaxRandomBots.
 
 #
 ###################################################################################################

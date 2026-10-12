@@ -27,7 +27,7 @@ Standby.Enable = 1
 #
 #    Standby.IdleMinutes
 #        Descripcion: Minutos sin ninguna sesion humana antes de apagar el
-#                     worldserver. Con AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay
+#                     worldserver. Con Playerbots.DisabledWithoutRealPlayerLogoutDelay
 #                     en 600 s (10 min), a los 15 min los bots ya han salido.
 #        Por defecto: 15
 

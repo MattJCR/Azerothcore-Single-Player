@@ -60,7 +60,11 @@ _doctor_sql_escape() {
 # librería): solo hace falta escribirlo, el panel (JS) es quien lo interpreta.
 _doctor_json_escape() {
     local OUT="" C
-    local S="$1"
+    # Un detalle puede traer el texto coloreado de error()/warn() (secuencias ANSI) u otros
+    # caracteres de control: JSON no los admite y MySQL rechaza el documento entero
+    # («Invalid encoding in string», 12/10/2026). Se quitan antes de escapar.
+    local S
+    S=$(printf '%s' "$1" | sed $'s/\x1b\[[0-9;]*[A-Za-z]//g' | tr -d '\000-\010\013-\037')
     local LEN=${#S}
     local I
     for (( I=0; I<LEN; I++ )); do
@@ -380,6 +384,22 @@ _doctor_check_addons() {
     _doctor_check "addons" ok "$(printf '%s' "$OUT" | head -1 | sed 's/^build-addons: //')"
 }
 
+# Las filas esES de mod-transmog que el propio módulo no trae (ids 18 y 19) las
+# pone patches/locales-es/ en la fase 5, ANTES del arranque que ejecuta el SQL
+# del módulo; si ese SQL se reejecuta (renombrado de ficheros, versión nueva) su
+# DELETE sobre module_string_locale las borra. Avisa y da el remedio.
+_doctor_check_translations() {
+    [ "${LOCALE_ES:-false}" = true ] && [ "${INSTALL_MOD_TRANSMOG:-false}" = true ] || return 0
+    command -v mysql >/dev/null 2>&1 || return 0
+    local N
+    N=$(mysql -u "$AC_DB_USER" -p"$AC_DB_PASS" -N -B "$DOCTOR_WORLD_DB" -e         "SELECT COUNT(*) FROM module_string_locale WHERE module='mod-transmog' AND id IN (18,19) AND locale='esES';" 2>/dev/null) || N=""
+    case "$N" in
+        2)  _doctor_check "traducciones-es" ok "mod-transmog: textos 18 y 19 en esES presentes." ;;
+        "") _doctor_check "traducciones-es" warn "no se pudo leer module_string_locale (¿acore_world sin crear?)." ;;
+        *)  _doctor_check "traducciones-es" warn "mod-transmog: faltan filas esES (hay $N de 2). Las borró el SQL del módulo al reejecutarse; reaplícalas con: bash scripts/reaplicar-traducciones.sh" ;;
+    esac
+}
+
 # Recursos que el panel genera desde el cliente del jugador (iconos de la armería,
 # parches de idioma, mapas). Que falten NO es un fallo del servidor, pero la
 # instalación no está completa hasta prepararlos: aviso con el paso a seguir.
@@ -432,6 +452,7 @@ run_doctor() {
     _doctor_check_client_data
     _doctor_check_addons
     _doctor_check_resources
+    _doctor_check_translations
     _doctor_check_services
     _doctor_check_disk_space
     _doctor_check_slow_ticks

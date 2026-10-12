@@ -506,7 +506,7 @@ namespace
 
         // Recuento desde la foto cacheada del coordinador (un solo escaneo de
         // ObjectAccessor por pasada, compartido con los Reserve de abajo).
-        uint32 const cap = sConfigMgr->GetOption<uint32>("AiPlayerbot.MaxRandomBots", 200);
+        uint32 const cap = sConfigMgr->GetOption<uint32>("Playerbots.MaxRandomBots", 200);
         uint32 const online = BotPopulationCoordinator::OnlineCount(now);
         if (online + wanted > cap)
             MakeRoom(online + wanted - cap, minLevel, maxLevel);
@@ -598,16 +598,16 @@ namespace
     }
 
 #ifdef PARTY_HERE_WITH_PLAYERBOTS
-    // La plantilla de talentos de playerbots (AiPlayerbot.PremadeSpecName.*)
+    // La plantilla de talentos de playerbots (Playerbots.PremadeSpecName.*)
     // que pone más puntos en esa rama; -1 si no hay ninguna.
     int PremadeSpecFor(uint8 cls, int tab)
     {
         for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
         {
-            if (sPlayerbotAIConfig.premadeSpecName[cls][specNo].empty())
+            if (sPlayerbotAIConfig.PremadeSpecName[cls][specNo].empty())
                 break;
             uint32 points[3] = { 0, 0, 0 };
-            for (std::vector<uint32> const& step : sPlayerbotAIConfig.parsedSpecLinkOrder[cls][specNo][80])
+            for (std::vector<uint32> const& step : sPlayerbotAIConfig.ParsedSpecLinkOrder[cls][specNo][80])
                 if (step.size() >= 4 && step[0] < 3)
                     points[step[0]] += step[3];
             int const top = static_cast<int>(std::max_element(points, points + 3) - points);
@@ -1694,7 +1694,7 @@ public:
         // si es un valor real: con 0 (config a medio poner) se ignora en vez de
         // forzar maxRaidBots a 0 y romper esa misma cota.
         cfg.maxRaidBots = std::clamp<uint32>(cfg.maxRaidBots, 5, 40);
-        uint32 const maxAdded = sConfigMgr->GetOption<uint32>("AiPlayerbot.MaxAddedBots", 40);
+        uint32 const maxAdded = sConfigMgr->GetOption<uint32>("Playerbots.MaxAddedBots", 40);
         if (maxAdded > 0 && cfg.maxRaidBots > maxAdded)
             cfg.maxRaidBots = std::max<uint32>(maxAdded, 5);
 

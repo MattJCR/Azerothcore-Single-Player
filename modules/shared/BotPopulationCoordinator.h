@@ -14,7 +14,7 @@
  * por ODR, igual que BotClaims.
  *
  * CONFIGURACION. Cada modulo que reserve llama a LoadSettings() en su
- * OnAfterConfigLoad: asi el tope global sale siempre de AiPlayerbot.MaxRandomBots
+ * OnAfterConfigLoad: asi el tope global sale siempre de Playerbots.MaxRandomBots
  * aunque mod-world-bots (donde vive el bloque BotPopulation.* documentado del
  * .conf) este desactivado. Las claves BotPopulation.* son opcionales; si no
  * estan en ningun .conf se usan los valores por defecto.
@@ -202,11 +202,11 @@ namespace BotPopulationCoordinator
 
     // La llama cada modulo consumidor en su OnAfterConfigLoad. Varias llamadas
     // con los mismos valores son inofensivas (gana la ultima, todas escriben
-    // lo mismo). El tope global es AiPlayerbot.MaxRandomBots siempre.
+    // lo mismo). El tope global es Playerbots.MaxRandomBots siempre.
     inline void LoadSettings()
     {
         Settings s;
-        s.globalCap            = sConfigMgr->GetOption<uint32_t>("AiPlayerbot.MaxRandomBots", 200);
+        s.globalCap            = sConfigMgr->GetOption<uint32_t>("Playerbots.MaxRandomBots", 200);
         s.pendingTimeoutSecs   = sConfigMgr->GetOption<uint32_t>("BotPopulation.PendingTimeoutSeconds", 90);
         s.maxPendingTotal      = sConfigMgr->GetOption<uint32_t>("BotPopulation.MaxPendingTotal", 40);
         s.maxPendingPerFaction = sConfigMgr->GetOption<uint32_t>("BotPopulation.MaxPendingPerFaction", 24);

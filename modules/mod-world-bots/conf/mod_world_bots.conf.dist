@@ -277,13 +277,13 @@ WorldBots.SamaritanLevelAbove = 8
 
 #
 #    Claves de mod-playerbots que el modulo LEE directamente (no las duplica):
-#      AiPlayerbot.RandomBotMaps   -> de aqui salen los mapas donde vive la
+#      Playerbots.RandomBotMaps   -> de aqui salen los mapas donde vive la
 #                                     poblacion (cfg.maps).
-#      AiPlayerbot.MaxRandomBots   -> tope global; el modulo no despierta bots
+#      Playerbots.MaxRandomBots   -> tope global; el modulo no despierta bots
 #                                     por encima de este numero.
-#      AiPlayerbot.MaxAddedBots    -> tope de bots que un jugador puede sumar.
+#      Playerbots.MaxAddedBots    -> tope de bots que un jugador puede sumar.
 #    Y con WorldBots.Stage.Enable = 1 el modulo MUTA EN CALIENTE
-#      AiPlayerbot.RandomBotMaxLevel y AiPlayerbot.RandomBotMaps segun la etapa
+#      Playerbots.RandomBotMaxLevel y Playerbots.RandomBotMaps segun la etapa
 #    de individual-progression del jugador conectado (los restaura al desactivar
 #    la etapa o el modulo, y los reaplica tras un .reload config).
 #
@@ -507,7 +507,7 @@ WorldBots.Pvp.NonCombatStrategies = "+pvp,+duel,+boost,-passive,-stay"
 #        Por defecto: 3 / 60
 #
 #    NOTA: con Stage.Enable=1 el modulo MUTA EN CALIENTE
-#    AiPlayerbot.RandomBotMaxLevel y AiPlayerbot.RandomBotMaps mientras hay
+#    Playerbots.RandomBotMaxLevel y Playerbots.RandomBotMaps mientras hay
 #    jugadores. Al desactivar WorldBots.Enable o WorldBots.Stage.Enable con
 #    ".reload config" se restauran los valores originales; tras un ".reload
 #    config" de playerbots el modulo los vuelve a aplicar. Si el worldserver
@@ -527,7 +527,7 @@ WorldBots.Stage.SyncSeconds = 60
 #
 #    WorldBots.PlayerScale.Enable
 #        Descripcion: Servidor de una sola persona: el min/max fijo de
-#                     playerbots (AiPlayerbot.MinRandomBots/MaxRandomBots,
+#                     playerbots (Playerbots.MinRandomBots/MaxRandomBots,
 #                     tipicamente 500/600) gasta esa RAM las 24 h que haya
 #                     alguien dentro, sea uno o varios. Con esto activo esos
 #                     dos campos dejan de salir del .conf de playerbots en

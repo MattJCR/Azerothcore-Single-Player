@@ -3575,7 +3575,7 @@ namespace AdaptiveAI
     // ─────────────────────────────────────────────────────────────────────────
     // ─────────────────────────────────────────────────────────────────────────
     //  Specs PvP. playerbots trae specs premade por clase con nombre
-    //  ("arms pvp", "frost pvp"...; AiPlayerbot.PremadeSpecName.<clase>.<n>),
+    //  ("arms pvp", "frost pvp"...; Playerbots.PremadeSpecName.<clase>.<n>),
     //  pero los bots aleatorios nunca las cogen (RandomClassSpecProb a 0). Con
     //  la spec PvP puesta, la fábrica de playerbots pondera resiliencia y da
     //  el abalorio anti-control al equipar (IsSpecPvp). Aquí se pone la spec
@@ -3587,7 +3587,7 @@ namespace AdaptiveAI
     static int PremadeSpecIndex(uint8 cls, std::string const& name)
     {
         for (int i = 0; i < MAX_SPECNO; ++i)
-            if (sPlayerbotAIConfig.premadeSpecName[cls][i] == name)
+            if (sPlayerbotAIConfig.PremadeSpecName[cls][i] == name)
                 return i;
         return -1;
     }
@@ -3602,7 +3602,7 @@ namespace AdaptiveAI
         {
             static std::set<std::string> warned;
             if (warned.insert(it->second).second)
-                LOG_WARN("module", "[adaptive-ai] AdaptiveAI.Arena.Specs: playerbots no tiene la spec '{}' para {} (AiPlayerbot.PremadeSpecName).", it->second, ClassName(bot->getClass()));
+                LOG_WARN("module", "[adaptive-ai] AdaptiveAI.Arena.Specs: playerbots no tiene la spec '{}' para {} (Playerbots.PremadeSpecName).", it->second, ClassName(bot->getClass()));
             return false;
         }
         uint32 current = sRandomPlayerbotMgr.GetValue(bot->GetGUID().GetCounter(), "specNo");   // guardado +1
@@ -3662,8 +3662,8 @@ namespace AdaptiveAI
         std::vector<int> options;
         for (int i = 0; i < MAX_SPECNO; ++i)
         {
-            std::string const& name = sPlayerbotAIConfig.premadeSpecName[cls][i];
-            if (name.find("pve") != std::string::npos && !sPlayerbotAIConfig.premadeSpecLink[cls][i][80].empty())
+            std::string const& name = sPlayerbotAIConfig.PremadeSpecName[cls][i];
+            if (name.find("pve") != std::string::npos && !sPlayerbotAIConfig.PremadeSpecLink[cls][i][80].empty())
                 options.push_back(i);
         }
         if (options.empty())
@@ -3678,7 +3678,7 @@ namespace AdaptiveAI
         factory.InitGlyphs(false);
         if (uint32 libres = bot->GetFreeTalentPoints())
             LOG_WARN("module", "[adaptive-ai] Loadout: {} ({}) se queda con {} puntos sin asignar en la spec {} '{}' (nivel {}).",
-                     bot->GetName(), ClassName(bot->getClass()), libres, what, sPlayerbotAIConfig.premadeSpecName[bot->getClass()][idx], bot->GetLevel());
+                     bot->GetName(), ClassName(bot->getClass()), libres, what, sPlayerbotAIConfig.PremadeSpecName[bot->getClass()][idx], bot->GetLevel());
     }
 
     static uint32 s_loadoutDual = 0, s_loadoutSwitches = 0, s_loadoutRegears = 0;
@@ -3707,7 +3707,7 @@ namespace AdaptiveAI
         int currentIdx = stored ? int(stored) - 1 : -1;
         if (p.specPve < 0 || p.specPve >= MAX_SPECNO)
         {
-            bool currentIsPvp = currentIdx >= 0 && sPlayerbotAIConfig.premadeSpecName[cls][currentIdx].find("pvp") != std::string::npos;
+            bool currentIsPvp = currentIdx >= 0 && sPlayerbotAIConfig.PremadeSpecName[cls][currentIdx].find("pvp") != std::string::npos;
             p.specPve = int8(currentIdx >= 0 && !currentIsPvp ? currentIdx : PvePremadeFor(cls));
             touched = true;
         }
@@ -3757,7 +3757,7 @@ namespace AdaptiveAI
             if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
                 botAI->ResetStrategies();
             LOG_INFO("module", "[adaptive-ai] Loadout: {} ({}) con doble spec: PvE '{}', PvP '{}'.", bot->GetName(), ClassName(cls),
-                     p.specPve >= 0 ? sPlayerbotAIConfig.premadeSpecName[cls][p.specPve] : "?", it->second);
+                     p.specPve >= 0 ? sPlayerbotAIConfig.PremadeSpecName[cls][p.specPve] : "?", it->second);
         }
         return touched;
     }
@@ -3833,7 +3833,7 @@ namespace AdaptiveAI
                     bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
                     ++removed;
                 }
-        uint32 quality = sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoGearQualityLimit", 4);
+        uint32 quality = sConfigMgr->GetOption<uint32>("Playerbots.AutoGearQualityLimit", 4);
         PlayerbotFactory::AutoGear(bot, quality, 0, true, false);   // incremental: solo los huecos, por nivel
         BotProfile& p = GetProfile(bot);
         p.ilvl = 0;
@@ -3896,8 +3896,8 @@ namespace AdaptiveAI
             // de spec: con el mismo nivel de objeto el equipo que lleva sirve.
             if (forceGear || off || p.ilvl != ilvl)
             {
-                uint32 quality = sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoGearQualityLimit", 4);
-                bool twoRounds = sConfigMgr->GetOption<bool>("AiPlayerbot.TwoRoundsGearInit", true);
+                uint32 quality = sConfigMgr->GetOption<uint32>("Playerbots.AutoGearQualityLimit", 4);
+                bool twoRounds = sConfigMgr->GetOption<bool>("Playerbots.TwoRoundsGearInit", true);
                 PlayerbotFactory::DestroyEquippedGear(bot);
                 PlayerbotFactory::AutoGear(bot, quality, ilvl, false, twoRounds);
                 p.ilvl = ilvl;
@@ -4051,7 +4051,7 @@ namespace AdaptiveAI
     // nosotros movemos: asi un 'reload config' no puede dejarlo pegado.
     void SyncLevelBrackets()
     {
-        if (!cfg.bracketsWithPlayer || !sPlayerbotAIConfig.levelBracketsEnabled)
+        if (!cfg.bracketsWithPlayer || !sPlayerbotAIConfig.LevelBracketsEnabled)
             return;
 
         bool humanOnline = false;
@@ -4065,21 +4065,21 @@ namespace AdaptiveAI
             }
         }
 
-        bool base = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Dynamic.UseDynamicDistribution", false);
+        bool base = sConfigMgr->GetOption<bool>("Playerbots.LevelBrackets.Dynamic.UseDynamicDistribution", false);
         bool want = humanOnline || base;
-        if (sPlayerbotAIConfig.levelBracketsDynamicDistribution == want)
+        if (sPlayerbotAIConfig.LevelBracketsDynamicDistribution == want)
             return;
 
-        sPlayerbotAIConfig.levelBracketsDynamicDistribution = want;
+        sPlayerbotAIConfig.LevelBracketsDynamicDistribution = want;
         LOG_INFO("module", "[adaptive-ai] Franjas de nivel: reparto {} ({}).", want ? "automatico" : "fijo",
                  humanOnline ? "hay un jugador conectado" : "el servidor entrena solo");
     }
 
     std::string LevelBracketsStatus()
     {
-        if (!sPlayerbotAIConfig.levelBracketsEnabled)
+        if (!sPlayerbotAIConfig.LevelBracketsEnabled)
             return "franjas de nivel apagadas en playerbots";
-        std::string reparto = sPlayerbotAIConfig.levelBracketsDynamicDistribution ? "automatico (sigue al jugador)"
+        std::string reparto = sPlayerbotAIConfig.LevelBracketsDynamicDistribution ? "automatico (sigue al jugador)"
                                                                                  : "fijo (manda BOTS_LEVEL80_PCT)";
         if (!cfg.bracketsWithPlayer)
             return reparto + ", sin conmutar (AdaptiveAI.FranjasConJugador = 0)";

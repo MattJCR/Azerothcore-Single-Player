@@ -35,7 +35,7 @@ def poblacion(m) -> dict:
 
 @caso(id="bots", titulo="Bots del mundo con un jugador dentro",
       descripcion="""
-Con `AiPlayerbot.DisabledWithoutRealPlayer` los bots sólo entran si hay un
+Con `Playerbots.DisabledWithoutRealPlayer` los bots sólo entran si hay un
 jugador real. El cliente entra, espera `espera` segundos y comprueba que los
 personajes en el mundo superan a los jugadores conectados (bots = diferencia),
 cuántos jugadores se ven alrededor y qué dice world-bots.

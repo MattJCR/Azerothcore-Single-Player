@@ -147,7 +147,7 @@ AdaptiveAI.Real.Enable = 1
 #        Descripcion: Spec premade de playerbots que llevan los bots de cada
 #                     clase al entrar en arena o subir a 80 ("clase:nombre",
 #                     separados por comas; los nombres son los de
-#                     AiPlayerbot.PremadeSpecName.<clase>.<n>: arms pvp, frost
+#                     Playerbots.PremadeSpecName.<clase>.<n>: arms pvp, frost
 #                     pvp, subtlety pvp, unholy pvp, affli pvp, mm pvp, cat pvp,
 #                     ret pvp, shadow pvp, ele pvp, holy pvp, disc pvp...). Con
 #                     una spec PvP la fabrica de playerbots pondera resiliencia
