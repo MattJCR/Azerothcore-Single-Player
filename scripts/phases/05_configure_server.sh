@@ -447,6 +447,12 @@ if [ "$INSTALL_MOD_PLAYERBOTS" = true ]; then
         # Los bots usan el buscador de mazmorras: es lo que llena las colas.
         set_conf_value "$CONF" "Playerbots.RandomBotJoinLfg"        "$(bool_to_int "$BOTS_JOIN_LFG")"
 
+        # Recolección (DoGather, 12/10/2026): los bots recorren la zona cogiendo
+        # hierbas y minerales. Opción nueva de playerbots, encendida de fábrica y sin
+        # medir aquí (coste por bot, competencia por los nodos): arranca apagada
+        # hasta probarla (PLAN.md, UPD-O).
+        set_conf_value "$CONF" "Playerbots.RpgStatusProbWeight.DoGather" "0"
+
         # El módulo amontona por defecto un 10% de bots en el nivel mínimo y
         # otro 10% en el máximo, dejando pelados los niveles intermedios.
         set_conf_value "$CONF" "Playerbots.RandomBotMinLevelChance" "$BOTS_MIN_LEVEL_CHANCE"
@@ -1540,6 +1546,11 @@ if [ "${INSTALL_MOD_PLAYERBOTS_WINTERGRASP:-false}" = true ]; then
         set_conf_value "$CONF" "PlayerbotsWintergrasp.AcceptBattle" "1"
         set_conf_value "$CONF" "PlayerbotsWintergrasp.Announce"     "$(bool_to_int "${WINTERGRASP_ANNOUNCE:-false}")"
         set_conf_value "$CONF" "PlayerbotsWintergrasp.Tactics.Enable" "0"
+        # Opciones de la versión 2.0 del módulo, independientes de la IA táctica y
+        # encendidas de fábrica: sin medir en este servidor, arrancan apagadas (UPD-P).
+        set_conf_value "$CONF" "PlayerbotsWintergrasp.MasterFollowAssist.Enable"      "0"
+        set_conf_value "$CONF" "PlayerbotsWintergrasp.GraveyardRespawn.Enable"        "0"
+        set_conf_value "$CONF" "PlayerbotsWintergrasp.TeamBalance.Rebalance.Enable"   "0"
         set_conf_value "$CONF" "PlayerbotsWintergrasp.Debug"        "0"
     fi
 fi

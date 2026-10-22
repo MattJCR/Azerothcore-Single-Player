@@ -9,9 +9,6 @@
 *.zip  binary
 *.rar  binary
 *.patch text eol=lf
-# Excepcion: este parche lleva  al final de las lineas CRLF del fichero que toca
-# (PlayerbotsWintergrasp.cpp mezcla CRLF y LF); sin esto git los quitaria al comitear.
-patches/mod-playerbots-wintergrasp/02-compat-core-nuevo-sin-playerbotscript.patch -text
 *.py   text eol=lf
 *.tsv  text eol=lf
 *.yml  text eol=lf

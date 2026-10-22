@@ -14,6 +14,41 @@
 > llamándolo `INSTALL.md`; su traducción es `INSTALL_EN.md`. Lo mismo pasa con `README.md`,
 > que ahora es un selector de idioma: el contenido completo está en `README_ES.md` y `README_EN.md`.
 
+## 22/10/2026 (23:10) — Actualización de core y 4 módulos: wintergrasp 2.0 (parche 02 retirado, 01 rehecho) y el explorador de bandas del core
+
+Procedimiento de `INSTALL_ES.md` parte 4 §3. Los PR 1 y 2 de GitHub siguen cerrados (eran pruebas); no hay PR nuevos. Pasan a `versions.lock`: **core** `2a2211c` → `8a4e76e` (164 commits), **mod-playerbots** `79bd428` → `d750b4b` (12), **mod-dungeon-clear** `07f8e33` → `27048f6` (29), **mod-individual-progression** `60336b3` → `4933d45` (3) y **mod-playerbots-wintergrasp** `f313a99` → `f83696b` (1 commit, pero reescribe el módulo: +6.300 / −1.250 líneas). Los otros 21 repositorios estaban al día. Addons de cliente: al día salvo el catálogo de NoM0Re (`2ca8773`, ya conocido: UPD-F).
+
+### Qué trae
+
+- **core:** casi todo SQL/SmartAI y scripts de mazmorras (BRD, Templo Oscuro, Prueba del Cruzado, Ulduar); `GameObject` lanza hechizos propios (#26152); `OnGroupChangeLeader` recibe de verdad el líder anterior (misma firma, ningún módulo propio lo usa). **LFG: el explorador de bandas respeta por fin `DungeonFinder.OptionsMask`** (bit 2) y el valor de fábrica pasa de 5 a 7. Sin comandos nuevos, sin cabeceras de `ScriptMgr` cambiadas.
+- **mod-playerbots:** recolección (`DoGather`, #2539, con textos propios en el SQL del módulo), tope de expansión en LFG (`Playerbots.RandomBotJoinLfgOutleveledExpansion`, 1 = comportamiento anterior), `Playerbots.AllowBattlegroundCommands` (0), `LimitTalentsExpansion` respetado en `talents spec`/`apply`, cementerios de zona inicial limitados por nivel, enlaces de objeto con nueve campos, reescritura de Serpentshrine, y `TargetValueExclusionType` renombrado (`None/Tank/Dps/Attacker` → `TankTarget/DpsTarget/DebuffTarget/Aoe`; mod-dungeon-clear ya lee ambos). **Traducciones esES oficiales de `ai_playerbot_texts`** (#2900, 1.742 filas). Ninguna clave eliminada del `.conf.dist`.
+- **mod-dungeon-clear:** eventos de BRD (Grim Guzzler, Lyceum, Tomb of the Seven, Iron Hall) y de UBRS, cofres de encuentro siempre saqueados, arreglos de reanimación/«stall»/pull. Dos líneas de `.conf.dist` (sólo comentarios) y dos ficheros nuevos en CMake.
+- **mod-individual-progression:** regex de cuentas compiladas una vez y con caché (antes una consulta a `login` por cada evento de daño/curación), comandantes de War Effort que informan del progreso del jugador (NPC con diálogo, no un comando) y el gong escarabajo.
+- **mod-playerbots-wintergrasp 2.0:** reescrito. Ya usa `ServerScript`/`PlayerScript::OnPlayerLogout`/`WorldScript::OnUpdate` (lo que hacía nuestro parche 02), IA táctica ampliada (`Tactics.Enable` pasa a 1 de fábrica), equilibrio de equipos, ayuda al seguir al maestro, reaparición en cementerio. Trae un parche opcional del core (`core-wintergrasp-building-targets.patch`) y un SQL de mundo manual: **no se aplican**.
+
+### Qué hubo que tocar (revisión previa, pasos 2 y 3)
+
+- **`mod-playerbots-wintergrasp/02`: retirado.** El upstream publicó su propia migración (UPD-G: «retirarlo cuando publique la suya»): confirmado leyendo `src/PlayerbotsWintergrasp.cpp` (`ServerScript`, `IsHeadless()`, `PlayerScript::OnPlayerLogout`, `WorldScript::OnUpdate`). Se borra el parche y la excepción `-text` de `.gitattributes` (el módulo ahora está en LF).
+- **`mod-playerbots-wintergrasp/01`: rehecho** contra `f83696b`. Ninguno de los dos aplicaba (`git apply --check` falló en ambos). Ahora la copia del paquete (`ObserveWorldStatePacket`) sólo se hace con `TacticsEnabled() || MasterFollowAssistEnabled() || GraveyardRespawnEnabled()`: la caché de world-states sólo la lee `WintergraspTactics`, y las dos ayudas nuevas también pueden usarla. Aplica limpio por la fase 3.
+- **Fase 5:** `Playerbots.RpgStatusProbWeight.DoGather = 0` y, en wintergrasp, `MasterFollowAssist.Enable`, `GraveyardRespawn.Enable` y `TeamBalance.Rebalance.Enable` a 0 (opciones nuevas de riesgo, encendidas de fábrica y sin medir aquí; candidatos **UPD-O** y **UPD-P** en `PLAN.md`). `Tactics.Enable` sigue a 0.
+- **`DungeonFinder.OptionsMask`:** la fase 5 copia `worldserver.conf.dist` entero, así que el `.conf` de la VM pasó de 5 a **7** sin tocar nada (comprobado). Hacía falta: `mod-queue-bots` rellena el explorador de bandas y, con el bit 2 apagado, el core nuevo contesta `LFG_JOIN_NOT_MEET_REQS` (**UPD-Q**).
+- **Los 4 parches de mod-playerbots, `patches/core/01` y el resto aplican sin tocar.** Símbolos de playerbots que usan los módulos propios sin cambios de firma; `mod-dungeon-clear` no tiene parches propios.
+- **Traducciones de los bots:** el SQL de #2900 se ejecuta en el primer arranque y sobrescribe `text_loc6` de las 1.742 filas, incluidas las 846 nuestras (`patches/locales-es-playerbots/`). Decisión: se deja la traducción del upstream para las demás y se reaplican las nuestras con `scripts/reaplicar-traducciones.sh` (idempotente). Las filas nuevas de `DoGather` (ids ≥ 1928) ya traen esES.
+
+### Despliegue (VM)
+
+Copia `~/backup-20261022-2211`; 3 ficheros subidos (`versions.lock`, fase 5, parche 01) con md5 igual a los dos lados y el parche 02 borrado de la VM; fase 3 (1 s, versiones fijadas y parches aplicados), fase 4 (**33 min 41 s, compiló a la primera**), fase 5 (11 s, ninguna clave `Playerbots.*` sin declarar). `ac-authserver`, socket y worldserver arrancados (World Initialized en 23 s, sin `expected v` ni claves ausentes). `--mirror` (5 espejos nuevos, 5 viejos borrados) y `--verify-mirrors` en verde; `--freeze` (refresca la copia del panel) y `versions.lock` con comentarios vuelto a subir; `tools/revisar-actualizaciones` tras desplegar: 26 al día. `doctor` en OK (con `mirrors` en ERR hasta generar los espejos).
+
+### Verificación (cliente sintético, reino real)
+
+`diagnostico` OK (6), `modulos` OK (14), `companeros` OK (13), `bot-operations-estado` OK (11). **`buscador-extendido`:** con `partes=ambos` salió FALLO en la banda (1 miembro tras 180 s), pero es un **artefacto del caso**: tras la parte de arena el personaje sube 55 niveles más y queda en 80, queue-bots pide bots de nivel 75-80 y con la etapa Vanilla (tope 60) no existen (`0/3 bots conectados de nivel 75-80` en el log). La arena 2c2 y 3c3 pasó. Con `partes=banda` (el protocolo de las verificaciones anteriores, nivel 56, Zul'Gurub): **el explorador de bandas funciona con `OptionsMask = 7`**, el grupo se convierte en banda y llega a 7 miembros en 180 s (AVISO: no llegó a 10 en esa ventana, y el tipo de actualización LFG visto fue 2 en vez de 3; sin FALLO). El caso queda por corregir (que la banda no herede el nivel 80 de la parte de arena). Personajes de prueba borrados (`limpiar`: 0 en cuenta).
+
+No se ejecutaron `bots` ni `mazmorra` (casos largos), ni hay caso para wintergrasp: la IA táctica y sus ayudas están apagadas, sólo se comprobó que el módulo carga y el worldserver arranca limpio.
+
+### Revisión de oportunidades (3b/3c) y comandos (3d)
+
+Al plan, sin aplicar: **UPD-O** recolección de bots, **UPD-P** opciones de wintergrasp 2.0 (y `TeamBalance.MaxDifference`, siempre activo), **UPD-Q** verificar el explorador de bandas con la población real, **UPD-R** `AllowBattlegroundCommands`. **UPD-G** cerrado. Hipótesis descartada: añadir `DungeonFinder.OptionsMask` a la fase 5 a mano (innecesario: el `.conf` se regenera desde el `.dist`). No hay comandos de chat nuevos en ningún repositorio, así que `mod-server-help` y el panel no cambian.
+
 ## 12/10/2026 (19:40) — Comprobaciones pendientes con el cliente sintético; copias antiguas borradas
 
 - **Copias borradas en la VM** (a petición de Matt): `~/upd-dc-20261007.log` y las `worldserver.conf.bak.*` y `authserver.conf.bak.*` que escribe la fase 5 (16 ficheros). Se conservan las cinco carpetas `~/backup-*` (la de hoy es `backup-20261012-1657`). Quedan en `~` los logs viejos del instalador (`fase3.log`, `fase4.log`, `fase5.log`, `i18n-build.log`, `instalacion-completa.log`, `make-k.log`, `primer-arranque.log`), que no son de esta sesión y no se tocaron.

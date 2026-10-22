@@ -83,12 +83,18 @@
 #   nivel de un invocador amigo), mod-transmog (SQL reorganizado, mensajes de claim/check) y
 #   mod-dungeon-clear (estrategia food en mazmorra). Parches 01-04 de mod-playerbots y el de
 #   mod-quest-loot-party rehechos; claves y miembros migrados en todo el proyecto. Ver CHANGELOG.
+# 2026-10-22: core (164 commits: DB/SAI, scripts BRD/BT/ToC, LFG: el explorador de bandas respeta ya
+#   DungeonFinder.OptionsMask, ahora 7 por defecto), mod-playerbots (12: recolección DoGather, textos
+#   esES propios, tope de expansión en LFG, reescritura de SSC), mod-dungeon-clear (29: eventos de BRD
+#   y UBRS), mod-individual-progression (3) y mod-playerbots-wintergrasp (reescrita: tácticas, equilibrio
+#   de equipos). Parche 02 de wintergrasp retirado (el upstream ya migró a ServerScript) y el 01 rehecho.
+#   Ver CHANGELOG.
 #
 # Para volver a una de estas versiones:  ./install.sh --only 3 && ./install.sh --from 4
 # Para actualizar el lock a lo instalado: ./install.sh --freeze
 #
 # nombre                      	rama        	commit                                  	fecha     	url
-core	Playerbot	2a2211cd8f3d157da432ec0175ddd4b8a191931f	2026-10-09	https://github.com/mod-playerbots/azerothcore-wotlk.git
+core	Playerbot	8a4e76eac8c4ccebf547113afe7b51d6c3e91641	2026-10-16	https://github.com/mod-playerbots/azerothcore-wotlk.git
 mod-1v1-arena	master	5ef5708d031f3b02283e6e599aa655bd320d904e	2026-03-25	https://github.com/azerothcore/mod-1v1-arena.git
 mod-ah-bot-plus	master	f685832994c825f90aa5a3dc0e1620aa568e875b	2026-07-02	https://github.com/NathanHandley/mod-ah-bot-plus.git
 mod-aoe-loot	master	44486b1aecebd86944ce115972b3c839544903d3	2026-10-10	https://github.com/azerothcore/mod-aoe-loot.git
@@ -96,15 +102,15 @@ mod-quest-loot-party	master	c3955915c76d5a22a9d25a44482345d368a8de82	2026-10-12	
 mod-autobalance	master	1d707cb61a0962ab01e4123681e2d3b66cc558a2	2026-10-07	https://github.com/azerothcore/mod-autobalance.git
 mod-challenge-modes	master	1930525b9530d329cb9fe0504a3c9b5b40a12261	2025-11-25	https://github.com/ZhengPeiRu21/mod-challenge-modes.git
 mod-congrats-on-level	master	fed4752e0cd71db7faa4d6f9f4650f5377d2f31c	2025-02-28	https://github.com/azerothcore/mod-congrats-on-level.git
-mod-dungeon-clear	master	07f8e33c8676bfc821fdbbadd68be3a25db63ba3	2026-10-11	https://github.com/jrad7/mod-dungeon-clear.git
+mod-dungeon-clear	master	27048f694618e59a446a0443e6594559bf2d9bf6	2026-10-21	https://github.com/jrad7/mod-dungeon-clear.git
 mod-dungeon-master	main	612eaf804cd7fc4af74fde66d376a571a5550077	2026-09-06	https://github.com/InstanceForge/mod-dungeon-master.git
 mod-guild-levels	main	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	2026-05-01	https://github.com/Old-Man-Warcraft/mod-guild-levels.git
 mod-guildhouse	master	0b3cc14e947a859f8a7751a10676107d6316275b	2026-06-18	https://github.com/azerothcore/mod-guildhouse.git
-mod-individual-progression	master	60336b349cce2bc209d154bb840f2370f1cc16f2	2026-10-04	https://github.com/ZhengPeiRu21/mod-individual-progression.git
+mod-individual-progression	master	4933d455d2f611eed50c74c68c78832df4ed37a3	2026-10-20	https://github.com/ZhengPeiRu21/mod-individual-progression.git
 mod-instanced-worldbosses	master	4c7a6310a748c199f79d7be2bbdcbc3191985bdc	2026-09-21	https://github.com/azerothcore/mod-instanced-worldbosses.git
 mod-instance-reset	master	1e2c20770f40f5382348b7649291371f47c86812	2026-03-23	https://github.com/azerothcore/mod-instance-reset.git
-mod-playerbots	master	79bd428115c8f33b74b13de23b133d49c3f75c60	2026-10-09	https://github.com/mod-playerbots/mod-playerbots.git
-mod-playerbots-wintergrasp	main	f313a99fb6aedd74d60275446e281552d7a0d491	2026-09-08	https://github.com/vrzgames/mod-playerbots-wintergrasp.git
+mod-playerbots	master	d750b4b3a50effdf22bedc8032f0e8e5f7cb8091	2026-10-16	https://github.com/mod-playerbots/mod-playerbots.git
+mod-playerbots-wintergrasp	main	f83696b2e236a5c779db329f8b0f8f9d6c16c4e1	2026-10-18	https://github.com/vrzgames/mod-playerbots-wintergrasp.git
 mod-racial-trait-swap	main	8ae1e6fab13b4660eed76aca8fce998a18343048	2026-09-20	https://github.com/azerothcore/mod-racial-trait-swap.git
 mod-random-enchants	master	6d49d64918f1e798490d0139038a33194fd294df	2026-09-24	https://github.com/azerothcore/mod-random-enchants.git
 mod-reagent-bank	master	62c265338ceba10fb754394413e6c4c61cedf9de	2026-04-23	https://github.com/ZhengPeiRu21/mod-reagent-bank.git
