@@ -668,6 +668,14 @@ avisa por cada intento, porque un rol puede llegar después. El druida no
 cuenta como tanque: `IsTank` sólo lo reconoce en forma de oso. Los
 automáticos no esperan ni cambian talentos.
 
+`RoleLevelAbove` (5 en el perfil, 0 de fábrica): pasada la espera de rol, si
+dentro del tramo no hay tanque o sanador libre se admite uno de hasta ese
+número de niveles por encima (primero uno de verdad, luego el cambio de
+especialización), y los dormidos que se despiertan buscando ese rol se
+buscan en el mismo tramo ampliado. Sólo afecta a tanque y sanador de grupos
+manuales; el resto sigue con «ninguno por encima». Motivo: en un tramo de
+cuatro niveles suele haber uno o ningún guerrero o paladín (UPD-I).
+
 Límite de población (visto en la VM el 24/09/2026): `IsRandomBot(guid)` de
 playerbots sólo es cierto para los bots de su conjunto activo
 (`playerbots_random_bots`, evento `add`; 300 en la VM y todos conectados con

@@ -663,19 +663,29 @@ def ejecutar_equipo(ctx):
                                      "ambos con misión y reparto de grupo", origen="entorno"):
                     return
                 criatura = 5807
-                anteriores = {g for g, o in a.objetos.items()
-                              if o.get("valores", {}).get(upd.OBJECT_FIELD_ENTRY) == criatura}
-                a.comando("npc add %d" % criatura, 2)
-                a.bombear(1)
-                nuevos = [g for g, o in a.objetos.items()
-                          if g not in anteriores and o.get("valores", {}).get(upd.OBJECT_FIELD_ENTRY) == criatura]
+                nuevos, guid = [], None
+                for _ in range(4):
+                    anteriores = {g for g, o in a.objetos.items()
+                                  if o.get("valores", {}).get(upd.OBJECT_FIELD_ENTRY) == criatura}
+                    a.comando("npc add %d" % criatura, 1)
+                    nuevos = [g for g, o in a.objetos.items()
+                              if g not in anteriores and o.get("valores", {}).get(upd.OBJECT_FIELD_ENTRY) == criatura]
+                    if not nuevos:
+                        break
+                    guid = nuevos[0]
+                    a.seleccionar(guid)
+                    dyn = a.objetos.get(guid, {}).get("valores", {}).get(upd.UNIT_DYNAMIC_FLAGS) or 0
+                    if not (dyn & 0x4 and not dyn & 0x8):
+                        break
+                    # UPD-N: un bot aleatorio de la zona (otro grupo) le pegó antes y el botín sería
+                    # suyo (UNIT_DYNFLAG_TAPPED sin TAPPED_BY_PLAYER): se borra y se prueba con otra.
+                    a.comando("npc delete", 1)
+                    nuevos, guid = [], None
                 if not inf.comprobar(sec, bool(nuevos),
                                      "se crea la criatura con armadura verde garantizada",
                                      str(nuevos), origen="entorno"):
                     return
-                guid = nuevos[0]
                 creados.append(guid)
-                a.seleccionar(guid)
                 a.atacar(guid)
                 limite = time.monotonic() + 35
                 while time.monotonic() < limite:
@@ -694,13 +704,15 @@ def ejecutar_equipo(ctx):
                 tirada_b = next(((g, t) for g, t in b.tiradas.items() if t["itemid"] == 17922), None)
                 if not inf.comprobar(sec, tirada_a is not None and tirada_b is not None,
                                      "ambos reciben la tirada de la armadura verde 17922",
-                                     "A %s, B %s, ventana %s" % (tirada_a, tirada_b, respuesta)):
+                                     "A %s, B %s, ventana %s, dynflags del cadáver %s" % (
+                                         tirada_a, tirada_b, respuesta,
+                                         a.objetos.get(guid, {}).get("valores", {}).get(upd.UNIT_DYNAMIC_FLAGS))):
                     return
                 inf.comprobar(sec, tirada_a[0] == tirada_b[0],
                               "los dos ven la misma tirada compartida, sin copias separadas",
-                              "GUID %s / %s" % (tirada_a[0], tirada_b[0]))
-                a.votar_loot(tirada_a[0], tirada_a[1]["ranura"], 0)
-                b.votar_loot(tirada_b[0], tirada_b[1]["ranura"], 0)
+                              "GUID/ranura %s / %s" % (tirada_a[0], tirada_b[0]))
+                a.votar_loot(tirada_a[1]["guid"], tirada_a[1]["ranura"], 0)
+                b.votar_loot(tirada_b[1]["guid"], tirada_b[1]["ranura"], 0)
                 a.bombear(1)
                 b.bombear(1)
                 inf.comprobar(sec, not a.errores_lectura and not b.errores_lectura,

@@ -1126,6 +1126,7 @@ if [ "${INSTALL_MOD_PARTY_HERE:-false}" = true ]; then
         set_conf_value "$CONF" "PartyHere.PendingWakeSeconds" "${PARTY_HERE_PENDING_WAKE_SECONDS:-45}"
         set_conf_value "$CONF" "PartyHere.RoleWaitSeconds"   "${PARTY_HERE_ROLE_WAIT_SECONDS:-45}"
         set_conf_value "$CONF" "PartyHere.RoleRespec"        "$(bool_to_int "${PARTY_HERE_ROLE_RESPEC:-false}")"
+        set_conf_value "$CONF" "PartyHere.RoleLevelAbove"    "${PARTY_HERE_ROLE_LEVEL_ABOVE:-0}"
         set_conf_value "$CONF" "PartyHere.DismissExcludeMinutes" "${PARTY_HERE_DISMISS_EXCLUDE_MINUTES:-10}"
         set_conf_value "$CONF" "PartyHere.ScanIntervalMs"      "${PARTY_HERE_SCAN_INTERVAL_MS:-3000}"
         set_conf_value "$CONF" "PartyHere.MaxGroupBots"        "${PARTY_HERE_MAX_GROUP_BOTS:-0}"

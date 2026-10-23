@@ -14,6 +14,143 @@
 > llamándolo `INSTALL.md`; su traducción es `INSTALL_EN.md`. Lo mismo pasa con `README.md`,
 > que ahora es un selector de idioma: el contenido completo está en `README_ES.md` y `README_EN.md`.
 
+## 23/10/2026 (15:25) — UPD-P: wintergrasp 2.0 no se puede ejercitar con la población actual; se queda apagado
+
+**Lo que se hizo.** Lectura del módulo (`mod-playerbots-wintergrasp` `f83696b`: `conf.dist`, `README.md`, `WintergraspBotController.cpp`, `PlayerbotsWintergrasp.cpp`) frente a lo desplegado (`MasterFollowAssist`, `GraveyardRespawn`, `Rebalance` y `Tactics` a 0; `MaxDifference` a 1, `AcceptQueue`/`AcceptBattle` a 1), y un intento de forzar una batalla en la VM con un personaje de prueba de nivel 80.
+
+**Hallazgos.**
+- **Coste fuera de la batalla: ninguno por diseño.** El controlador táctico sólo trabaja con bots cuya zona es la 4197 (`bot->GetZoneId() != WINTERGRASP_ZONE_ID` en `WintergraspBotController.cpp:132`); las tres opciones independientes (seguimiento del maestro, resurrección en el cementerio, reequilibrio) actúan sólo dentro de una batalla activa.
+- **El módulo no pone bots en Wintergrasp.** Su propio README lo dice («no recluta bots de otras zonas ni puebla los campamentos»). Aquí ningún módulo propio lo hace (búsqueda de «wintergrasp» y «4197» en `modules/`), así que sólo entrarían bots que ya estén en la zona.
+- **No hay bots de nivel 77+ en línea.** Con la población actual (300 bots en línea, ninguno por encima de 76, aunque haya 261 personajes de bots de nivel 77 o más sin conectar) una batalla forzada con `.bf start 1` se quedaría sin participantes. Hacerla exigiría subir de nivel o conectar a mano decenas de personajes de bots, datos reales que no se tocan para probar algo que el personaje de juego (nivel 20) no alcanzará en mucho tiempo.
+- **`TeamBalance.MaxDifference`:** retrasa la entrada de un bot sólo si su bando pasaría a superar al otro en más de 1; a los jugadores reales nunca les afecta. Con un único jugador, el bando contrario de bots quedaría limitado a su número +1. Es el comportamiento previsto, no un retraso por fallo; no se pudo ver en vivo.
+- El autor del módulo reconoce que las batallas completas de ambos bandos y las mediciones de rendimiento no están documentadas (README); la lista de comprobaciones manuales está en su `LOCAL_TEST.md`.
+
+**Incidencia propia.** Interrumpí con `pkill` el caso temporal de la prueba; el personaje `Vsnobupo` quedó conectado y huérfano. Lo borró `verificar.py limpiar` en cuanto cerró la sesión. Comprobado: 0 personajes `Vs*`, `diagnostico` OK, batalla de Wintergrasp sin tocar (`.bf start` no llegó a ejecutarse), caso temporal eliminado del repositorio.
+
+**Decisión.** Todo sigue como estaba (opciones nuevas a 0). Queda en `PLAN.md` como UPD-P «bloqueado»: se retoma cuando haya un personaje de 77+ o una población de bots de ese nivel en Wintergrasp. Receta para entonces: `ejecutar diagnostico`, personaje de nivel 77+ en la zona, bots 77+ en la zona (`.summon`), `.bf start 1`, `PlayerbotsWintergrasp.Debug = 1` durante la prueba, y activar de una en una `GraveyardRespawn`, `Rebalance`, `MasterFollowAssist` y por último `Tactics.Enable` (la más cara y la más experimental), midiendo con `muestreo-servidor`.
+
+## 23/10/2026 (15:25) — UPD-O: recolección de bots medida (coste sin efecto visible; competencia sin demostrar)
+
+**Método.** Caso nuevo `muestreo-servidor` (fila en `COBERTURA.md`): un personaje temporal de nivel 20 parado en Villadorada (Goldshire) y, cada 30 s, `.server info` (bots en el mundo y resumen de los últimos 500 ciclos: media, mediana, p95, p99, máximo). Sin jugador conectado el servidor no tiene bots activos, de ahí el personaje. En paralelo, cada minuto, nodos de hierbas/minerales en `gameobject_respawn` (los de `gameobject` de tipo cofre cuyo botín es hierba o mineral: 29.808 en los continentes) y el reparto de estados de `Bots rpg status` del log de estadísticas (cada 5 min).
+
+**Hipótesis corregida: `reload config` no aplica `DoGather`.** Se puso 15 en `playerbots.conf`, `reload config` por SOAP y una ventana de 12 min: el log de estadísticas siguió con `DoGather: 0`. Esa ventana se descartó. La opción sólo se lee al arrancar el worldserver.
+
+| ventana | `DoGather` | bots en el mundo | ciclo medio | mediana | p95 | p99 | máx. |
+|---|---|---|---|---|---|---|---|
+| A (12 min, 24 muestras) | 0 | 596 | 6,0 ms | 2,4 | 16,4 | 21,8 | 26,2 |
+| B (16 min, 32 muestras, reinicio) | 15 | 301 estable | 3,7 | 1,0 | 10,8 | 11,8 | 14,0 |
+| A2 (14 min, 28 muestras, reinicio) | 0 | 301 estable | 4,1 | 1,0 | 11,8 | 13,5 | 15,4 |
+
+- **Coste:** B frente a A2 (misma población) no muestra sobrecoste; sale incluso algo menor, dentro del ruido. A tiene el doble de bots y no es comparable más que por bot (≈10 µs/bot en A frente a ≈12–14 en B y A2). La medida incluye el arranque de cada ventana (los bots entran poco a poco), así que los máximos no se interpretan.
+- **Alcance de la conducta:** con 15, 35, 39 y 43 bots estaban en `DoGather` en las tres lecturas del log (≈13 % de ~300). De los ~1.700 personajes de bots, 423 tienen Herbalismo y 543 Minería (consulta a `character_skills`).
+- **Competencia por los nodos: sin demostrar.** `gameobject_respawn` valió 0 en las 60 muestras de las tres ventanas válidas y también 7 min después de ordenar `rpg status do gather` por susurro de GM a 10 bots con la profesión (aceptaron: `estado RPG -> DO_GATHER`). Dos lecturas: o recolectan poco o la tabla no recoge sus nodos (`SaveRespawnTimeImmediately = 1` y el código lo guarda, pero no se comprobó con una recolección real). Un hallazgo lateral: esos 10 bots acabaron en zonas distintas de las que tenían (otros módulos de la población los reubican), así que no sirven como muestra de «bots recorriendo una zona». Sus mochilas tenían 0–17 hierbas o minerales, sin referencia de antes.
+- **Estado final:** `DoGather = 0` como estaba (el `playerbots.conf` de la VM es idéntico al de antes de las pruebas, comprobado con `diff`); sin personajes `Vs*` ni nodos en respawn; copia temporal de la VM borrada. No se cambia el valor por defecto: la fase 5 sigue dejándolo a 0.
+- **Pendiente de decidir (Matt):** subirlo a un valor pequeño (p. ej. 5) o dejarlo en 0. Con lo medido no hay razón técnica en contra, pero tampoco se vio el efecto que se busca (bots recolectando de verdad). Queda en `PLAN.md` como UPD-O «medido».
+
+## 23/10/2026 (13:50) — UPD-R: `Playerbots.AllowBattlegroundCommands` no cambia nada para la cuenta de juego
+
+### Qué hace la opción (leído en `PlayerbotSecurity.cpp`, mod-playerbots `e88cc40`)
+
+Un bot aleatorio dentro de un campo de batalla o arena no tiene maestro y todo su bando comparte una banda, así que la comprobación de grupo de `PlayerbotSecurity::LevelFor` deniega a todos (`PLAYERBOT_DENY_NOT_YOURS`). Con `AllowBattlegroundCommands = 1` (0 de fábrica), un jugador real, o un `selfbot`, **del mismo bando y del mismo campo** recibe `PLAYERBOT_SECURITY_ALLOW_ALL` sobre ese bot sin pasar a ser su maestro; los bots que sí tienen un maestro jugador quedan fuera (#2932). **Antes de esa comprobación** hay otra: cualquier cuenta con el permiso RBAC de GM (`from->CanBeGameMaster()`, es decir `RBAC_PERM_COMMAND_GM`, id 371) ya recibe `ALLOW_ALL`.
+
+### Medido, y qué significa para este servidor
+
+- **La cuenta de juego es GM.** `Darkcore` está en la cuenta `ADMIN` (nivel de seguridad 3), igual que las cuentas del cliente sintético. Por tanto **las órdenes a los bots de un campo ya funcionan sin tocar la opción**: es un asunto de cuentas no GM, que aquí no hay.
+- **Caso nuevo `campo-batalla-ordenes`** (comparte el flujo de `campo-batalla`, ahora en una función común `_campo`): entra en la Garganta Grito de Guerra, manda `debug state` por el chat de campo de batalla y cuenta quién contesta; después `debug position` y exige que quien contestó siga en el mismo mapa de campo. Resultado en vivo, 3 de 3 ejecuciones OK: **8 y 9 bots del bando contestaron, todos en el mapa 489**, con la opción a 0. Fila nueva en `COBERTURA.md`.
+- **No se probó el camino de una cuenta no GM**, que es el único donde la opción cambia algo. Se intentó quitar el permiso en caliente con `rbac account deny <cuenta> 371` desde la consola del worldserver (SOAP): el comando guarda el permiso negado (`rbac account list` lo muestra) y **la sesión ya conectada lo conserva** (`.gm on` siguió funcionando hasta 18 s después). Sin una cuenta de nivel 0 con un personaje que llegue al nivel 10 y al maestro de batalla no hay forma limpia de medirlo; no se creó ninguna. El `deny` desde dentro del juego sobre la propia cuenta ni se admite («low security level»).
+- **Hipótesis corregida durante la prueba:** se esperaba que `debug` contestara con un mensaje de addon. Por el camino del chat de grupo/campo (`HandleCommand` de tres parámetros) contesta con un mensaje normal del mismo tipo que la orden y el bot como emisor; el caso lee `m.chat`, no `m.addon`.
+- Revertido lo que sobró: se añadió y se quitó un acceso del perfil a la consola del worldserver por SSH (`consola_ssh`) para el `deny`/`revoke`; no hace falta. La tabla `rbac_account_permissions` quedó vacía tras cada intento (comprobado por SQL), el perfil local sin la clave extra y `diagnostico` OK.
+
+### Decisión
+
+`Playerbots.AllowBattlegroundCommands` **se queda en 0** (valor de fábrica; la fase 5 no la toca) y no se añade a `config.sh`: no aporta nada a una cuenta GM. Si algún día se juega con una cuenta normal, basta con ponerla a 1 en `playerbots.conf` y reiniciar. Sale de `PLAN.md` la fila UPD-R.
+
+### Observación aparte: `campo-batalla` depende de la población de bots
+
+Con el nivel por defecto (24) el caso **no consiguió oferta en 240 s dos veces seguidas** (mod-queue-bots encontró 4 aliados y 2 rivales, luego 4 y 1: 6/9 y 5/9 en el tramo 20–29, con sólo 17 bots de 20–29 en línea), y con nivel 70 tampoco (ningún bot de 70 en línea). Con **nivel 15** (75 bots de 10–19 en línea) entra a los 9 s en las cuatro ejecuciones hechas. Es relleno de población, no un fallo del código; sirve de aviso para UPD-D: el tiempo de entrada que se mida depende del tramo de nivel elegido.
+
+## 23/10/2026 (12:58) — UPD-N: el reparto de botín con jugadores reales queda verificado en vivo
+
+El caso `botin-grupo-jugadores-reales` pasa por primera vez completo (13 comprobaciones OK, 4 ejecuciones seguidas con la versión final): el parche `04` de mod-playerbots (`LootRollAfterRealPlayersPass`) hace lo que dice. **No había ningún defecto del servidor: eran tres fallos del propio caso**, encadenados.
+
+### 1. El cadáver de prueba nunca era lootable
+
+Con `.modify hp 1` + golpe cuerpo a cuerpo (el método de la sesión del 12/10) salía `LOOT_ERROR_DIDNT_KILL` y `UNIT_DYNAMIC_FLAGS` del cadáver valía 4 (`TAPPED`, sin `TAPPED_BY_PLAYER` ni `LOOTABLE`) o 0. Lo que se vio al instrumentar el caso (vida y banderas del cadáver justo antes y después de matarlo):
+
+- **Carrera con otros atacantes.** La vida del cadáver recién creado ya estaba entre 71 y 188 de 198 cuando llegaba el golpe: el compañero bot, o un bot aleatorio de la zona de inicio, le pega antes. Si lo tapea un grupo ajeno (`dynflags = 4`) el botín es suyo; si lo mata solo el bot, sin daño de jugador contado, `Creature::IsDamageEnoughForLootingAndReward()` no se cumple y el cadáver sale sin reconocimiento (`dynflags = 0`). Es lo que explica que unas ejecuciones fallaran y otras no con el mismo código, y que el 12/10 «quitar el paso» diera el mismo resultado: **la hipótesis de entonces estaba mal planteada**. El caso `dynflags = 0` (muerte a manos del bot sin daño de jugador contado) es lo más probable por lectura del core; no se aisló quién dio el golpe final.
+- **`.modify hp` no hacía nada.** Con una criatura seleccionada, `ChatHandler::getSelectedPlayer()` devuelve nulo y el comando falla sin efecto: ni bajaba la vida de la criatura ni tocaba `_playerDamageReq`. Es el paso que el docstring daba por esencial.
+- **`.damage` sí sirve**, al contrario de lo que decía el docstring: lo da el propio jugador (`Unit::DealDamage` cuenta `unDamage` en `LowerPlayerDamageReq` y marca `_damagedByPlayer`). Sólo hay que golpear antes que nadie (sin esperas tras `.npc add`) y **descartar** la criatura si ya está tapeada por otro grupo (bandas `0x4` sin `0x8`), con `.npc delete` y otra nueva. Con eso las seis ejecuciones siguientes del caso generaron las tres tiradas. Sin el descarte, una de cuatro ejecuciones seguidas falló tres veces con `dynflags = 4`.
+
+### 2. Una sola tirada por cadáver → no se cubrían necesidad y codicia
+
+`Mundo.tiradas` se indexaba por el GUID del cadáver, así que varios objetos de un mismo cadáver se pisaban, y el caso se quedaba con «1 tirada» (AVISO en los sub-casos de necesidad y codicia). Ahora se indexa por `(guid, ranura)` y el caso mata hasta ocho criaturas hasta reunir tres tiradas abiertas a la vez (cada una dura 60 s). Ajustados el otro usuario de `tiradas` (`quest_loot_party.py`, que votaba con el índice) y tres pruebas locales de `tests/test_cliente_sintetico.py` (64/64).
+
+### 3. El voto del bot no se encontraba (falso FALLO)
+
+`SMSG_LOOT_ROLL` llega con el GUID de origen a 0 en este core, y el caso buscaba el voto del bot por ese GUID. Ahora se identifica por `ranura` + `itemid`, y como las ranuras se repiten entre cadáveres, sólo cuentan los sucesos posteriores al inicio de cada sub-caso (en una ejecución, sin eso, el voto de una tirada anterior se tomó por el de la actual).
+
+### Lo que verifica
+
+Con tres tiradas reales y un grupo de dos jugadores reales y un bot: (1) con `VERIFICADOR2` sin votar, el bot **no** vota en 8 s; (2) cuando los dos humanos pasan y nadie reclama, el bot vota (codicia); (3) si un humano vota necesidad, el bot pasa; (4) si vota codicia, el bot pasa.
+
+### Corrección propia sobre `botin-mision-equipo` y limpieza
+
+- **`botin-mision-equipo` (SP04) fallaba por el mismo motivo** (`error_loot = 0`, `dynflags = 4`; no tiene compañero bot, así que era un bot aleatorio de la zona). Mismo descarte de la criatura ya tapeada, hasta cuatro intentos; 3 de 3 OK después. No se revisaron los demás casos SP04.
+- **Restos en la VM (regla 9):** quedaban dos filas de «The Rake» (5807) en la posición exacta de inicio de Elwynn (`creature` 8015637 y 8019873, mapa 0, `-8949.95,-132.493`; la copia natural 26611 de Durotar no se tocó). Una estaba viva y se quitó con `.npc delete` desde una sesión temporal; la otra era una fila residual sin criatura y se borró por SQL con `guid`, `id`, mapa y posición. Ninguna ejecución de esta sesión deja filas nuevas (comprobado antes y después de una pasada); `diagnostico` OK, personajes `Vs*`: 0.
+- Las dos copias eran de sesiones anteriores: el 12/10 se «borraron por SQL» las 8015637–8015639 con el servidor encendido y la fila 8015637 volvió a existir después (probable reutilización del guid por un `.npc add` posterior); no se investigó más.
+
+Sale de `PLAN.md` la fila UPD-N.
+
+## 23/10/2026 (10:05) — UPD-I y UPD-Q: tanque con holgura de nivel en party-here y dos fallos del caso del explorador de bandas
+
+### UPD-I — `party-here` sin tanque en un tramo de pocos niveles
+
+**Causa (medida, no supuesta).** En la VM hay 1.701 personajes de bots, pero sólo 49 en el tramo 10–19 y 121 en el 20–29; de ellos, los capaces de tanquear (guerrero, paladín) eran **un guerrero o paladín por nivel** en 14–27 y ninguno en 23–25 (consulta a `characters` con las cuentas `RNDBOT%`). Con `PartyHere.LevelBelow = 3` y `LevelAbove = 0` el tramo de un jugador es de cuatro niveles, así que casi nunca hay un tanque libre en él; el cambio de especialización (`RoleRespec`) tampoco ayuda porque sale de la misma población. Los logs del 23/10 lo confirman: «El grupo de … se completa sin tanque: no hay bots de ese rol libres de nivel 22-25 ni de una clase que pueda cambiar». Además, `IsRandomBot` sólo vale para los 300 bots del conjunto activo, así que despertar dormidos fuera de ese conjunto no es posible (ver `REFERENCES.md`).
+
+**Cambio.** Opción nueva `PartyHere.RoleLevelAbove` (0 de fábrica; **5 en el perfil de `config.sh`**, fijada en la fase 5; máximo 20). Pasada la espera de rol de un grupo manual, si dentro del tramo no hay tanque o sanador libre: (1) se admite uno *de verdad* hasta ese número de niveles por encima; (2) si no, el cambio de especialización dentro del tramo; (3) y por último el cambio de especialización en el tramo ampliado. Los dormidos que se despiertan buscando el rol (`WakeBots`) también se buscan en el tramo ampliado (`roleMaxLevel`; respeta el tope de la etapa activa) y esa búsqueda empieza ya durante la espera, para que lleguen antes de que venza. No afecta a los grupos automáticos por misión ni a los bots de daño, que siguen con «ninguno por encima»; el aviso «No hay tanque libre de nivel X-Y» muestra el tramo ampliado. Añadida al catálogo del panel (`serverConfigCatalog.js` y su inglés) y a `REFERENCIA_CONFIG_PANEL.md`.
+
+**Verificación (cliente sintético, reino real).** Desplegado con fases 3/4/5 (compiló en ~1 min, incremental) y arranque limpio. `companeros` nivel 16: tanque de nivel 17 y sanador de nivel 21 (antes el grupo salía sin tanque); `companeros` nivel 25: 13/13 OK con tanque (24) y sanador (25) del propio tramo, cuatro compañeros. **Dos ejecuciones previas (justo tras el arranque en frío del servidor, que estaba en espera) dieron FALLO «3 compañeros»** en el nivel 25 (los mismos tres, sin sanador en 22–30) y una en el 16: no son de la opción sino de que sólo había tres bots libres en el tramo (los demás en combate o agrupados); repetido con el servidor caliente salió completo. Queda como límite conocido: la holgura es sólo para tanque y sanador, no para rellenar con bots de daño. **Corrección propia del caso `companeros`:** comprobaba «ninguno por encima del tramo» y habría marcado FALLO a un tanque de nivel superior; nuevo parámetro `holgura_rol` (5) que debe coincidir con la opción del servidor.
+
+### UPD-Q — explorador de bandas con `OptionsMask = 7`
+
+El explorador sigue funcionando (el core nuevo respeta el bit 2): `buscador-extendido` mete al jugador en la banda y `FillRaid` la llena (10/10 a los ~2 min el 23/10 a las 09:16; 6 miembros en otra pasada con otra población: faltan tanques y sanadores de nivel 51–56, mismo límite de población que UPD-I). **Dos fallos del caso, ambos corregidos:**
+
+- **«No llega a 10» era falso:** `SMSG_GROUP_LIST` no incluye al jugador que lo recibe, y el caso contaba sólo `miembros`. El log del servidor registraba «(10/10)» mientras el caso decía 9. Ahora cuenta `miembros` sin el jugador `+ 1` (`_tamano_grupo`).
+- **`partes=ambos` heredaba el nivel 80:** `.levelup` es un delta; tras subir 24 niveles para la arena, la banda sumaba 55 más. Ahora sube sólo hasta el nivel mínimo de la banda (56, Zul'Gurub). Comprobado: `partes=ambos` entró en 2c2 (Ruins of Lordaeron) y 3c3 (Blade's Edge) y la banda se formó con el personaje a nivel 56, 11 OK y 2 AVISOS (tipo de actualización LFG visto 2 en vez de 3, ya conocido; banda de 6 por población).
+
+`diagnostico` OK (6) al terminar, sin personajes huérfanos; maestro de arena de prueba borrado por el propio caso.
+
+## 23/10/2026 (09:25) — Actualización de core, mod-playerbots y mod-dungeon-clear: idioma de la cuenta como texto
+
+Procedimiento de `INSTALL_ES.md` parte 4 §3. Sin PR nuevos en GitHub. Pasan a `versions.lock`: **core** `8a4e76e` → `3f2969d` (40 commits), **mod-playerbots** `d750b4b` → `e88cc40` (15) y **mod-dungeon-clear** `27048f6` → `fcb680f` (2). Los otros 23 repositorios estaban al día; addons de cliente al día salvo el catálogo de NoM0Re (`2ca8773`, ya conocido: UPD-F).
+
+### Qué trae
+
+- **core:** el idioma deja de ser un número fijo: `TOTAL_LOCALES` pasa a 16 y los módulos pueden registrar idiomas (#28081). Efecto visible para nosotros: **`account.locale` pasa de `tinyint` a `varchar(4)`** (`'esES'`, `'enUS'`…) con la migración `db_auth/2026_10_15_00.sql`, y `AuthSession` guarda lo que anuncia el cliente. Además: el pool de BD de módulos renombra `CreateConnection(queue, …)` a `CreateAsyncConnection` (#27773, lo usa `PlayerbotsDatabase`), un hook de `SessionScript` para que un script cambie el resultado esperado de una comprobación de Warden (#28089, sin uso aquí), correcciones de SmartAI/Alterac/spawns y de `GameObject`/trampas, scripts de la Enclave Escarlata y del Torneo del Crusader. Un revert de Ignis (#27804).
+- **mod-playerbots:** soporte de idiomas registrados por módulos en textos y nombres de bots (#2961; `GetLocaleColumns` consulta `information_schema` y cae a enUS si falta una columna), `CreateAsyncConnection` (#2960), bots con maestro jugador excluidos de las órdenes de campo de batalla (#2932), arreglos del hilo de la concentración por zona (#2936: la lista de zonas se calcula en el hilo del mundo y se lee con cerrojo) y ahora respeta `RandomBotMaps` y la distancia de nivel inicial, mutex en las estrategias de BG (#2935), equipo por debajo del límite de gear score, encantamientos de valor cero, munición obsoleta, tirada mínima 1 en `/roll`, arreglos de Zul'Aman y estrategias de Pícaro reorganizadas. Equipos de arena: un miembro fuera del tramo del capitán se da de baja y desaparece el filtro fijo de nivel 70 al juntar el equipo (#2862).
+- **mod-dungeon-clear:** `TestRun` reconstruye las estrategias de los miembros tras agruparlos para que todos tengan «avoid aoe». Sin cambios de conf ni de SQL.
+
+### Revisión previa (pasos 2 y 3)
+
+- **Parches:** los cuatro de mod-playerbots y el de `core/01` aplican limpios sobre los árboles nuevos (el del core es de contexto cero: se aplica con `--unidiff-zero`, como hace la fase 3). `mod-dungeon-clear` no tiene parches. **Nada que tocar en `patches/`.**
+- **Claves:** ninguna eliminada del `.conf.dist` de playerbots (sólo cambia un comentario); la fase 5 no deja claves `Playerbots.*` sin declarar.
+- **Símbolos** de playerbots que usan los módulos propios (`IsTank`, `IsHeal`, `ResetStrategies`, `AddPlayerBot`, `LogoutPlayerBot`, `IsRandomBot`): sin cambios de firma; la única cabecera de playerbots que incluye `mod-dungeon-clear` y ha cambiado es `RandomPlayerbotMgr.h` (campos privados nuevos de la lista de zonas).
+- **SQL propio:** playerbots no trae SQL nuevo, así que las 846 traducciones de `patches/locales-es-playerbots/` no se pisan esta vez (a diferencia del 22/10).
+- **`account.locale`:** ningún código propio (módulos, panel, scripts, instalador) la lee ni la escribe: los módulos usan `GetSessionDbLocaleIndex()`, que sigue valiendo. Core y playerbots van acoplados por `IsLocaleRegistered`/`CreateAsyncConnection`: hay que actualizarlos juntos.
+- **Comandos de chat nuevos:** ninguno; `mod-server-help` y el panel no cambian.
+
+### Despliegue (VM)
+
+Copia `~/backup-20261023-0830`; sólo se subió `versions.lock` (md5 igual a los dos lados); fase 3 (7 s, tres versiones fijadas y los 5 parches aplicados), fase 4 (**compiló a la primera**, 08:31 → 09:04), fase 5 (10 s, sin claves ausentes), arranque en ~8 s sin `expected v`. La migración convirtió las cuentas (esES 2, enUS 173). `Errors.log`: las mismas 20 líneas de siempre (pools, formaciones, script de `submerge`) y una nueva del core (`SmartAIMgr: Creature 20281 … WaypointPath id 20281`, dato del upstream; no es nuestro). `--mirror` (3 espejos nuevos, 3 viejos borrados), `--verify-mirrors` y `--freeze` en verde; `versions.lock` con comentarios vuelto a subir. `doctor` OK; `tools/revisar-actualizaciones` tras desplegar: 26 al día.
+
+### Verificación (cliente sintético, reino real)
+
+`diagnostico` OK (6), `modulos` OK (14), `bot-operations-estado` OK (11), `campo-batalla` OK (7: oferta a 0,0 s por un campo ya abierto, entrada a WSG a los 9 s). `companeros` dos veces: 12 OK + 1 AVISO cada una («No hay tanque libre de nivel 22-25: tu grupo se completa sin él»; el módulo lo avisa como debe, es población, y el 22/10 había tanque; evidencia para UPD-I). **`buscador-extendido -p partes=banda` (UPD-Q): el explorador de bandas sigue funcionando con `OptionsMask = 7`; la banda llega a 9 miembros en 180 s** (7 el 22/10); 2 AVISOS: no llega a 10 y el tipo de actualización LFG visto sigue siendo 2. Personajes de prueba borrados (`diagnostico`: 0 huérfanos). No se ejecutaron `bots`, `mazmorra` ni `buscador` (casos largos).
+
+### Revisión de oportunidades (3b/3c)
+
+Al plan, sin aplicar: **UPD-D** y **UPD-R** ganan descripción (el filtro de nivel 70 de los equipos de arena ya no existe; las órdenes en BG sólo valen para bots sin maestro jugador). El soporte de idiomas por módulo (#2961/#28081) no nos sirve: esES es nativo. La caché de zonas de #2936 sólo se calcula con `RandomBotConcentrateInPlayerZone` activo.
+
 ## 22/10/2026 (23:10) — Actualización de core y 4 módulos: wintergrasp 2.0 (parche 02 retirado, 01 rehecho) y el explorador de bandas del core
 
 Procedimiento de `INSTALL_ES.md` parte 4 §3. Los PR 1 y 2 de GitHub siguen cerrados (eran pruebas); no hay PR nuevos. Pasan a `versions.lock`: **core** `2a2211c` → `8a4e76e` (164 commits), **mod-playerbots** `79bd428` → `d750b4b` (12), **mod-dungeon-clear** `07f8e33` → `27048f6` (29), **mod-individual-progression** `60336b3` → `4933d45` (3) y **mod-playerbots-wintergrasp** `f313a99` → `f83696b` (1 commit, pero reescribe el módulo: +6.300 / −1.250 líneas). Los otros 21 repositorios estaban al día. Addons de cliente: al día salvo el catálogo de NoM0Re (`2ca8773`, ya conocido: UPD-F).
@@ -54,7 +191,8 @@ Al plan, sin aplicar: **UPD-O** recolección de bots, **UPD-P** opciones de wint
 - **Copias borradas en la VM** (a petición de Matt): `~/upd-dc-20261007.log` y las `worldserver.conf.bak.*` y `authserver.conf.bak.*` que escribe la fase 5 (16 ficheros). Se conservan las cinco carpetas `~/backup-*` (la de hoy es `backup-20261012-1657`). Quedan en `~` los logs viejos del instalador (`fase3.log`, `fase4.log`, `fase5.log`, `i18n-build.log`, `instalacion-completa.log`, `make-k.log`, `primer-arranque.log`), que no son de esta sesión y no se tocaron.
 - **`mazmorra` — OK (20 OK, 0 avisos, 0 fallos):** Sima Ígnea, mago humano de nivel 17 en selfbot y cuatro compañeros de party-here (tanque, sanador y dos de daño). queue-bots activó dungeon-clear solo a los 68 s; los cuatro jefes murieron (Oggleflint 575 s, Taragaman 962 s, Jergosh 1224 s, Bazzalan 1435 s), recorrido de 1441 s, **sin intervenciones del agente y sin muertes**. Es la primera pasada completa de esta mazmorra desde la entrada del 07/10 (UPD-H); no demuestra por sí sola qué cambió entre `d224254` y `07f8e33`, porque aquel día no se midió con este método.
 - **`monturas-bots` (caso nuevo) — OK:** el personaje de prueba sube a nivel 45, va a Ventormenta y observa durante 240 s el nivel y `UNIT_FIELD_MOUNTDISPLAYID` de los jugadores vistos: 30 vistos, 23 de nivel 20 o más, 6 montados alguna vez (niveles 24, 30 y 60). Cierra lo que faltaba de UPD-L: los bots con Equitación siguen montando tras #2884. No dice nada de los 59 bots de nivel 55 sin Equitación. Fila nueva en `COBERTURA.md`.
-- **`doctor` con un fallo real — OK:** se llamó a `_doctor_persist` en la VM con una comprobación `fail` cuyo detalle lleva secuencias ANSI, `` y comillas; guardó una fila con `JSON_VALID = 1`. Después se volvió a ejecutar `doctor` (queda `manual`/`warn`) y se borraron las filas de prueba de `doctor_history`. Confirma el arreglo de las 19:00.
+- **`doctor` con un fallo real — OK:** se llamó a `_doctor_persist` en la VM con una comprobación `fail` cuyo detalle lleva secuencias ANSI, `
+` y comillas; guardó una fila con `JSON_VALID = 1`. Después se volvió a ejecutar `doctor` (queda `manual`/`warn`) y se borraron las filas de prueba de `doctor_history`. Confirma el arreglo de las 19:00.
 - **Avisos de tick lento:** `doctor` queda en AVISOS por 5 ticks lentos de `world-bots` (104 a 148 ms) acumulados durante la hora de pruebas con unos 600 bots y el selfbot de mazmorra. El 07/10 ya hubo uno de 154 ms. No hay referencia de antes de la actualización con la misma carga, así que no se atribuye ni se descarta.
 - **`DungeonMaster.Roguelike.Buff.1`** («Missing property»): ya salía en el `Server.log` anterior a la actualización (copia de las 16:57). No es de esta actualización.
 - **Sigue abierto:** UPD-N (reparto de botín con jugadores reales).

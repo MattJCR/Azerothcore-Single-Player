@@ -195,7 +195,9 @@ def _leer_loot_start_roll(datos: bytes) -> dict:
 
 def _leer_loot_roll(datos: bytes) -> dict:
     """SMSG_LOOT_ROLL: el voto YA CONTADO de un participante, difundido a todo el que
-    siga con voto válido (NOT_VALID excluido) en esa tirada — incluido el que vota."""
+    siga con voto válido (NOT_VALID excluido) en esa tirada — incluido el que vota.
+    Comprobado en vivo (UPD-N): el core fijado manda el GUID de origen a 0, así que el voto
+    se identifica por `ranura` + `itemid`, no por `guid`."""
     L = Lector(datos)
     guid, ranura, jugador, itemid = L.u64(), L.u32(), L.u64(), L.u32()
     L.u32(); L.u32()                                                # randomSuffix, randomPropId: sin usar
@@ -243,7 +245,7 @@ class Mundo:
         self.vigilante = None            # areatriggers.Vigilante
         self.grupo = None                # leer_lista_grupo()
         self.miembros = {}               # guid -> última estadística conocida
-        self.tiradas = {}                # guid del objeto -> última SMSG_LOOT_START_ROLL (M40)
+        self.tiradas = {}                # (guid del cadáver, ranura) -> SMSG_LOOT_START_ROLL (M40): un cadáver puede tener varias tiradas a la vez
         self.temporizadores = {}         # tipo -> dict
         self.forzados_sin_ack = {}       # nombre -> veces
         self.lfg = {"auto_aceptar": False, "roles": 0, "propuestas": [], "estado": None, "union": None}
@@ -473,13 +475,13 @@ class Mundo:
             self.emitir("grupo_disuelto")
         elif op == SMSG_LOOT_START_ROLL:
             r = _leer_loot_start_roll(datos)
-            self.tiradas[r["guid"]] = r
+            self.tiradas[(r["guid"], r["ranura"])] = r
             self.emitir("tirada_inicio", **r)
         elif op == SMSG_LOOT_ROLL:
             self.emitir("tirada_voto", **_leer_loot_roll(datos))
         elif op == SMSG_LOOT_ROLL_WON:
             r = _leer_loot_roll_won(datos)
-            self.tiradas.pop(r["guid"], None)
+            self.tiradas.pop((r["guid"], r["ranura"]), None)
             self.emitir("tirada_ganada", **r)
         elif op in (SMSG_PARTY_MEMBER_STATS, SMSG_PARTY_MEMBER_STATS_FULL):
             e = grp.leer_estadisticas(datos, op == SMSG_PARTY_MEMBER_STATS_FULL)

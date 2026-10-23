@@ -159,6 +159,7 @@ namespace
         uint32 pendingWakeSecs    = 45;   // entre tandas de despertar para la misma peticion
         uint32 roleWaitSecs       = 45;   // grupo manual: esperar tanque/sanador antes de cubrir con cualquiera
         bool   roleRespec         = false; // pasada la espera, especializar a un bot capaz en el rol que falta
+        uint32 roleLevelAbove     = 0;     // niveles por encima del tramo que se admiten para tanque/sanador (UPD-I)
         uint32 excludeMinutes     = 10;   // un bot echado o cambiado no vuelve por reposicion en este tiempo (M16)
         BotGear::Settings gear;
     };
@@ -485,17 +486,21 @@ namespace
     // un grupo manual. Se despierta el doble de clases capaces de cada una
     // COMO EXTRA sobre el lote normal: sólo con el filtro, un arranque en frío
     // traía guerreros y nadie más.
+    // roleMaxLevel (UPD-I): techo de nivel de los candidatos de tanque y
+    // sanador; 0 = el mismo que el resto.
     uint32 WakeBots(uint32 wanted, uint32 minLevel, uint32 maxLevel, TeamId team,
-                    uint32 tanks = 0, uint32 healers = 0)
+                    uint32 tanks = 0, uint32 healers = 0, uint32 roleMaxLevel = 0)
     {
         if (!wanted || !cfg.wakeBots)
             return 0;
 #ifdef PARTY_HERE_WITH_PLAYERBOTS
         // La etapa de progresión activa (mod-world-bots) manda sobre cualquier
         // rango pedido aquí: si no cabe nada por debajo del tope, no se despierta.
-        maxLevel = std::min(maxLevel, BotPopulationCoordinator::StageCap());
+        uint32 const stageCap = BotPopulationCoordinator::StageCap();
+        maxLevel = std::min(maxLevel, stageCap);
         if (minLevel > maxLevel)
             return 0;
+        uint32 const roleMax = std::min(std::max(roleMaxLevel, maxLevel), stageCap);
 
         uint64_t const now = TimeMs::NowMs();
         if (now < g_nextWake)
@@ -527,11 +532,11 @@ namespace
         uint32 const tankWake = std::min<uint32>(tanks * 2, 4);
         uint32 const healWake = std::min<uint32>(healers * 2, 4);
         if (tankWake)
-            add(BotWake::SelectOfflineCandidates(tankWake, minLevel, maxLevel, alliance,
-                                                 RoleClasses(lfg::PLAYER_ROLE_TANK, maxLevel)));
+            add(BotWake::SelectOfflineCandidates(tankWake, minLevel, roleMax, alliance,
+                                                 RoleClasses(lfg::PLAYER_ROLE_TANK, roleMax)));
         if (healWake)
-            add(BotWake::SelectOfflineCandidates(healWake, minLevel, maxLevel, alliance,
-                                                 RoleClasses(lfg::PLAYER_ROLE_HEALER, maxLevel)));
+            add(BotWake::SelectOfflineCandidates(healWake, minLevel, roleMax, alliance,
+                                                 RoleClasses(lfg::PLAYER_ROLE_HEALER, roleMax)));
         add(BotWake::SelectOfflineCandidates(wanted, minLevel, maxLevel, alliance));
         wanted += tankWake + healWake;
         SlowTick::WarnIfSlow("party-here", "BotWake::SelectOfflineCandidates", tWake0);
@@ -545,7 +550,7 @@ namespace
                 lowGuid, OWNER,
                 team == TEAM_ALLIANCE ? BotPopulationCoordinator::Faction::Alliance
                                       : BotPopulationCoordinator::Faction::Horde,
-                minLevel, maxLevel);
+                minLevel, roleMax);
             if (!reservation)
                 continue;
             sRandomPlayerbotMgr.AddPlayerBot(ObjectGuid::Create<HighGuid::Player>(lowGuid), 0);
@@ -560,7 +565,7 @@ namespace
                                                                 tankWake, healWake) : std::string());
         return woken;
 #else
-        (void)minLevel; (void)maxLevel; (void)team; (void)tanks; (void)healers;
+        (void)minLevel; (void)maxLevel; (void)team; (void)tanks; (void)healers; (void)roleMaxLevel;
         return 0;
 #endif
     }
@@ -922,15 +927,20 @@ namespace
                 if (now < untilMs)
                     taken.insert(botGuid);
 
-        auto take = [&](uint8 role, uint32 wanted) -> uint32
+        // UPD-I: techo de nivel para tanque y sanador. En un tramo con un guerrero
+        // o paladín por nivel no hay tanque que valga; pasada la espera de rol se
+        // admiten hasta PartyHere.RoleLevelAbove niveles por encima.
+        uint32 const roleTop = std::min(topLevel + cfg.roleLevelAbove, maxLevel);
+
+        auto take = [&](uint8 role, uint32 wanted, uint32 top) -> uint32
         {
             uint32 got = 0;
             while (wanted && chosen.size() < room)
             {
                 uint32 const want = std::min<uint32>(wanted, room - static_cast<uint32>(chosen.size()));
-                std::vector<Player*> found = CollectBots(want, minLevel, topLevel, team, role, &classes, taken);
+                std::vector<Player*> found = CollectBots(want, minLevel, top, team, role, &classes, taken);
                 if (found.empty())
-                    found = CollectBots(want, minLevel, topLevel, team, role, nullptr, taken);
+                    found = CollectBots(want, minLevel, top, team, role, nullptr, taken);
                 if (found.empty())
                     break;
                 for (Player* bot : found)
@@ -948,7 +958,7 @@ namespace
         // Pasada la espera de rol (M26): un bot libre de clase capaz cambia
         // de especialización. Sólo en grupos pedidos por el jugador; los de
         // misión son de paso y no justifican tocar los talentos de nadie.
-        auto convert = [&](uint8 role, uint32 wanted) -> uint32
+        auto convert = [&](uint8 role, uint32 wanted, uint32 top) -> uint32
         {
             if (!wanted || !cfg.roleRespec || opts.automatic || !opts.anyRole)
                 return 0;
@@ -958,7 +968,7 @@ namespace
                 Player* bot = pair.second;
                 if (!bot || taken.count(bot->GetGUID()) || RoleTab(bot->getClass(), role) < 0)
                     continue;
-                if (bot->GetLevel() < std::max<uint32>(minLevel, 10) || bot->GetLevel() > topLevel)
+                if (bot->GetLevel() < std::max<uint32>(minLevel, 10) || bot->GetLevel() > top)
                     continue;   // sin puntos de talento no hay rama que elegir
                 if (bot->GetTeamId() != team || !IsFreeBot(bot))
                     continue;
@@ -990,7 +1000,7 @@ namespace
                 }
                 LOG_INFO("module", "[party-here] {} ({}) cambia de {} a {} para el grupo de {}: no habia {} libre de nivel {}-{}.",
                          bot->GetName(), bot->GetLevel(), RoleName(before), RoleName(role),
-                         player->GetName(), RoleName(role), minLevel, topLevel);
+                         player->GetName(), RoleName(role), minLevel, top);
                 chosen.push_back(bot);
                 taken.insert(bot->GetGUID());
                 classes.insert(bot->getClass());
@@ -1002,19 +1012,32 @@ namespace
 
         uint32 const needTanks   = wantTanks   > haveTanks   ? wantTanks   - haveTanks   : 0;
         uint32 const needHealers = wantHealers > haveHealers ? wantHealers - haveHealers : 0;
-        uint32 gotTanks          = take(lfg::PLAYER_ROLE_TANK,   needTanks);
-        uint32 gotHealers        = take(lfg::PLAYER_ROLE_HEALER, needHealers);
-        gotTanks   += convert(lfg::PLAYER_ROLE_TANK,   needTanks   - gotTanks);
-        gotHealers += convert(lfg::PLAYER_ROLE_HEALER, needHealers - gotHealers);
+        uint32 gotTanks          = take(lfg::PLAYER_ROLE_TANK,   needTanks,   topLevel);
+        uint32 gotHealers        = take(lfg::PLAYER_ROLE_HEALER, needHealers, topLevel);
+        // Primero un tanque o sanador de verdad algo más alto (no toca talentos),
+        // luego el cambio de especialización: dentro del tramo y, si no, con holgura.
+        bool const slack = roleTop > topLevel && opts.anyRole && !opts.automatic;
+        if (slack)
+        {
+            gotTanks   += take(lfg::PLAYER_ROLE_TANK,   needTanks   - gotTanks,   roleTop);
+            gotHealers += take(lfg::PLAYER_ROLE_HEALER, needHealers - gotHealers, roleTop);
+        }
+        gotTanks   += convert(lfg::PLAYER_ROLE_TANK,   needTanks   - gotTanks,   topLevel);
+        gotHealers += convert(lfg::PLAYER_ROLE_HEALER, needHealers - gotHealers, topLevel);
+        if (slack)
+        {
+            gotTanks   += convert(lfg::PLAYER_ROLE_TANK,   needTanks   - gotTanks,   roleTop);
+            gotHealers += convert(lfg::PLAYER_ROLE_HEALER, needHealers - gotHealers, roleTop);
+        }
         result.missingTanks   = needTanks   - gotTanks;
         result.missingHealers = needHealers - gotHealers;
-        take(lfg::PLAYER_ROLE_DAMAGE, wantDps > haveDps ? wantDps - haveDps : 0);
+        take(lfg::PLAYER_ROLE_DAMAGE, wantDps > haveDps ? wantDps - haveDps : 0, topLevel);
         // Lo que quede, cualquiera (grupo pequeño, o faltan bots de daño). Las
         // plazas de tanque/sanador sin candidato se guardan mientras la
         // petición espera a que llegue ese rol (M17), salvo con anyRole.
         uint32 const reserved = opts.anyRole ? 0 : (needTanks - gotTanks) + (needHealers - gotHealers);
         uint32 const left = room - static_cast<uint32>(chosen.size());
-        take(0, left > reserved ? left - reserved : 0);
+        take(0, left > reserved ? left - reserved : 0, topLevel);
 
         if (chosen.empty())
         {
@@ -1024,7 +1047,8 @@ namespace
                      opts.wake ? ": se despiertan" : "");
             if (opts.wake)
                 result.woken = WakeBots(room * 2, minLevel, topLevel, team,
-                                        opts.automatic ? 0 : result.missingTanks, opts.automatic ? 0 : result.missingHealers);
+                                        opts.automatic ? 0 : result.missingTanks, opts.automatic ? 0 : result.missingHealers,
+                                        opts.automatic ? 0 : roleTop);
             return result;
         }
 
@@ -1113,7 +1137,8 @@ namespace
             LOG_INFO("module", "[party-here] Faltan {} para el grupo de {} (nivel {}-{}): se despiertan bots.",
                      missing, player->GetName(), minLevel, topLevel);
             result.woken = WakeBots(missing * 2, minLevel, topLevel, team,
-                                    opts.automatic ? 0 : result.missingTanks, opts.automatic ? 0 : result.missingHealers);
+                                    opts.automatic ? 0 : result.missingTanks, opts.automatic ? 0 : result.missingHealers,
+                                        opts.automatic ? 0 : roleTop);
         }
 
         return result;
@@ -1304,7 +1329,8 @@ namespace
 
         uint32 const level = human->GetLevel();
         uint32 const minLevel = level > cfg.levelBelow ? level - cfg.levelBelow : 1;
-        uint32 const topLevel = std::min(level + cfg.levelAbove, sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
+        uint32 const topLevel = std::min(level + cfg.levelAbove + cfg.roleLevelAbove,
+                                         sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
         char const* const missing = noTank && noHealer ? "tanque ni sanador" : (noTank ? "tanque" : "sanador");
         LOG_INFO("module", "[party-here] El grupo de {} {} sin {}: no hay bots de ese rol libres de nivel {}-{}{}.",
                  human->GetName(), completed ? "se completa" : "se queda", missing, minLevel, topLevel,
@@ -1684,6 +1710,7 @@ public:
         cfg.pendingWakeSecs = std::max<uint32>(sConfigMgr->GetOption<uint32>("PartyHere.PendingWakeSeconds", 45), 5);
         cfg.roleWaitSecs = sConfigMgr->GetOption<uint32>("PartyHere.RoleWaitSeconds", 45);
         cfg.roleRespec   = sConfigMgr->GetOption<bool>("PartyHere.RoleRespec", false);
+        cfg.roleLevelAbove = std::min<uint32>(sConfigMgr->GetOption<uint32>("PartyHere.RoleLevelAbove", 0), 20);
         cfg.excludeMinutes = sConfigMgr->GetOption<uint32>("PartyHere.DismissExcludeMinutes", 10);
         cfg.gear        = BotGear::LoadSettings("PartyHere");
         BotPopulationCoordinator::LoadSettings();

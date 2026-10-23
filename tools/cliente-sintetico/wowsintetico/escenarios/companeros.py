@@ -42,7 +42,10 @@ grupo.
 """,
       etiquetas=("party-here", "grupo", "bots", "personaje"),
       acciones=("conectar", "leer", "personaje", "gm", "grupo"),
-      parametros={"nivel": Parametro(int, 25, "nivel del jugador", minimo=10, maximo=80)},
+      parametros={"nivel": Parametro(int, 25, "nivel del jugador", minimo=10, maximo=80),
+                  "holgura_rol": Parametro(int, 5, "niveles por encima del tramo que se admiten a un tanque o "
+                                                   "sanador (PartyHere.RoleLevelAbove del servidor)",
+                                           minimo=0, maximo=20)},
       duracion_max=480, protege=("mod-party-here", "BotGear.h", "PLAN M20", "PLAN M26"), control="directo",
       observa=("SMSG_GROUP_LIST", "SMSG_PARTY_MEMBER_STATS (nivel, zona, posición)", "`.grupo estado`"),
       no_cubre=("reparto por misiones de grupo automáticas", "recomposición tras relogin",
@@ -79,9 +82,14 @@ def ejecutar(ctx):
         while time.time() < limite and any(v is None for v in niveles.values()):
             m.bombear(2)
             niveles = {n: m.miembros.get(g, {}).get("nivel") for g, n in miembros.items()}
-        fuera_tramo = [n for n, v in niveles.items() if v is not None and not (nivel - 3 <= v <= nivel)]
+        # UPD-I: pasada la espera de rol, un tanque o sanador puede venir algo por encima.
+        rol_de = roles(roles_del_grupo(m))
+        holgura = ctx.p["holgura_rol"]
+        fuera_tramo = [n for n, v in niveles.items() if v is not None and not (
+            nivel - 3 <= v <= nivel + (holgura if rol_de.get(n) in ("tanque", "sanador") else 0))]
         inf.comprobar(sec, not fuera_tramo,
-                      "los compañeros son de tu tramo (hasta 3 por debajo, ninguno por encima)",
+                      "los compañeros son de tu tramo (hasta 3 por debajo, ninguno por encima; "
+                      "un tanque o sanador hasta %d por encima)" % holgura,
                       ", ".join("%s %s" % (n, v if v is not None else "?") for n, v in niveles.items()))
         propia = m.posicion_actual()
         lejos_quieto = _lejos(m, propia, miembros)

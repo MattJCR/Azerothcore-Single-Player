@@ -494,17 +494,17 @@ class PruebasTiradasLoot(unittest.TestCase):
         m.oyentes.append(lambda t, ev, d: vistos.append((ev, d)) if ev == "tirada_inicio" else None)
         e = Escritor().u64(0x42).u32(559).u32(3).u32(17922).u32(0).u32(0).u32(1).u32(60000).u8(7)
         m._procesar(0x2A1, e.valor())
-        self.assertEqual(m.tiradas[0x42]["itemid"], 17922)
+        self.assertEqual(m.tiradas[(0x42, 3)]["itemid"], 17922)
         self.assertEqual(vistos[0][0], "tirada_inicio")
 
     def test_dispatch_tirada_ganada_borra_la_tirada_pendiente(self):
         m = mundo_sin_red()
-        m.tiradas[0x42] = {"itemid": 17922}
+        m.tiradas[(0x42, 3)] = {"itemid": 17922}
         vistos = []
         m.oyentes.append(lambda t, ev, d: vistos.append((ev, d)) if ev == "tirada_ganada" else None)
         e = Escritor().u64(0x42).u32(3).u32(17922).u32(0).u32(0).u64(0x77).u8(50).u8(1)
         m._procesar(0x29F, e.valor())
-        self.assertNotIn(0x42, m.tiradas)
+        self.assertNotIn((0x42, 3), m.tiradas)
         self.assertEqual(vistos[0][1]["ganador"], 0x77)
 
 

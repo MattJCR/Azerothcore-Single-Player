@@ -1604,6 +1604,7 @@ PARTY_HERE_PENDING_RETRY_SECONDS=5
 PARTY_HERE_PENDING_WAKE_SECONDS=45
 PARTY_HERE_ROLE_WAIT_SECONDS=45           # grupo manual: esperar tanque/sanador antes de cubrir con otro rol; 0 = no
 PARTY_HERE_ROLE_RESPEC=true               # pasada la espera, un bot de clase capaz cambia de talentos al rol que falta (M26)
+PARTY_HERE_ROLE_LEVEL_ABOVE=5             # pasada la espera, admite tanque/sanador hasta N niveles por encima del tramo (UPD-I); 0 = no
 PARTY_HERE_DISMISS_EXCLUDE_MINUTES=10     # un bot echado o cambiado no vuelve en este tiempo
 PARTY_HERE_SCAN_INTERVAL_MS=3000
 PARTY_HERE_MAX_GROUP_BOTS=0        # tope de ".grupo N"; 0 = MAX_RAID_BOTS

@@ -227,6 +227,21 @@ PartyHere.RoleWaitSeconds = 45
 PartyHere.RoleRespec = 0
 
 #
+#    PartyHere.RoleLevelAbove
+#        Descripcion: Grupo manual: niveles POR ENCIMA del tramo que se admiten
+#                     para un tanque o un sanador cuando, pasada la espera de
+#                     rol (RoleWaitSeconds), no hay ninguno libre dentro del
+#                     tramo. Con pocos guerreros y paladines por nivel el tramo
+#                     normal se queda sin tanque; un tanque algo mas alto, sin
+#                     tocar sus talentos, es mejor que un grupo sin tanque.
+#                     Se prueba antes que RoleRespec. Tambien amplia el nivel de
+#                     los bots dormidos que se despiertan buscando ese rol. No
+#                     afecta a los grupos automaticos por mision. Maximo 20.
+#        Por defecto: 0 (desactivado; el perfil de config.sh pone 5)
+
+PartyHere.RoleLevelAbove = 0
+
+#
 #    PartyHere.DismissExcludeMinutes
 #        Descripcion: Minutos durante los que un bot echado con ".grupo fuera
 #                     <nombre>" o cambiado con ".grupo cambia <nombre>" no vuelve

@@ -43,6 +43,7 @@ export default {
   "PartyHere.PendingWakeSeconds": "Minimum seconds between waves of waking bots for the same pending request.",
   "PartyHere.RoleWaitSeconds": "Manual group: seconds the tank and healer slots are held waiting for a bot of that role before filling them with anyone. 0 = fill at once.",
   "PartyHere.RoleRespec": "Manual group: once the role wait has passed without a tank or healer, a free bot of a capable class switches its talent tree to the missing role (and stays that way). If there is none, the player is told.",
+  "PartyHere.RoleLevelAbove": "Manual group: once the role wait has passed, how many levels above the usual range a tank or healer may be when none is free inside the range (tried before switching anyone's talents). 0 = the range only.",
   "PartyHere.DismissExcludeMinutes": "Minutes during which a bot that was dismissed (\".grupo fuera <name>\") or swapped (\".grupo cambia\") does not return to your group. 0 = no exclusion.",
   "PartyHere.AnnounceErrors": "Show the module's failure messages, apart from the Announce switch.",
   "PartyHere.ScanIntervalMs": "Milliseconds between passes of the party sweep (bring bots, dismiss automatic ones, clean up).",

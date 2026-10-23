@@ -30,6 +30,14 @@ from . import PersonajeTemporal, sin_colores
 MAPAS_ARENA = {559: "Nagrand Arena", 562: "Blade's Edge Arena", 572: "Ruins of Lordaeron",
                617: "Dalaran Sewers", 618: "The Ring of Valor"}
 ENTRY_ARENA_BATTLEMASTER = 26007        # "Arena Battlemaster" (confirmado en vivo 25/09/2026)
+NIVEL_ARENA = 25                        # 1 + `.levelup 24`
+
+
+def _tamano_grupo(m):
+    """Miembros del grupo CON el jugador. SMSG_GROUP_LIST no lista a quien lo recibe:
+    contar sólo `miembros` daba uno menos (una banda de 10/10 en el log se veía como 9)."""
+    otros = [x for x in (m.grupo or {}).get("miembros", []) if x["guid"] != m.guid]
+    return len(otros) + 1
 
 
 def _raid_mas_accesible(dbc):
@@ -133,6 +141,7 @@ def ejecutar(ctx):
         ctx.anotar_servidor(m)
         m.comando("gm off", 1)
 
+        nivel_actual = 1
         # ── Arena 2c2 y 3c3 primero: `.levelup` sólo SUBE el nivel, nunca lo
         # baja, y la banda exige un nivel de banda (55+) que dejaría al
         # personaje sin apenas población de bots en el bracket de arena (10
@@ -141,7 +150,8 @@ def ejecutar(ctx):
             # Nivel medio, no el máximo: la población de bots (mod-world-bots)
             # se mantiene hasta el nivel 60 por defecto en este perfil, así que
             # un personaje de prueba muy alto no tiene con quién emparejar.
-            m.comando("levelup 24", 3)
+            m.comando("levelup %d" % (NIVEL_ARENA - 1), 3)
+            nivel_actual = NIVEL_ARENA
             guid_maestro, resp_npc_add = _spawn_maestro_arena(m)
             if inf.comprobar(sec, guid_maestro is not None,
                               "hay un maestro de batalla de arena de prueba (`.npc add`)",
@@ -169,7 +179,11 @@ def ejecutar(ctx):
             raid = _raid_mas_accesible(ctx.dbc)
             if inf.comprobar(sec, raid is not None, "hay una mazmorra de tipo banda en LFGDungeons.dbc",
                               "%s" % raid, origen="entorno"):
-                m.comando("levelup %d" % (max(raid["nivel_min"], 10) - 1), 3)
+                # `.levelup` es un delta: con `partes=ambos` el personaje ya tiene el nivel de la
+                # arena, y sumarle nivel_min - 1 lo dejaba en el 80 (sin bots con quién llenar la banda).
+                nivel_banda = max(raid["nivel_min"], 10)
+                if nivel_banda > nivel_actual:
+                    m.comando("levelup %d" % (nivel_banda - nivel_actual), 3)
                 m.lfg_unirse(grp.ROL_TANQUE | grp.ROL_SANADOR | grp.ROL_DANO, [raid["id"]])
                 estado["cola"] = True
                 limite = time.time() + 20
@@ -191,7 +205,7 @@ def ejecutar(ctx):
                 tamano = 1
                 while time.time() < limite and tamano < 10:
                     m.bombear(3)
-                    tamano = len((m.grupo or {}).get("miembros", [])) or 1
+                    tamano = _tamano_grupo(m)
                 estado["grupo"] = tamano > 1
                 es_banda = bool((m.grupo or {}).get("tipo", 0) & grp.GROUP_TYPE_RAID)
                 # M48 (25/09/2026): antes CollectBots exigía el nivel EXACTO del
