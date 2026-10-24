@@ -12,17 +12,26 @@ parte de este fichero los modifica ni los sustituye.
 Cómo llega cada cosa a su equipo
 --------------------------------
  [R] Redistribuido dentro de este repositorio, con su texto de licencia.
- [D] No se redistribuye: el instalador lo descarga del origen indicado, en el
-     commit fijado, y comprueba su SHA-256 antes de usarlo.
+ [D] No se redistribuye dentro del repositorio: el instalador lo descarga en el
+     commit fijado y comprueba su SHA-256 antes de usarlo.
+ [A] Copia de respaldo como asset de la versión «snapshots» de este proyecto
+     (ficheros aparte, sin modificar, con sus avisos; no forman parte de nuestro
+     código). El instalador la prefiere si su SHA-256 cuadra y, si falta, cae al
+     origen indicado.
  [G] Se genera en su equipo a partir de ficheros que usted ya posee.
 
-1. Core y módulos de AzerothCore (descargados al compilar) [D]
---------------------------------------------------------------
+1. Core y módulos de AzerothCore (descargados al compilar) [D] [A]
+-------------------------------------------------------------------
 Licencia = la que declara el proyecto en su LICENSE (L), en las cabeceras de
 sus ficheros (C) o en su README (R). «ninguna declarada» significa que el
-commit fijado no trae fichero de licencia ni la menciona; su uso sin
-redistribuir es el que hace el instalador, y su snapshot NO se publica como
-asset (sólo se obtiene del repositorio original).
+commit fijado no trae fichero de licencia ni la menciona. Su copia de respaldo
+se ofrece igualmente como asset [A], para que la instalación no dependa de que
+el origen siga existiendo; si el autor de alguno lo reclama, se retira de la
+versión y el instalador vuelve a pedirlo al repositorio original.
+
+Origen retirado: mod-playerbots-wintergrasp (autor iCore) dejó de estar
+disponible en la dirección indicada abajo; su copia de respaldo es el commit
+fijado, que sigue siendo GPL.
 
 core (rama de mod-playerbots)    GPL-2.0-or-later (L, C)
     https://github.com/mod-playerbots/azerothcore-wotlk

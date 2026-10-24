@@ -1114,7 +1114,7 @@ NOTIFY_GM_ON_UPDATE=true        # in-game mail to the GM accounts
 GM_NOTIFY_MIN_LEVEL=3
 MIRROR_REPOS=true               # offline copies in mirrors/
 MIRROR_INCLUDE_CORE=true        # 209 MB; this repo lives on a Gitea with no 100 MB limit
-MIRROR_ASSET_BASE_URL=""        # release asset (https://) that ./install.sh --hidratar downloads from before rebuilding
+MIRROR_ASSET_BASE_URL="https://github.com/MattJCR/Azerothcore-Single-Player/releases/download/snapshots"  # release asset (https://) that ./install.sh --hidratar downloads from before rebuilding
 ```
 
 **`versions.lock`** pins the exact commit of each of the 20 repositories (19 until
@@ -1149,14 +1149,16 @@ patches applies on the pinned commit, with no Git repository and no prior
 `azerothcore-single-player-<version>.zip` and `.tar.gz` (the public tree without
 Git history, with the execute permissions and the Linux line endings),
 `azerothcore-single-player-<version>-con-snapshots.tar` (the same tree plus the
-licensed snapshots in `mirrors/`, to avoid downloading the core and those
-modules) and one asset per snapshot (`<module>@<commit>.tar.gz`; its download
-address is what goes in `MIRROR_ASSET_BASE_URL`). The packages are generated
+snapshots in `mirrors/`, to avoid downloading the core and the modules) and one
+asset per snapshot (`<module>@<commit>.tar.gz`; its download address is what goes
+in `MIRROR_ASSET_BASE_URL`). The assets are a backup copy of every snapshot,
+including those of modules whose origin has no license file; if an author asks
+for one to be removed, it is withdrawn from the release and the installer goes
+back to requesting it from its repository. The packages are generated
 reproducibly from a single commit and checked before being attached: same paths
 and bytes as the public export, no `.git`, no Markdown other than the common
-documents and no secrets. **They are not an offline installation**: they never
-include the seven unlicensed modules (they are requested from their origin
-repository at the pinned commit), the third-party addons, `Data.zip` v20.0 or the
+documents and no secrets. **They are not an offline installation**: they do not
+include the third-party addons, `Data.zip` v20.0 or the
 npm dependencies, and they carry nothing from Blizzard (client patches, icons and
 maps are generated from the player's client). The ZIP that GitHub offers
 automatically for a tag is only the tree: the installer completes the rest with

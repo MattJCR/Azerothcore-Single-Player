@@ -94,7 +94,7 @@ done
 echo ""
 
 if [ -n "${UPDATE_UNREACHABLE:-}" ]; then
-    echo "  Sin acceso a: ${UPDATE_UNREACHABLE} (sin red, o repositorio movido/borrado: mirar mirrors/)."
+    echo "  Sin acceso a: ${UPDATE_UNREACHABLE} (sin red, o repositorio movido/borrado: la instalación sigue usando mirrors/ y el asset «snapshots»)."
 fi
 
 if [ "${UPDATE_COUNT:-0}" -gt 0 ]; then

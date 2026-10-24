@@ -1101,7 +1101,7 @@ NOTIFY_GM_ON_UPDATE=true        # correo dentro del juego a las cuentas GM
 GM_NOTIFY_MIN_LEVEL=3
 MIRROR_REPOS=true               # copias offline en mirrors/
 MIRROR_INCLUDE_CORE=true        # 209 MB; este repo vive en un Gitea sin límite de 100 MB
-MIRROR_ASSET_BASE_URL=""        # asset de versión (https://) del que ./install.sh --hidratar descarga antes de reconstruir
+MIRROR_ASSET_BASE_URL="https://github.com/MattJCR/Azerothcore-Single-Player/releases/download/snapshots"  # asset (https://) del que ./install.sh --hidratar descarga antes de reconstruir
 ```
 
 **`versions.lock`** fija el commit exacto de cada uno de los 20 repositorios (19 hasta el 02/09/2026, cuando entró
@@ -1128,12 +1128,13 @@ comprueba que cada parche propio aplica sobre el commit fijado, sin repositorio 
 **Paquetes de cada versión.** Cada versión adjunta, con su `SHA256SUMS`, `MANIFIESTO.tsv` y `NOTAS-DE-VERSION.txt`:
 `azerothcore-single-player-<versión>.zip` y `.tar.gz` (el árbol público sin historial Git, con los permisos de ejecución
 y los fines de línea de Linux), `azerothcore-single-player-<versión>-con-snapshots.tar` (el mismo árbol más los
-snapshots con licencia en `mirrors/`, para no descargar el core ni esos módulos) y un asset por snapshot
-(`<módulo>@<commit>.tar.gz`; su dirección de descarga es lo que se pone en `MIRROR_ASSET_BASE_URL`). Los paquetes se
+snapshots en `mirrors/`, para no descargar el core ni los módulos) y un asset por snapshot
+(`<módulo>@<commit>.tar.gz`; su dirección de descarga es lo que se pone en `MIRROR_ASSET_BASE_URL`). Los assets
+son copia de respaldo de todos los snapshots, también los de módulos sin fichero de licencia en su origen; si el
+autor de alguno lo reclama, se retira de la versión y el instalador vuelve a pedirlo a su repositorio. Los paquetes se
 generan de forma reproducible desde un único commit y se comprueban antes de adjuntarse: mismas rutas y bytes que la
 exportación pública, sin `.git`, sin más Markdown que los documentos comunes y sin secretos. **No son una
-instalación offline**: nunca incluyen los siete módulos sin licencia (se piden a su repositorio de origen en el commit
-fijado), los addons de terceros, `Data.zip` v20.0 ni las dependencias npm, y no llevan nada de Blizzard (los parches de
+instalación offline**: no incluyen los addons de terceros, `Data.zip` v20.0 ni las dependencias npm, y no llevan nada de Blizzard (los parches de
 cliente, iconos y mapas se generan desde el cliente del jugador). El ZIP que GitHub ofrece de forma automática para una
 etiqueta es sólo el árbol: el instalador completa el resto con comprobación de SHA-256 y, si un hash no cuadra o falta
 un insumo, detiene el paso en vez de seguir.

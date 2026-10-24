@@ -177,7 +177,10 @@ clone_module() {
     # el caso para el que existen las copias: repositorio borrado, renombrado,
     # puesto en privado, o VM sin conexión.
     info "Clonar módulo $NAME..."
-    if git clone "$REPO" --branch "$BRANCH" --single-branch "$DEST" >> "$INSTALL_LOG" 2>&1; then
+    # GIT_TERMINAL_PROMPT=0: GitHub contesta 401 (no 404) a un repositorio borrado
+    # o privado, y git abriría /dev/tty para pedir usuario y contraseña: la
+    # instalación se quedaría colgada en vez de caer a la copia offline.
+    if GIT_TERMINAL_PROMPT=0 git clone "$REPO" --branch "$BRANCH" --single-branch "$DEST" >> "$INSTALL_LOG" 2>&1; then
         log "Clonar módulo $NAME — hecho."
         return 0
     fi

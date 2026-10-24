@@ -114,8 +114,10 @@ mirror_all_repos() {
 #      los mismos bytes que el snapshot original.
 #
 # Una caché o un asset no sustituyen la comprobación: un fichero que no cuadra
-# con el SHA-256 del manifiesto no se instala, venga de donde venga. Los siete
-# módulos sin licencia explícita no se redistribuyen como asset: sólo la vía 3.
+# con el SHA-256 del manifiesto no se instala, venga de donde venga. Los assets
+# son copia de respaldo de TODOS los snapshots (también los de módulos sin
+# fichero de licencia) para que la instalación no dependa de que un upstream
+# siga existiendo; la vía 3 sigue ahí por si el asset falta.
 # =============================================================================
 _mirror_sha_ok() {
     # $1 fichero, $2 sha esperado
@@ -181,7 +183,8 @@ hydrate_snapshot() {
     info "[hidratar] $NAME@${COMMIT:0:12}: reconstruyendo desde $URL (sólo ese commit)..."
     # core.autocrlf/eol fijados: git archive aplica las conversiones de fin de
     # línea de la configuración local; con las del sistema los bytes cambiarían.
-    local G=(git -c core.autocrlf=false -c core.eol=lf -C "$TMP/r")
+    # GIT_TERMINAL_PROMPT=0: un upstream borrado o privado no debe pedir credenciales.
+    local G=(env GIT_TERMINAL_PROMPT=0 git -c core.autocrlf=false -c core.eol=lf -C "$TMP/r")
     if git init -q "$TMP/r" \
         && "${G[@]}" fetch -q --depth 1 --no-tags "$URL" "$COMMIT" 2>>"${INSTALL_LOG:-/dev/null}" \
         && [ "$("${G[@]}" rev-parse 'FETCH_HEAD^{commit}')" = "$COMMIT" ] \
